@@ -6,22 +6,22 @@ import "./globals.css";
 const helvetica = localFont({
   src: [
     {
-      path: "../../helvetica-255-webfont/Helvetica.woff",
+      path: "./fonts/Helvetica.woff",
       weight: "400",
       style: "normal",
     },
     {
-      path: "../../helvetica-255-webfont/Helvetica-Bold.woff",
+      path: "./fonts/Helvetica-Bold.woff",
       weight: "700",
       style: "normal",
     },
     {
-      path: "../../helvetica-255-webfont/Helvetica-Oblique.woff",
+      path: "./fonts/Helvetica-Oblique.woff",
       weight: "400",
       style: "italic",
     },
     {
-      path: "../../helvetica-255-webfont/Helvetica-BoldOblique.woff",
+      path: "./fonts/Helvetica-BoldOblique.woff",
       weight: "700",
       style: "italic",
     },
