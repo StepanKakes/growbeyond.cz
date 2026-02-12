@@ -3,7 +3,7 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+
   background-color: #111111;
   --fractal-glass-gradient: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.27) 45px);
   --fractal-glass-blur: blur(20px);
