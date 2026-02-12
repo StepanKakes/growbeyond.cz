@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fractal Glass Effect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --fractal-glass-gradient: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.27) 45px);
+        --fractal-glass-blur: blur(20px);
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #111111;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .blender {
+        mix-blend-mode: color-dodge;
+        background: var(--fractal-glass-gradient);
+        -webkit-backdrop-filter: var(--fractal-glass-blur);
+        backdrop-filter: var(--fractal-glass-blur);
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .blender::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: var(--fractal-glass-gradient);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "framer-motion": "https://esm.sh/framer-motion@^12.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

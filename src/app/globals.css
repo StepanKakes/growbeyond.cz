@@ -5,4 +5,27 @@ body {
   padding: 0;
   overflow: hidden;
   background-color: #111111;
+  --fractal-glass-gradient: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.27) 45px);
+  --fractal-glass-blur: blur(20px);
+}
+
+.blender {
+  mix-blend-mode: color-dodge;
+  background: var(--fractal-glass-gradient);
+  -webkit-backdrop-filter: var(--fractal-glass-blur);
+  backdrop-filter: var(--fractal-glass-blur);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.blender::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: var(--fractal-glass-gradient);
 }

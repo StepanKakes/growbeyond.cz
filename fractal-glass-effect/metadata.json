@@ -1,0 +1,5 @@
+{
+  "name": "Fractal Glass Effect",
+  "description": "A visually stunning fractal glass distortion effect that reacts to mouse movement, using OKLCH colors and CSS backdrop filters.",
+  "requestFramePermissions": []
+}
