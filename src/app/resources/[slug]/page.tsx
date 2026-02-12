@@ -38,12 +38,12 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
     return (
         <div className="min-h-screen relative flex items-center justify-center p-6 lg:p-20">
-            <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+            <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-32 items-center">
 
                 {/* Left Column: Content */}
                 <div className="space-y-5 flex flex-col order-1 lg:order-none relative">
                     {/* Top Logo - Mobile: standard block, Desktop: absolute top left of container */}
-                    <div className="w-full text-left mb-4 lg:mb-0 lg:absolute lg:-top-24 lg:left-0">
+                    <div className="w-full text-left mb-4">
                         <span className={`${instrumentSerif.className} italic text-white text-3xl tracking-wide`}>Beyond</span>
                     </div>
 
@@ -61,7 +61,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
                 {/* Right Column: 3D Book */}
                 {/* On mobile, standard flow puts this second (below content). This is desired. */}
-                <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-8 lg:mt-0">
+                <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-8 lg:mt-0 scale-75 origin-center">
                     <CssBook
                         title={resource.name}
                         coverTitle={resource.coverTitle}
