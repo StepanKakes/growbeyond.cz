@@ -1,4 +1,5 @@
 import { getResourceBySlug, getAllResourceSlugs } from '@/lib/notion';
+import { instrumentSerif } from "@/app/fonts";
 import { notFound } from 'next/navigation';
 import { CssBook } from '@/components/CssBook';
 import { ResourceForm } from '@/components/ResourceForm';
@@ -18,7 +19,7 @@ function parseHeadline(text: string) {
     return parts.map((part, index) => {
         if (index % 2 === 1) {
             return (
-                <span key={index} className="font-serif italic font-normal text-[#B5B5B5]">
+                <span key={index} className={`${instrumentSerif.className} italic font-normal text-[#B5B5B5]`}>
                     {part}
                 </span>
             );
@@ -43,7 +44,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                 <div className="space-y-5 flex flex-col order-1 lg:order-none relative">
                     {/* Top Logo - Mobile: standard block, Desktop: absolute top left of container */}
                     <div className="w-full text-left mb-4 lg:mb-0 lg:absolute lg:-top-24 lg:left-0">
-                        <span className="font-serif italic text-white text-3xl tracking-wide">Beyond</span>
+                        <span className={`${instrumentSerif.className} italic text-white text-3xl tracking-wide`}>Beyond</span>
                     </div>
 
                     <h1 className="text-4xl lg:text-6xl font-bold tracking-[-0.05em] leading-[1.1] text-white">
