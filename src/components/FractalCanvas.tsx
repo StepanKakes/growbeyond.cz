@@ -131,7 +131,6 @@ export const FractalCanvas: React.FC = () => {
                     y: redY,
                     // Gradient: Light Gray (instead of White) -> Light Red -> Pure Red (No Yellow/Orange)
                     background: 'linear-gradient(180deg, #9CA3AF 0%, #FF4444 20%, #FF0E00 50%, #2a2a2a 100%)',
-                    opacity: 0.9,
                     filter: 'blur(60px)', // Reduced blur slightly for perf
                     opacity: 0.9,
                     willChange: 'transform',
