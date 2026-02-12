@@ -48,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${helvetica.variable} ${instrumentSerif.variable} antialiased min-h-screen relative bg-[#111111] overflow-x-hidden`}>
+      <body className={`${helvetica.className} ${instrumentSerif.variable} antialiased min-h-screen relative bg-[#111111] overflow-x-hidden`}>
 
         {/* CONTENT LAYER */}
         <div className="relative z-20">
