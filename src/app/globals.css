@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: #111111;
-  --color-foreground: #ffffff;
-  --color-accent: #FF0E00;
-
+:root {
   --font-sans: var(--font-helvetica);
   --font-serif: var(--font-instrument);
 }
@@ -14,5 +10,5 @@ body {
   padding: 0;
   overflow: hidden;
   background-color: #111111;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
