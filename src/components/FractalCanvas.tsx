@@ -8,7 +8,11 @@ import { motion, useTransform, useTime, useMotionValue, useSpring, MotionValue }
 // - targetX: The horizontal center of the blob (-1 to 1)
 // - mouseX, mouseY: The current mouse position (-1 to 1)
 // - strength: How much the blob moves vertically when active
-function useBlobPhysics(
+// Helper: Calculates movement based on proximity
+// - targetX: The horizontal center of the blob (-1 to 1)
+// - mouseX, mouseY: The current mouse position (-1 to 1)
+// - strength: How much the blob moves when active
+function useBlobMotion(
     mouseX: MotionValue<number>,
     mouseY: MotionValue<number>,
     targetX: number,
@@ -17,8 +21,6 @@ function useBlobPhysics(
     phaseOffset: number
 ) {
     // 1. Proximity Weight: How close is mouseX to this blob?
-    // We use a bell-curve-like logic. 
-    // If dist is 0, weight is 1. If dist is > 0.8, weight fades to 0.
     const influence = useTransform(mouseX, (x) => {
         const dist = Math.abs(x - targetX);
         return Math.max(0, 1 - dist / 0.8);
@@ -29,11 +31,21 @@ function useBlobPhysics(
         return (y as number) * (inf as number) * strength;
     });
 
-    // 3. Automatic Float: Gentle idle animation so it's never dead static
+    // 3. Interactive X: Move left/right based on mouseX * influence
+    // We dampen X slightly compared to Y for a balanced feel
+    const interactiveX = useTransform([mouseX, influence], ([x, inf]) => {
+        return (x as number) * (inf as number) * (strength * 0.8);
+    });
+
+    // 4. Automatic Float: Gentle idle animation
     const autoY = useTransform(time, (t) => Math.sin((t + phaseOffset) / 2500) * 15);
+    const autoX = useTransform(time, (t) => Math.cos((t + phaseOffset) / 3000) * 10);
 
     // Combine both
-    return useTransform([interactiveY, autoY], ([i, a]) => `calc(${i}px + ${a}px)`);
+    const x = useTransform([interactiveX, autoX], ([i, a]) => `calc(-50% + ${i}px + ${a}px)`);
+    const y = useTransform([interactiveY, autoY], ([i, a]) => `calc(${i}px + ${a}px)`);
+
+    return { x, y };
 }
 
 export const FractalCanvas: React.FC = () => {
@@ -63,14 +75,13 @@ export const FractalCanvas: React.FC = () => {
     // --- Independent Blob Logic ---
 
     // 1. Red Blob (Center) - Main Focus
-    // Strength 40 for subtle reaction
-    const redY = useBlobPhysics(smoothX, smoothY, 0, 40, time, 0);
+    const redMotion = useBlobMotion(smoothX, smoothY, 0, 40, time, 0);
 
     // 2. Gray Blob (Left)
-    const grayLeftY = useBlobPhysics(smoothX, smoothY, -0.7, 30, time, 5000);
+    const grayLeftMotion = useBlobMotion(smoothX, smoothY, -0.7, 30, time, 5000);
 
     // 3. Gray Blob (Right)
-    const grayRightY = useBlobPhysics(smoothX, smoothY, 0.7, 30, time, 2500);
+    const grayRightMotion = useBlobMotion(smoothX, smoothY, 0.7, 30, time, 2500);
 
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden bg-[#111111]">
@@ -85,8 +96,8 @@ export const FractalCanvas: React.FC = () => {
                     height: '50vw',
                     left: '10%',
                     top: '60%',
-                    x: '-50%',
-                    y: grayLeftY,
+                    x: grayLeftMotion.x,
+                    y: grayLeftMotion.y,
                     // Gradient: Light Gray top -> Mid Gray -> Dark Gray (Less White)
                     background: 'linear-gradient(180deg, #6B7280 0%, #4B5563 40%, #1F2937 100%)',
                     filter: 'blur(60px)',
@@ -105,8 +116,8 @@ export const FractalCanvas: React.FC = () => {
                     height: '55vw',
                     left: '85%',
                     top: '40%',
-                    x: '-50%',
-                    y: grayRightY,
+                    x: grayRightMotion.x,
+                    y: grayRightMotion.y,
                     // Gradient: Light Gray top -> Mid Gray -> Dark Gray (Less White)
                     background: 'linear-gradient(180deg, #6B7280 0%, #4B5563 40%, #1F2937 100%)',
                     filter: 'blur(70px)',
@@ -127,8 +138,8 @@ export const FractalCanvas: React.FC = () => {
                     left: '50%',
                     // Positioned so only the top portion is visible
                     top: '65%',
-                    x: '-50%',
-                    y: redY,
+                    x: redMotion.x,
+                    y: redMotion.y,
                     // Gradient: Light Gray (instead of White) -> Light Red -> Pure Red (No Yellow/Orange)
                     background: 'linear-gradient(180deg, #9CA3AF 0%, #FF4444 20%, #FF0E00 50%, #2a2a2a 100%)',
                     filter: 'blur(60px)', // Reduced blur slightly for perf
