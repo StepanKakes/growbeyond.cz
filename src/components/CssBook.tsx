@@ -1,4 +1,5 @@
 import React from 'react';
+import { instrumentSerif } from "@/app/fonts";
 
 interface CssBookProps {
     title?: string;
@@ -63,7 +64,7 @@ export function CssBook({ title, coverTitle, coverSubtitle }: CssBookProps) {
 
                     {/* Logo dole */}
                     <div className="mt-auto text-center pb-1">
-                        <span className="font-serif italic text-black text-xl">
+                        <span className={`${instrumentSerif.className} italic text-black text-xl`}>
                             Beyond
                         </span>
                     </div>
