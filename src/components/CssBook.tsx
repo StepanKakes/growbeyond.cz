@@ -40,14 +40,14 @@ export function CssBook({ title, coverTitle, coverSubtitle }: CssBookProps) {
                 {/* START: Rovně. HOVER: Lehce se nadzvedne, zatímco ostatní se schovají pod ni. */}
                 <div
                     className="absolute inset-0 bg-white rounded-2xl shadow-xl border border-gray-50 z-20 
-                     flex flex-col p-6 sm:p-8 justify-between
+                     flex flex-col p-5 sm:p-8 justify-between
                      transition-all duration-500 ease-out transform group-hover:-translate-y-1"
                 >
                     {/* Horní část */}
                     <div className="flex flex-col gap-4 mt-2">
                         {/* NADPIS */}
                         <h3
-                            className="text-[#FF0E00] font-bold text-3xl sm:text-4xl leading-none tracking-[-0.05em]"
+                            className="text-[#FF0E00] font-bold text-2xl sm:text-4xl leading-none tracking-[-0.05em]"
                             style={{ fontFamily: 'Helvetica, Inter, sans-serif' }}
                         >
                             {displayTitle}
@@ -57,14 +57,14 @@ export function CssBook({ title, coverTitle, coverSubtitle }: CssBookProps) {
                         <div className="w-full h-px bg-gray-200"></div>
 
                         {/* PODNADPIS */}
-                        <p className="text-[#B5B5B5] text-lg sm:text-xl font-bold leading-tight tracking-tight">
+                        <p className="text-[#B5B5B5] text-sm sm:text-xl font-bold leading-tight tracking-tight">
                             {displaySubtitle}
                         </p>
                     </div>
 
                     {/* Logo dole */}
                     <div className="mt-auto text-center pb-1">
-                        <span className={`${instrumentSerif.className} italic text-black text-xl`}>
+                        <span className={`${instrumentSerif.className} italic text-black text-lg sm:text-xl`}>
                             Beyond
                         </span>
                     </div>

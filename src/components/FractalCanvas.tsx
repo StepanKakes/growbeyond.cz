@@ -84,7 +84,7 @@ export const FractalCanvas: React.FC = () => {
     const grayRightMotion = useBlobMotion(smoothX, smoothY, 0.7, 30, time, 2500);
 
     return (
-        <div className="fixed inset-0 w-full h-full overflow-hidden bg-[#111111] z-0">
+        <div className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#111111] z-0">
 
             {/* --- The Blobs (The "Fractals") --- */}
 

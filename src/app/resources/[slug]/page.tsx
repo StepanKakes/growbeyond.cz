@@ -37,7 +37,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     }
 
     return (
-        <div className="min-h-screen relative flex items-start justify-center p-6 lg:px-20 lg:pt-32 lg:pb-20">
+        <div className="min-h-screen relative flex items-start justify-center px-10 py-12 lg:px-20 lg:pt-32 lg:pb-20">
             <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-12 lg:gap-64 items-center">
 
                 {/* Left Column: Content */}
