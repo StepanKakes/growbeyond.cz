@@ -12,7 +12,7 @@ export function CssBook({ title, coverTitle, coverSubtitle }: CssBookProps) {
     const displaySubtitle = coverSubtitle || " ";
 
     return (
-        <div className="relative group w-full max-w-[220px] sm:max-w-[320px] mx-auto perspective-1000">
+        <div className="relative group w-full max-w-[180px] sm:max-w-[260px] mx-auto perspective-1000">
             {/* Kontejner - poměr stran 3:4 */}
             <div className="relative w-full aspect-[3/4]">
 
