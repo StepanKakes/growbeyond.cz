@@ -68,7 +68,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
                     {/* Right Column: 3D Book */}
                     {/* On mobile, standard flow puts this second (below content). This is desired. */}
-                    <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-8 lg:mt-0 scale-90 origin-center">
+                    <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-12 lg:mt-0 transform scale-100 lg:scale-110 origin-center lg:origin-right">
                         <CssBook
                             title={resource.name}
                             coverTitle={resource.coverTitle}
