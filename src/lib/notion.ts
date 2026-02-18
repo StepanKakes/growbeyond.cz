@@ -133,5 +133,6 @@ function mapPageToResource(page: any): Resource {
         kitTagId: getText('KitTagId'),
         coverTitle: getText('CoverTitle'),
         coverSubtitle: getText('CoverSubtitle'),
+        redirectUrl: getText('RedirectUrl'),
     };
 }

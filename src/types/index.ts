@@ -9,4 +9,5 @@ export interface Resource {
     kitTagId: string;
     coverTitle: string;
     coverSubtitle: string;
+    redirectUrl?: string;
 }

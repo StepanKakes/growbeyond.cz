@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { instrumentSerif, helvetica } from "@/app/fonts";
 
 interface ResourceFormProps {
     formId?: string;
     tagId?: string;
+    redirectUrl?: string;
 }
 
-export function ResourceForm({ formId, tagId }: ResourceFormProps) {
+export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -15,6 +17,15 @@ export function ResourceForm({ formId, tagId }: ResourceFormProps) {
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        if (status === 'success' && redirectUrl) {
+            const timer = setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [status, redirectUrl]);
 
     const validateEmail = (email: string) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -58,12 +69,7 @@ export function ResourceForm({ formId, tagId }: ResourceFormProps) {
 
                 if (response.ok) {
                     setStatus('success');
-                    setMessage('Děkujeme za odběr! Materiál vám brzy dorazí do e-mailu.');
-                    // Optionally reset form
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setAgreed(false);
+                    // Success state now handled by conditional rendering
                 } else {
                     setStatus('error');
                     setMessage(data.error || 'Něco se nepovedlo. Zkuste to prosím znovu.');
@@ -74,6 +80,19 @@ export function ResourceForm({ formId, tagId }: ResourceFormProps) {
             }
         }
     };
+
+    if (status === 'success') {
+        return (
+            <div className="space-y-6 max-w-lg py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <p className={`${helvetica.className} text-xl lg:text-2xl font-bold text-white leading-tight uppercase tracking-tight`}>
+                    Super, máš to tam! Odkaz na ten tvůj resource už letí k tobě do schránky.
+                    <span className="block mt-4 text-gray-400 text-base lg:text-lg font-normal normal-case tracking-normal">
+                        Vydrž vteřinu, hned tě přesměrujeme.
+                    </span>
+                </p>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
@@ -139,8 +158,8 @@ export function ResourceForm({ formId, tagId }: ResourceFormProps) {
                     {status === 'loading' ? 'ODESÍLÁM...' : 'STÁHNOUT'}
                 </button>
 
-                {message && (
-                    <div className={`text-sm py-2 px-4 rounded-lg ${status === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                {message && status === 'error' && (
+                    <div className="text-sm py-2 px-4 rounded-lg bg-red-500/10 text-red-500">
                         {message}
                     </div>
                 )}
