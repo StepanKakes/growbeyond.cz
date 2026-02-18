@@ -56,7 +56,10 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                     </p>
 
                     {/* Form */}
-                    <ResourceForm />
+                    <ResourceForm
+                        formId={resource.kitFormId}
+                        tagId={resource.kitTagId}
+                    />
                 </div>
 
                 {/* Right Column: 3D Book */}

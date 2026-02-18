@@ -2,18 +2,25 @@
 
 import React, { useState } from 'react';
 
-export function ResourceForm() {
+interface ResourceFormProps {
+    formId?: string;
+    tagId?: string;
+}
+
+export function ResourceForm({ formId, tagId }: ResourceFormProps) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [message, setMessage] = useState('');
 
     const validateEmail = (email: string) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors: { [key: string]: string } = {};
 
@@ -29,9 +36,42 @@ export function ResourceForm() {
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            // Success! Mock download or API call
-            alert("Formulář úspěšně odeslán!");
-            // In a real scenario, trigger download logic here.
+            setStatus('loading');
+            setMessage('');
+
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        firstName,
+                        lastName,
+                        formId,
+                        tagId,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setStatus('success');
+                    setMessage('Děkujeme za odběr! Materiál vám brzy dorazí do e-mailu.');
+                    // Optionally reset form
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setAgreed(false);
+                } else {
+                    setStatus('error');
+                    setMessage(data.error || 'Něco se nepovedlo. Zkuste to prosím znovu.');
+                }
+            } catch (error) {
+                setStatus('error');
+                setMessage('Nepodařilo se připojit k serveru. Zkontrolujte prosím své připojení.');
+            }
         }
     };
 
@@ -44,7 +84,8 @@ export function ResourceForm() {
                         placeholder="Jméno"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-accent'}`}
+                        disabled={status === 'loading'}
+                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
                     />
                     {errors.firstName && <span className="text-red-500 text-xs pl-2">{errors.firstName}</span>}
                 </div>
@@ -54,7 +95,8 @@ export function ResourceForm() {
                         placeholder="Příjmení"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.lastName ? 'ring-2 ring-red-500' : 'focus:ring-accent'}`}
+                        disabled={status === 'loading'}
+                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.lastName ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
                     />
                     {errors.lastName && <span className="text-red-500 text-xs pl-2">{errors.lastName}</span>}
                 </div>
@@ -66,7 +108,8 @@ export function ResourceForm() {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-accent'}`}
+                    disabled={status === 'loading'}
+                    className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
                 />
                 {errors.email && <span className="text-red-500 text-xs pl-2">{errors.email}</span>}
             </div>
@@ -78,20 +121,30 @@ export function ResourceForm() {
                         id="terms"
                         checked={agreed}
                         onChange={(e) => setAgreed(e.target.checked)}
-                        className="mt-1 w-4 h-4 rounded border-gray-300 text-accent focus:ring-accent bg-transparent"
+                        disabled={status === 'loading'}
+                        className="mt-1 w-4 h-4 rounded border-gray-300 text-accent focus:ring-accent bg-transparent disabled:opacity-50"
                     />
                     <label htmlFor="terms" className={`text-xs leading-tight ${errors.agreed ? 'text-red-500' : 'text-gray-400'}`}>
-                        Odesláním formuláře udělujete souhlas se zpracováním osobních údajů za účelem zasílání obchodních sdělení a kontaktování ze strany Beyond.
+                        Odesláním formuláře udělujete souhlas se zpracováním osobních údajů v rámci growbeyond.cz.
                     </label>
                 </div>
             </div>
 
-            <button
-                type="submit"
-                className="bg-[#FF0E00] hover:bg-red-600 text-white text-sm font-bold uppercase tracking-wider px-10 py-3 rounded-xl transition-colors duration-200 shadow-xl shadow-red-900/20"
-            >
-                STÁHNOUT
-            </button>
+            <div className="flex flex-col gap-4">
+                <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className="bg-[#FF0E00] hover:bg-red-600 text-white text-sm font-bold uppercase tracking-wider px-10 py-3 rounded-xl transition-colors duration-200 shadow-xl shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {status === 'loading' ? 'ODESÍLÁM...' : 'STÁHNOUT'}
+                </button>
+
+                {message && (
+                    <div className={`text-sm py-2 px-4 rounded-lg ${status === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                        {message}
+                    </div>
+                )}
+            </div>
         </form>
     );
 }

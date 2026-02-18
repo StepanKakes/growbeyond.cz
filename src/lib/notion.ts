@@ -130,6 +130,7 @@ function mapPageToResource(page: any): Resource {
         subtitle: getText('Subtitle'),
         buttonText: getText('ButtonText'),
         kitFormId: getText('KitFormId'),
+        kitTagId: getText('KitTagId'),
         coverTitle: getText('CoverTitle'),
         coverSubtitle: getText('CoverSubtitle'),
     };

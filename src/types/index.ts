@@ -6,6 +6,7 @@ export interface Resource {
     subtitle: string;
     buttonText: string;
     kitFormId: string;
+    kitTagId: string;
     coverTitle: string;
     coverSubtitle: string;
 }
