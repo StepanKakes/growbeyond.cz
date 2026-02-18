@@ -85,7 +85,7 @@ export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) 
         return (
             <div className="space-y-6 max-w-lg py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <p className={`${helvetica.className} text-xl lg:text-2xl font-bold text-white leading-tight uppercase tracking-tight`}>
-                    Super, máš to tam! Odkaz na ten tvůj resource už letí k tobě do schránky.
+                    Super, máš to tam! Odkaz na tvůj resource už letí k tobě do schránky.
                     <span className="block mt-4 text-gray-400 text-base lg:text-lg font-normal normal-case tracking-normal">
                         Vydrž vteřinu, hned tě přesměrujeme.
                     </span>

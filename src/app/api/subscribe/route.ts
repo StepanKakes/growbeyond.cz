@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { vokativ } from 'vokativ';
 
 export async function POST(req: Request) {
     try {
@@ -15,7 +16,11 @@ export async function POST(req: Request) {
         const DEFAULT_FORM_ID = process.env.CONVERTKIT_FORM_ID;
         const FINAL_FORM_ID = formId || DEFAULT_FORM_ID;
 
-        console.log(`Subscribing ${email} to Kit: Form ID: ${FINAL_FORM_ID}, Tag ID: ${tagId || 'none'}`);
+        // Compute vocative case for the first name if it exists (and capitalize it)
+        const rawVocative = firstName ? vokativ(firstName) : undefined;
+        const vocativeName = rawVocative ? rawVocative.charAt(0).toUpperCase() + rawVocative.slice(1) : undefined;
+
+        console.log(`Subscribing ${email} to Kit: Form ID: ${FINAL_FORM_ID}, Tag ID: ${tagId || 'none'}, Vocative: ${vocativeName}`);
 
         if (!API_KEY || !FINAL_FORM_ID) {
             console.error('Missing ConvertKit configuration (API_KEY or FORM_ID)');
@@ -39,6 +44,7 @@ export async function POST(req: Request) {
                 tags: tagId ? [tagId] : undefined,
                 fields: {
                     last_name: lastName,
+                    vokativ: vocativeName,
                 },
             }),
         });
