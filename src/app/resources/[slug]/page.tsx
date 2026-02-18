@@ -3,6 +3,7 @@ import { instrumentSerif } from "@/app/fonts";
 import { notFound } from 'next/navigation';
 import { CssBook } from '@/components/CssBook';
 import { ResourceForm } from '@/components/ResourceForm';
+import { FractalCanvas } from '@/components/FractalCanvas';
 
 export const revalidate = 60;
 
@@ -37,42 +38,45 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     }
 
     return (
-        <div className="min-h-screen relative flex items-start justify-center px-10 py-12 lg:px-20 lg:pt-32 lg:pb-20">
-            <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-12 lg:gap-64 items-center">
+        <>
+            <FractalCanvas />
+            <div className="min-h-screen relative z-10 flex items-start justify-center px-10 py-12 lg:px-20 lg:pt-32 lg:pb-20">
+                <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-12 lg:gap-64 items-center">
 
-                {/* Left Column: Content */}
-                <div className="space-y-5 flex flex-col order-1 lg:order-none relative">
-                    {/* Top Logo - Mobile: standard block, Desktop: absolute top left of container */}
-                    <div className="w-full text-left mb-4">
-                        <span className={`${instrumentSerif.className} italic text-white text-3xl tracking-wide`}>Beyond</span>
+                    {/* Left Column: Content */}
+                    <div className="space-y-5 flex flex-col order-1 lg:order-none relative">
+                        {/* Top Logo - Mobile: standard block, Desktop: absolute top left of container */}
+                        <div className="w-full text-left mb-4">
+                            <span className={`${instrumentSerif.className} italic text-white text-3xl tracking-wide`}>Beyond</span>
+                        </div>
+
+                        <h1 className="text-4xl lg:text-6xl font-bold tracking-[-0.05em] leading-[1.1] text-white">
+                            {parseHeadline(resource.publicTitle || resource.name)}
+                        </h1>
+
+                        <p className="text-white leading-tight text-sm lg:text-lg max-w-none">
+                            {resource.subtitle}
+                        </p>
+
+                        {/* Form */}
+                        <ResourceForm
+                            formId={resource.kitFormId}
+                            tagId={resource.kitTagId}
+                            redirectUrl={resource.redirectUrl}
+                        />
                     </div>
 
-                    <h1 className="text-4xl lg:text-6xl font-bold tracking-[-0.05em] leading-[1.1] text-white">
-                        {parseHeadline(resource.publicTitle || resource.name)}
-                    </h1>
-
-                    <p className="text-white leading-tight text-sm lg:text-lg max-w-none">
-                        {resource.subtitle}
-                    </p>
-
-                    {/* Form */}
-                    <ResourceForm
-                        formId={resource.kitFormId}
-                        tagId={resource.kitTagId}
-                        redirectUrl={resource.redirectUrl}
-                    />
-                </div>
-
-                {/* Right Column: 3D Book */}
-                {/* On mobile, standard flow puts this second (below content). This is desired. */}
-                <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-8 lg:mt-0 scale-90 origin-center">
-                    <CssBook
-                        title={resource.name}
-                        coverTitle={resource.coverTitle}
-                        coverSubtitle={resource.coverSubtitle}
-                    />
+                    {/* Right Column: 3D Book */}
+                    {/* On mobile, standard flow puts this second (below content). This is desired. */}
+                    <div className="flex justify-center perspective-1000 order-2 lg:order-none mt-8 lg:mt-0 scale-90 origin-center">
+                        <CssBook
+                            title={resource.name}
+                            coverTitle={resource.coverTitle}
+                            coverSubtitle={resource.coverSubtitle}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
