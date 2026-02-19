@@ -4,8 +4,28 @@ import { notFound } from 'next/navigation';
 import { CssBook } from '@/components/CssBook';
 import { ResourceForm } from '@/components/ResourceForm';
 import { FractalCanvas } from '@/components/FractalCanvas';
+import { Metadata } from 'next';
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const { slug } = await params;
+    const resource = await getResourceBySlug(slug);
+
+    if (!resource) {
+        return {
+            title: 'Not Found',
+        };
+    }
+
+    // Strip asterisks from the title for SEO
+    const cleanTitle = (resource.publicTitle || resource.name).replace(/\*/g, '');
+
+    return {
+        title: cleanTitle,
+        description: resource.subtitle,
+    };
+}
 
 export async function generateStaticParams() {
     const slugs = await getAllResourceSlugs();
