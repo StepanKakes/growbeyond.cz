@@ -7,6 +7,7 @@ export interface Resource {
     buttonText: string;
     kitFormId: string;
     kitTagId: string;
+    kitSequenceId?: string;
     coverTitle: string;
     coverSubtitle: string;
     redirectUrl?: string;

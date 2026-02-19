@@ -3,7 +3,7 @@ import { vokativ } from 'vokativ';
 
 export async function POST(req: Request) {
     try {
-        const { email, firstName, lastName, formId, tagId } = await req.json();
+        const { email, firstName, formId, tagId, sequenceId } = await req.json();
 
         if (!email) {
             return NextResponse.json(
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         const rawVocative = firstName ? vokativ(firstName) : undefined;
         const vocativeName = rawVocative ? rawVocative.charAt(0).toUpperCase() + rawVocative.slice(1) : undefined;
 
-        console.log(`Subscribing ${email} to Kit: Form ID: ${FINAL_FORM_ID}, Tag ID: ${tagId || 'none'}, Vocative: ${vocativeName}`);
+        console.log(`Subscribing ${email} to Kit: Form ID: ${FINAL_FORM_ID}, Tag ID: ${tagId || 'none'}, Sequence ID: ${sequenceId || 'none'}, Vocative: ${vocativeName}`);
 
         if (!API_KEY || !FINAL_FORM_ID) {
             console.error('Missing ConvertKit configuration (API_KEY or FORM_ID)');
@@ -30,9 +30,9 @@ export async function POST(req: Request) {
             );
         }
 
-        const url = `https://api.convertkit.com/v3/forms/${FINAL_FORM_ID}/subscribe`;
-
-        const response = await fetch(url, {
+        // 1. Subscribe to Form/Tag
+        const subscribeUrl = `https://api.convertkit.com/v3/forms/${FINAL_FORM_ID}/subscribe`;
+        const subscribeResponse = await fetch(subscribeUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -43,23 +43,50 @@ export async function POST(req: Request) {
                 first_name: firstName,
                 tags: tagId ? [tagId] : undefined,
                 fields: {
-                    last_name: lastName,
                     vokativ: vocativeName,
                 },
             }),
         });
 
-        const data = await response.json();
+        const subscribeData = await subscribeResponse.json();
 
-        if (!response.ok) {
-            console.error('ConvertKit API error:', data);
+        if (!subscribeResponse.ok) {
+            console.error('ConvertKit Form Subscribe error:', subscribeData);
             return NextResponse.json(
-                { error: data.message || 'Failed to subscribe' },
-                { status: response.status }
+                { error: subscribeData.message || 'Failed to subscribe' },
+                { status: subscribeResponse.status }
             );
         }
 
-        return NextResponse.json({ success: true, subscriber: data.subscription });
+        // 2. Subscribe to Sequence if sequenceId is provided
+        if (sequenceId) {
+            const sequenceUrl = `https://api.convertkit.com/v3/sequences/${sequenceId}/subscribe`;
+            const sequenceResponse = await fetch(sequenceUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    api_key: API_KEY,
+                    email: email,
+                    first_name: firstName,
+                    tags: tagId ? [tagId] : undefined,
+                    fields: {
+                        vokativ: vocativeName,
+                    },
+                }),
+            });
+
+            if (!sequenceResponse.ok) {
+                const sequenceData = await sequenceResponse.json();
+                console.error('ConvertKit Sequence Subscribe error:', sequenceData);
+                // We don't fail the whole request because form subscription was already successful
+            } else {
+                console.log(`Successfully subscribed ${email} to sequence ${sequenceId}`);
+            }
+        }
+
+        return NextResponse.json({ success: true, subscriber: subscribeData.subscription });
     } catch (error) {
         console.error('Subscription error:', error);
         return NextResponse.json(

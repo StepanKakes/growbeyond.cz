@@ -131,6 +131,7 @@ function mapPageToResource(page: any): Resource {
         buttonText: getText('ButtonText'),
         kitFormId: getText('KitFormId'),
         kitTagId: getText('KitTagId'),
+        kitSequenceId: getText('KitSequenceId'),
         coverTitle: getText('CoverTitle'),
         coverSubtitle: getText('CoverSubtitle'),
         redirectUrl: getText('RedirectUrl'),

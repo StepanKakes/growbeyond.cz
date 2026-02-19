@@ -7,11 +7,12 @@ interface ResourceFormProps {
     formId?: string;
     tagId?: string;
     redirectUrl?: string;
+    buttonText?: string;
+    sequenceId?: string;
 }
 
-export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) {
+export function ResourceForm({ formId, tagId, redirectUrl, buttonText, sequenceId }: ResourceFormProps) {
     const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -36,7 +37,6 @@ export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) 
         const newErrors: { [key: string]: string } = {};
 
         if (!firstName.trim()) newErrors.firstName = "Jméno je povinné.";
-        if (!lastName.trim()) newErrors.lastName = "Příjmení je povinné.";
         if (!email.trim()) {
             newErrors.email = "Email je povinný.";
         } else if (!validateEmail(email)) {
@@ -59,9 +59,9 @@ export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) 
                     body: JSON.stringify({
                         email,
                         firstName,
-                        lastName,
                         formId,
                         tagId,
+                        sequenceId,
                     }),
                 });
 
@@ -96,29 +96,16 @@ export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) 
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
-            <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                    <input
-                        type="text"
-                        placeholder="Jméno"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        disabled={status === 'loading'}
-                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
-                    />
-                    {errors.firstName && <span className="text-red-500 text-xs pl-2">{errors.firstName}</span>}
-                </div>
-                <div className="flex flex-col gap-1">
-                    <input
-                        type="text"
-                        placeholder="Příjmení"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        disabled={status === 'loading'}
-                        className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.lastName ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
-                    />
-                    {errors.lastName && <span className="text-red-500 text-xs pl-2">{errors.lastName}</span>}
-                </div>
+            <div className="flex flex-col gap-1">
+                <input
+                    type="text"
+                    placeholder="Jméno"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    disabled={status === 'loading'}
+                    className={`w-full bg-white rounded-xl px-5 py-3 text-black text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 shadow-lg ${errors.firstName ? 'ring-2 ring-red-500' : 'focus:ring-accent'} disabled:opacity-50`}
+                />
+                {errors.firstName && <span className="text-red-500 text-xs pl-2">{errors.firstName}</span>}
             </div>
 
             <div className="flex flex-col gap-1">
@@ -155,7 +142,7 @@ export function ResourceForm({ formId, tagId, redirectUrl }: ResourceFormProps) 
                     disabled={status === 'loading'}
                     className="bg-[#FF0E00] hover:bg-red-600 text-white text-sm font-bold uppercase tracking-wider px-10 py-3 rounded-xl transition-colors duration-200 shadow-xl shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {status === 'loading' ? 'ODESÍLÁM...' : 'STÁHNOUT'}
+                    {status === 'loading' ? 'ODESÍLÁM...' : (buttonText || 'STÁHNOUT')}
                 </button>
 
                 {message && status === 'error' && (

@@ -63,6 +63,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                             formId={resource.kitFormId}
                             tagId={resource.kitTagId}
                             redirectUrl={resource.redirectUrl}
+                            buttonText={resource.buttonText}
+                            sequenceId={resource.kitSequenceId}
                         />
                     </div>
 
