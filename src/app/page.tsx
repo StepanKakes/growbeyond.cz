@@ -1,33 +1,41 @@
-import { instrumentSerif, helvetica } from "@/app/fonts";
-import { RotatingText } from "@/components/RotatingText";
+"use client";
+
+import dynamic from 'next/dynamic';
+import { Navbar } from '@/components/Navbar';
+import { Hero } from '@/components/Hero';
+import { Testimonials } from '@/components/Testimonials';
+import { ReviewWall } from '@/components/ReviewWall';
+import { StarterPackOffer } from '@/components/StarterPackOffer';
+import { StarterPackIntro } from '@/components/StarterPackIntro';
+import { CreatorStarterPack } from '@/components/CreatorStarterPack';
+import { TruthAboutBuilding } from '@/components/TruthAboutBuilding';
+import { FAQ } from '@/components/FAQ';
+import { HowWeTeach } from '@/components/HowWeTeach';
+import { HowItWorks } from '@/components/HowItWorks';
+import { Footer } from '@/components/Footer';
+import { TextureOverlay } from '@/components/TextureOverlay';
+
+const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
+const VideoSection = dynamic(() => import('@/components/VideoSection').then(mod => mod.VideoSection), { ssr: false });
+
 
 export default function Home() {
   return (
-    <main className="w-full h-screen relative flex flex-col items-center justify-center overflow-hidden bg-grain p-10">
-
-      {/* Top Logo */}
-      <div className="absolute top-12 left-10 lg:left-20 animate-reveal" style={{ animationDelay: '0.2s' }}>
-        <span className={`${instrumentSerif.className} italic text-white text-3xl tracking-wide`}>
-          Beyond
-        </span>
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center gap-4">
-        <h1 className={`${helvetica.className} text-5xl md:text-8xl font-bold tracking-[-0.06em] text-white uppercase text-center animate-reveal`} style={{ animationDelay: '0.4s' }}>
-          Coming Soon
-        </h1>
-
-        <div className="w-24 h-[1px] bg-white/20 animate-reveal" style={{ animationDelay: '0.6s' }} />
-
-        <div className="w-full animate-reveal" style={{ animationDelay: '0.8s' }}>
-          <RotatingText />
-        </div>
-      </div>
-
-      {/* Aesthetic Vignette */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30 pointer-events-none" />
-
-    </main>
+    <SmoothScroll>
+      <main className="min-h-screen relative bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white">
+        <Navbar />
+        <TextureOverlay />
+        <Hero />
+        <VideoSection />
+        <StarterPackIntro />
+        <Testimonials />
+        <CreatorStarterPack />
+        <TruthAboutBuilding />
+        <ReviewWall />
+        <StarterPackOffer />
+        <FAQ />
+        <Footer />
+      </main>
+    </SmoothScroll>
   );
 }

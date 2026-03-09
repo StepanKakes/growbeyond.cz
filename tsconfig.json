@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
-    "fractal-glass-effect"
+    "fractal-glass-effect",
+    "beyond-waitlist-lp"
   ]
 }
