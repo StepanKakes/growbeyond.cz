@@ -17,7 +17,7 @@ export const FadeUp = ({ children, delay = 0, translateY = 50, className = "" }:
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{
-                duration: 0.8,
+                duration: 0.4,
                 ease: [0.21, 0.47, 0.32, 0.98],
                 delay
             }}

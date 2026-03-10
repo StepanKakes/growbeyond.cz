@@ -4,8 +4,8 @@ import "./globals.css";
 
 
 export const metadata: Metadata = {
-  title: "Notion Resources",
-  description: "Curated resources from Notion.",
+  title: "GrowBeyond | Tvůj Instagram jako byznys",
+  description: "Proměň svůj Instagram na podnikání, které vydělává. Naučíme tě, jak na to pomocí našeho Creator Starter Packu.",
 };
 
 export default function RootLayout({
