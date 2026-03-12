@@ -79,7 +79,7 @@ export const Hero = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] tracking-tight-custom max-w-[90%] md:max-w-4xl mx-auto">
-            Proměň svůj Instagram<br className="hidden md:block" />
+            Proměň svůj Instagram <br className="hidden md:block" />
             na podnikání, které <span className="font-serif italic font-normal text-brand-red">vydělává</span>
           </h1>
 
