@@ -13,28 +13,28 @@ interface PackItem {
 const packItems: PackItem[] = [
     {
         title: "Brandová Analýza",
-        description: "Kompletní rentgen tvé situace ještě před hovorem. Přicházíme připravení — žádné úvodní otázky, rovnou na věc.",
+        description: "Kompletní analýza tvé situace ještě před hovorem",
         image: "/images/starter-pack/brand_analysis.jpg"
     },
     {
         title: "Strategický Call",
-        description: "60 minut na Miro Board. Positioning, obsah, monetizace, funnel. Odcházíš s přesným přehledem kde ztrácíš a proč.",
+        description: "60 minut jen pro tebe, kde probereme tvoji situaci do hloubky",
         image: "/images/starter-pack/diagnostic_call.png"
     },
     {
         title: "Creator Map™",
-        description: "Písemný plán na míru po callu. Slabá místa, 3 prioritní změny a konkrétní kroky na příštích 4 týdny. Tvoje osobní mapa růstu.",
+        description: "Tvoje mapa růstu vytvořená na míru na základě našeho hovoru",
         image: "/images/starter-pack/creator_map.png"
     },
     {
         title: "Content Framework Pack™",
-        description: "Storytelling Reels Framework, Viral Hook Library, Pre-Posting Checklist. Systémy které používáme denně — rovnou použitelné.",
+        description: "Storytelling Reels Framework, Viral Hook Library a Pre-Posting Checklist",
         image: "/images/starter-pack/content_frameworks.png",
         isWide: true
     },
     {
         title: "Creator OS™",
-        description: "Content Planner, Task Planner, Publish Tracker. Kompletní operační systém tvůrce — přesně to co potřebuješ aby Instagram přestal být chaos.",
+        description: "Kompletní operační systém tvůrce: Content Planner, Task Planner a Publish Tracker",
         image: "/images/starter-pack/creator_os.png",
         isWide: true
     }
@@ -105,7 +105,7 @@ export const CreatorStarterPack = () => {
                                         <h3 className="text-lg md:text-xl font-bold text-white mb-2 tracking-tight leading-tight">
                                             {item.title}
                                         </h3>
-                                        <p className="text-gray-400 text-sm leading-relaxed font-sans">
+                                        <p className="text-white text-[15px] md:text-base leading-relaxed font-sans">
                                             {item.description}
                                         </p>
                                     </div>

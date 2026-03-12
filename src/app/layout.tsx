@@ -4,7 +4,7 @@ import "./globals.css";
 
 
 export const metadata: Metadata = {
-  title: "GrowBeyond | Tvůj Instagram jako byznys",
+  title: "Beyond | Tvůj Instagram jako byznys",
   description: "Proměň svůj Instagram na podnikání, které vydělává. Naučíme tě, jak na to pomocí našeho Creator Starter Packu.",
 };
 

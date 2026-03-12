@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FadeUp } from './FadeUp';
 import { motion } from 'framer-motion';
 
@@ -13,6 +13,37 @@ const offerBenefits = [
 ];
 
 export const StarterPackOffer = () => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleCheckout = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error('Network response was not ok');
+                setIsLoading(false);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                console.error('No URL returned from checkout API');
+                setIsLoading(false);
+            }
+        } catch (error) {
+            console.error('Error initiating checkout:', error);
+            setIsLoading(false);
+        }
+    };
+
     return (
         <section id="starterpackoffer" className="py-20 px-4 relative z-50 bg-transparent overflow-hidden">
             <div className="max-w-2xl mx-auto">
@@ -63,9 +94,14 @@ export const StarterPackOffer = () => {
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="w-full sm:w-auto px-10 md:px-14 py-4 bg-brand-red hover:bg-[#FF1F14] text-white rounded-full font-bold text-base md:text-lg transition-all"
+                                onClick={handleCheckout}
+                                disabled={isLoading}
+                                className={`w-full md:w-auto px-10 md:px-14 py-4 rounded-full font-bold text-base md:text-lg transition-all ${isLoading
+                                        ? 'bg-brand-red/70 text-white/70 cursor-wait'
+                                        : 'bg-brand-red hover:bg-[#FF1F14] text-white'
+                                    }`}
                             >
-                                Chci Creator Starter Pack
+                                {isLoading ? 'Připravuji pokladnu...' : 'Chci Creator Starter Pack'}
                             </motion.button>
                         </div>
                     </div>

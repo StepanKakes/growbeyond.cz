@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FadeUp } from './FadeUp';
 import { SocialProof } from './SocialProof';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -115,7 +116,12 @@ const chunk = (arr: Review[], size: number) =>
 
 export const ReviewWall = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
     const rows = chunk(reviews, 5);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <section className="pb-32 pt-16 px-4 relative z-20 bg-transparent overflow-hidden">
@@ -166,37 +172,40 @@ export const ReviewWall = () => {
                 </div>
             </div>
 
-            {/* Image Modal */}
-            <AnimatePresence>
-                {selectedImage && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedImage(null)}
-                        className="fixed inset-0 z-[999] bg-black/95 flex items-center justify-center p-8 md:p-24 cursor-zoom-out"
-                    >
-                        <motion.button
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.5 }}
-                            className="absolute top-6 right-6 text-white hover:text-brand-red transition-colors z-[110]"
+            {/* Image Modal using document portal to escape stacking context */}
+            {mounted && createPortal(
+                <AnimatePresence>
+                    {selectedImage && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedImage(null)}
+                            className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center p-8 md:p-24 cursor-zoom-out"
                         >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </motion.button>
-                        <motion.img
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            src={selectedImage}
-                            alt="Proof detail"
-                            className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-2xl"
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                className="absolute top-6 right-6 text-white hover:text-brand-red transition-colors z-[100000]"
+                            >
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </motion.button>
+                            <motion.img
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                src={selectedImage}
+                                alt="Proof detail"
+                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </section>
     );
 };

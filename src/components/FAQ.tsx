@@ -20,7 +20,7 @@ const faqData: FAQItem[] = [
     },
     {
         question: "Co se přesně stane na callu?",
-        answer: "60 minut živé práce. Projdeme tvůj positioning, obsah, monetizaci a funnel. Ukážu ti přesně kde ztrácíš sledující, pozornost a peníze — a nastavíme konkrétní kroky co dělat dál."
+        answer: "60 minut živé práce. Ať stavíš brand od nuly nebo už tvoříš bez výsledků — projdeme positioning, obsah, monetizaci a funnel. Odcházíš s jasným přehledem co změnit a konkrétními kroky co dělat dál."
     },
     {
         question: "Musím mít připravené nějaké materiály?",
