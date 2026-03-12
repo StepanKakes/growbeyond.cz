@@ -36,7 +36,7 @@ const faqData: FAQItem[] = [
             <span>
                 Creator Starter Pack je skvělý první krok — ale pokud víš že chceš víc než jednorázovou konzultaci, máme i možnost dlouhodobé 1:1 spolupráce.{" "}
                 <a
-                    href="https://calendly.com"
+                    href="https://calendly.com/tim-creationwithtim/strategicky-call-s-timem"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-brand-red font-bold hover:underline"
