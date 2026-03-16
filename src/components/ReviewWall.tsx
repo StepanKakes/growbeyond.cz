@@ -134,10 +134,12 @@ export const ReviewWall = () => {
                     {rows.map((rowItems, rowIndex) => (
                         <div
                             key={rowIndex}
-                            className="flex flex-wrap justify-center gap-4 w-full"
+                            className={`flex flex-nowrap md:flex-wrap justify-start md:justify-center gap-4 w-[100vw] md:w-full overflow-x-auto md:overflow-visible -ml-4 md:ml-0 px-4 md:px-0 pb-4 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+                                rowIndex % 3 === 1 ? 'pl-12 md:pl-0' : rowIndex % 3 === 2 ? 'pl-24 md:pl-0' : ''
+                            }`}
                         >
                             {rowItems.map((review, i) => (
-                                <div key={`${rowIndex}-${i}`}>
+                                <div key={`${rowIndex}-${i}`} className="flex-shrink-0">
                                     <FadeUp
                                         delay={(rowIndex * 5 + i) * 0.05}
                                     >

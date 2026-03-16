@@ -11,7 +11,7 @@ const users = [
 
 export const SocialProof = () => {
     return (
-        <div className="flex flex-row items-center flex-nowrap gap-4 relative z-50">
+        <div className="flex flex-col-reverse md:flex-row items-center md:flex-nowrap gap-4 relative z-50">
             <span
                 className="text-white tracking-tight-custom font-sans font-bold relative inline-block z-10 whitespace-nowrap"
                 style={{ fontSize: '15px' }}
