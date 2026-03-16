@@ -20,6 +20,9 @@ export const SmoothScroll = ({ children }: SmoothScrollProps) => {
             infinite: false,
         });
 
+        // Expose lenis globally so components can use lenis.scrollTo() for snap effects
+        (window as any).__lenis = lenis;
+
         function raf(time: number) {
             lenis.raf(time);
             requestAnimationFrame(raf);
