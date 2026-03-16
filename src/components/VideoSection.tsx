@@ -64,7 +64,7 @@ export const VideoSection = () => {
                     const videoEl = videoContainerRef.current;
                     const videoH = videoEl.offsetHeight;
                     const offset = -(window.innerHeight - videoH) / 2;
-                    lenis.scrollTo(videoEl, { 
+                    lenis.scrollTo(videoEl, {
                         offset,
                         duration: 1.5
                     });
@@ -85,13 +85,13 @@ export const VideoSection = () => {
                 if (!hasAutoPlayed.current && showContent) {
                     hasAutoPlayed.current = true;
                     player.muted = true;
-                    player.play().catch(() => {});
+                    try { player.play(); } catch (_) { }
                 }
 
                 const time = player.currentTime || 0;
                 const duration = player.duration || 1;
                 let width = 0;
-                
+
                 // Smart progress: first 35s → 0-50% with ease-out, rest → 50-100% linear
                 if (time < 35) {
                     const t = time / 35;
@@ -157,7 +157,7 @@ export const VideoSection = () => {
                         <div className="relative">
                             {/* Smart Autoplay Overlay */}
                             {showOverlay && (
-                                <div 
+                                <div
                                     onClick={handleOverlayClick}
                                     className="absolute inset-0 z-[10] bg-black/40 flex items-center justify-center cursor-pointer transition-opacity duration-300"
                                 >
@@ -175,16 +175,16 @@ export const VideoSection = () => {
                                     </div>
                                 </div>
                             )}
-                        
+
                             <Plyr
                                 ref={playerRef}
                                 source={plyrSource}
                                 options={plyrOptions}
                             />
-                        
+
                             {/* Smart Progress Bar */}
                             <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
-                                <div 
+                                <div
                                     ref={progressBarRef}
                                     className="absolute top-0 left-0 h-full bg-[#FF0E00] transition-all duration-100 ease-linear"
                                     style={{ width: '0%' }}
