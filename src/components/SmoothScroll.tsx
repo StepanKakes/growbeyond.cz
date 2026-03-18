@@ -45,11 +45,13 @@ export const SmoothScroll = ({ children }: SmoothScrollProps) => {
             const el = document.querySelector(href);
             if (el) {
                 e.preventDefault();
+                // Per-section offset: #vsl needs extra because of its negative margin-top
+                const scrollOffset = href === '#vsl' ? -150 : 0;
                 // Signal to other scroll handlers (e.g. video snap) to not interfere
                 (window as any).__anchorScrolling = true;
                 lenis.scrollTo(el as HTMLElement, {
                     duration: 1.8,
-                    offset: -150,
+                    offset: scrollOffset,
                     onComplete: () => { (window as any).__anchorScrolling = false; }
                 });
             }
