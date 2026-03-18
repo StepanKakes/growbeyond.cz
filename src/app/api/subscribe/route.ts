@@ -16,8 +16,10 @@ export async function POST(req: Request) {
         const DEFAULT_FORM_ID = process.env.CONVERTKIT_FORM_ID;
         const FINAL_FORM_ID = formId || DEFAULT_FORM_ID;
 
+        // Extract only the first name (first word) in case the user entered full name (e.g. "Ivan Kraus" -> "Ivan")
+        const justFirstName = firstName ? firstName.trim().split(/\s+/)[0] : undefined;
         // Compute vocative case for the first name if it exists (and capitalize it)
-        const rawVocative = firstName ? vokativ(firstName) : undefined;
+        const rawVocative = justFirstName ? vokativ(justFirstName) : undefined;
         const vocativeName = rawVocative ? rawVocative.charAt(0).toUpperCase() + rawVocative.slice(1) : undefined;
 
         console.log(`Subscribing ${email} to Kit: Form ID: ${FINAL_FORM_ID}, Tag ID: ${tagId || 'none'}, Sequence ID: ${sequenceId || 'none'}, Vocative: ${vocativeName}`);
