@@ -57,7 +57,8 @@ export const VideoSection = () => {
             }
 
             // Scroll snap: when video section enters viewport zone, snap to center video
-            if (!hasSnapped.current && rect.top <= window.innerHeight * 0.8 && rect.top > 0) {
+            // Skip if an anchor link smooth-scroll is already in progress
+            if (!hasSnapped.current && !((window as any).__anchorScrolling) && rect.top <= window.innerHeight * 0.8 && rect.top > 0) {
                 hasSnapped.current = true;
                 const lenis = (window as any).__lenis;
                 if (lenis && videoContainerRef.current) {
@@ -121,9 +122,14 @@ export const VideoSection = () => {
     };
 
     return (
-        <section ref={sectionRef} className="-mt-[60dvh] md:-mt-[50dvh] flex items-center justify-center pb-24 px-4 relative z-20 bg-transparent transition-opacity duration-1000 ease-in-out" style={{ opacity: showContent ? 1 : 0 }}>
+        <section ref={sectionRef} id="vsl" className="-mt-[60dvh] md:-mt-[50dvh] flex items-center justify-center pb-24 px-4 relative z-20 bg-transparent transition-opacity duration-1000 ease-in-out" style={{ opacity: showContent ? 1 : 0 }}>
             <div className="max-w-[1400px] mx-auto w-full">
                 <div className="max-w-5xl mx-auto relative">
+                    <div className="text-center mb-8 md:mb-12">
+                        <h2 className="text-[32px] md:text-[48px] lg:text-[56px] font-bold text-white tracking-tight-custom leading-[1]">
+                            Tohle <span className="font-serif italic font-normal text-brand-red">potřebuješ</span> slyšet...
+                        </h2>
+                    </div>
                     <div ref={videoContainerRef} className="relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515] shadow-2xl">
                         <style>{`
                             .plyr {

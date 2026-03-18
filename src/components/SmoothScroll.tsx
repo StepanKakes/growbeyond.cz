@@ -36,10 +36,28 @@ export const SmoothScroll = ({ children }: SmoothScrollProps) => {
 
         requestAnimationFrame(raf);
 
-        // Handle anchor links manually for even smoother results if needed,
-        // but Lenis handles them pretty well by default if they are on the same page.
+        // Intercept anchor link clicks for smooth scrolling via Lenis
+        const handleAnchorClick = (e: MouseEvent) => {
+            const target = (e.target as HTMLElement).closest('a[href^="#"]');
+            if (!target) return;
+            const href = target.getAttribute('href');
+            if (!href || href === '#') return;
+            const el = document.querySelector(href);
+            if (el) {
+                e.preventDefault();
+                // Signal to other scroll handlers (e.g. video snap) to not interfere
+                (window as any).__anchorScrolling = true;
+                lenis.scrollTo(el as HTMLElement, {
+                    duration: 1.8,
+                    offset: -150,
+                    onComplete: () => { (window as any).__anchorScrolling = false; }
+                });
+            }
+        };
+        document.addEventListener('click', handleAnchorClick);
 
         return () => {
+            document.removeEventListener('click', handleAnchorClick);
             lenis.destroy();
         };
     }, []);

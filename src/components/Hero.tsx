@@ -85,7 +85,7 @@ export const Hero = () => {
 
           <div className="mt-12">
             <a
-              href="#starterpackintro"
+              href="#vsl"
               className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-3 rounded-full text-base font-bold tracking-tight-custom transition-all inline-block"
             >
               Zjistit jak to funguje
