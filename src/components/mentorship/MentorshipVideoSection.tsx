@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FadeUp } from './FadeUp';
 import { Plyr } from 'plyr-react';
 import "plyr-react/plyr.css";
 
@@ -37,9 +36,9 @@ const plyrOptions = {
     }
 };
 
-export const VideoSection = () => {
+export const MentorshipVideoSection = () => {
     const [showContent, setShowContent] = useState(false);
-    const sectionRef = useRef<HTMLElement>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -51,12 +50,10 @@ export const VideoSection = () => {
         const handleScroll = () => {
             if (!sectionRef.current) return;
             const rect = sectionRef.current.getBoundingClientRect();
-            // Show when the top of the element hits the middle of the screen
             if (rect.top <= window.innerHeight / 2) {
                 setShowContent(true);
             }
 
-            // Scroll snap: when video section enters viewport zone, snap to center video
             if (!hasSnapped.current && !((window as any).__anchorScrolling) && rect.top <= window.innerHeight * 0.8 && rect.top > 0) {
                 hasSnapped.current = true;
                 const lenis = (window as any).__lenis;
@@ -76,12 +73,10 @@ export const VideoSection = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Custom progress bar tracking only - autoplay is handled by Plyr options
     useEffect(() => {
         const interval = setInterval(() => {
             const player = playerRef.current?.plyr;
             if (player && player.currentTime !== undefined) {
-                // One-shot autoplay trigger
                 if (!hasAutoPlayed.current && showContent) {
                     hasAutoPlayed.current = true;
                     player.muted = true;
@@ -92,7 +87,6 @@ export const VideoSection = () => {
                 const duration = player.duration || 1;
                 let width = 0;
 
-                // Smart progress: first 35s → 0-50% with ease-out, rest → 50-100% linear
                 if (time < 35) {
                     const t = time / 35;
                     width = (1 - Math.pow(1 - t, 2)) * 50;
@@ -130,7 +124,6 @@ export const VideoSection = () => {
                         --plyr-menu-background: #151515;
                         --plyr-menu-color: #ffffff;
                     }
-                    /* Hide YouTube branding and controls overlay */
                     .plyr .plyr__video-embed iframe {
                         pointer-events: none;
                     }
@@ -140,7 +133,6 @@ export const VideoSection = () => {
                     .plyr__video-embed .plyr__poster {
                         z-index: 2;
                     }
-                    /* Hide YouTube top bar gradient and info */
                     .plyr .plyr__video-embed::after {
                         content: '';
                         position: absolute;
@@ -153,7 +145,6 @@ export const VideoSection = () => {
                     }
                 `}</style>
                 <div className="relative">
-                    {/* Smart Autoplay Overlay */}
                     {showOverlay && (
                         <div
                             onClick={handleOverlayClick}
@@ -179,7 +170,6 @@ export const VideoSection = () => {
                         options={plyrOptions}
                     />
 
-                    {/* Smart Progress Bar */}
                     <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
                         <div
                             ref={progressBarRef}

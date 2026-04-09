@@ -8,13 +8,31 @@ const TestimonialCard: React.FC<{
     quote: string,
     author: string,
     role: string,
-    image: string,
+    image?: string,
     proofImages?: string[]
 }> = ({ hook, quote, author, role, image, proofImages }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const maxLength = 150;
     const isLong = quote.length > maxLength;
     const displayQuote = isExpanded ? quote : (isLong ? `${quote.substring(0, maxLength)}...` : quote);
+
+    const getAvatarColor = (name: string) => {
+        const colors = [
+            'bg-[#FF0E00]', // brand red
+            'bg-blue-600',
+            'bg-purple-600',
+            'bg-emerald-600',
+            'bg-orange-600',
+            'bg-pink-600',
+            'bg-indigo-600',
+            'bg-yellow-600'
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    };
 
     return (
         <div className="bg-[#151515] rounded-2xl border border-white/10 p-6 flex flex-col gap-4 h-full">
@@ -61,8 +79,16 @@ const TestimonialCard: React.FC<{
                 )}
             </div>
             <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-gray-700 flex-shrink-0">
-                    <img src={image} alt={author} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                    {image ? (
+                        <img src={image} alt={author} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                        <div className={`w-full h-full flex items-center justify-center ${getAvatarColor(author)}`}>
+                            <span className="text-white font-bold text-sm uppercase">
+                                {author.charAt(0)}
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div>
                     <h4 className="text-white text-base font-serif">{author}</h4>
@@ -112,6 +138,11 @@ const testimonials = [
         author: "Patrick",
         role: "Flowlance founder",
         image: "/images/users/patrick.jpg"
+    },
+    {
+        quote: "Prošel jsem spoustu programů, které slibovaly hory doly a skončil jsem jen s větším zmatkem. Beyond je úplně jiný. Tim tě provede celým procesem krok za krokem — žádná nudná teorie, jen čistá praxe. Nikdy jsem si nebyl tak jistý tím, co buduju. Pokud chceš vybudovat vlastní značku, tohle ti skutečně pomůže.",
+        author: "Chris Nolan",
+        role: "Content Creator"
     }
 ];
 

@@ -98,7 +98,7 @@ export const Navbar = () => {
                         7denní program zdarma
                     </a>
                     <a
-                        href="#footer"
+                        href="/mentorship"
                         className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-6 py-2 rounded-full text-sm font-bold tracking-tight-custom transition-all"
                     >
                         spolupracovat 1:1
@@ -149,7 +149,7 @@ export const Navbar = () => {
                             7denní program zdarma
                         </a>
                         <a
-                            href="#footer"
+                            href="/mentorship"
                             onClick={() => setIsOpen(false)}
                             className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
                         >
