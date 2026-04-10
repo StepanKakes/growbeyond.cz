@@ -57,8 +57,11 @@ export const MentorshipVideoSection = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Custom progress bar tracking - Using requestAnimationFrame for ultimate smoothness
     useEffect(() => {
-        const interval = setInterval(() => {
+        let requestRef: number;
+
+        const updateProgress = () => {
             const player = playerRef.current?.plyr;
             if (player && player.ready) {
                 try {
@@ -72,14 +75,22 @@ export const MentorshipVideoSection = () => {
                     const duration = player.duration || 1;
                     let width = 0;
 
-                    if (time < 35) {
-                        const t = time / 35;
-                        width = (1 - Math.pow(1 - t, 2)) * 50;
+                    // Goal: Reach 50% width at 20% of total duration
+                    const midpointTime = duration * 0.2;
+
+                    if (time < midpointTime) {
+                        // First 20% of time: 0 -> 50% width
+                        // Ease-out curve: starts fast, slows down towards the 50% mark
+                        const t = time / midpointTime;
+                        const easeOut = 1 - Math.pow(1 - t, 2.5); // 2.5 power for aggressive start
+                        width = easeOut * 50;
                     } else {
-                        const remainingTime = time - 35;
-                        const remainingDuration = Math.max(duration - 35, 1);
+                        // Remaining 80% of time: 50% -> 100% width (linear "normal" speed)
+                        const remainingTime = time - midpointTime;
+                        const remainingDuration = Math.max(duration - midpointTime, 0.1);
                         width = 50 + (remainingTime / remainingDuration) * 50;
                     }
+
                     if (progressBarRef.current) {
                         progressBarRef.current.style.width = `${Math.min(width, 100)}%`;
                     }
@@ -87,9 +98,11 @@ export const MentorshipVideoSection = () => {
                     // Not ready yet
                 }
             }
-        }, 100);
+            requestRef = requestAnimationFrame(updateProgress);
+        };
 
-        return () => clearInterval(interval);
+        requestRef = requestAnimationFrame(updateProgress);
+        return () => cancelAnimationFrame(requestRef);
     }, [showContent]);
 
     const handleOverlayClick = () => {
@@ -170,7 +183,7 @@ export const MentorshipVideoSection = () => {
                     <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
                         <div
                             ref={progressBarRef}
-                            className="absolute top-0 left-0 h-full bg-[#FF0E00] transition-all duration-100 ease-linear"
+                            className="absolute top-0 left-0 h-full bg-[#FF0E00] transition-all duration-[16ms] ease-linear"
                             style={{ width: '0%' }}
                         >
                             <div className="absolute top-0 right-0 w-4 h-full bg-white/30 blur-[2px]" />
