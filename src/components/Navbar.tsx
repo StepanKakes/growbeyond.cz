@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LogoAnimation } from './LogoAnimation';
 
 const springTransition = {
@@ -14,7 +14,6 @@ const springTransition = {
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
-    const [scrolled, setScrolled] = useState(false);
 
     // Periodic logo animation trigger
     useEffect(() => {
@@ -24,53 +23,13 @@ export const Navbar = () => {
         return () => clearInterval(timer);
     }, []);
 
-    // Track scroll position — trigger after 400px
-    const { scrollY } = useScroll();
-
-    useMotionValueEvent(scrollY, "change", (latest) => {
-        setScrolled(latest > 400);
-    });
-
     return (
-        <motion.nav
-            className="fixed left-0 w-full z-[100] px-4"
-            animate={{
-                paddingTop: scrolled ? 22 : 16,
-                paddingBottom: scrolled ? 22 : 16,
-                top: scrolled ? 12 : 0,
-            }}
-            transition={springTransition}
+        <nav
+            className="absolute top-0 left-0 w-full z-[100] px-4 py-4"
         >
-            {/* Animated background pill */}
-            <motion.div
-                className="absolute left-1/2 -translate-x-1/2 -z-10"
-                animate={{
-                    width: scrolled ? "min(1140px, calc(100% - 32px))" : "100.2vw",
-                    borderRadius: scrolled ? 9999 : 0,
-                    backgroundColor: scrolled ? "rgba(20, 20, 20, 0.4)" : "rgba(0, 0, 0, 0)",
-                    backdropFilter: scrolled ? "blur(24px)" : "blur(0px)",
-                    WebkitBackdropFilter: scrolled ? "blur(24px)" : "blur(0px)",
-                    borderWidth: 1,
-                    borderColor: scrolled ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0)",
-                } as any}
-                transition={springTransition}
-                style={{
-                    top: 0,
-                    bottom: 0,
-                    position: 'absolute',
-                    borderStyle: 'solid',
-                }}
-            />
-
-            {/* Content container — animates width */}
-            <motion.div
-                className="mx-auto flex justify-between items-center relative"
-                animate={{
-                    maxWidth: scrolled ? 1100 : 10000,
-                    paddingLeft: scrolled ? 16 : 0,
-                    paddingRight: scrolled ? 16 : 0,
-                }}
-                transition={springTransition}
+            {/* Content container */}
+            <div
+                className="mx-auto flex justify-between items-center relative max-w-[1200px]"
             >
 
                 {/* Left Side (Empty for balance) */}
@@ -98,7 +57,7 @@ export const Navbar = () => {
                         7denní program zdarma
                     </a>
                     <a
-                        href="/mentorship"
+                        href="#footer"
                         className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-6 py-2 rounded-full text-sm font-bold tracking-tight-custom transition-all"
                     >
                         spolupracovat 1:1
@@ -127,7 +86,7 @@ export const Navbar = () => {
                         </div>
                     </button>
                 </div>
-            </motion.div>
+            </div>
 
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
@@ -149,7 +108,7 @@ export const Navbar = () => {
                             7denní program zdarma
                         </a>
                         <a
-                            href="/mentorship"
+                            href="#footer"
                             onClick={() => setIsOpen(false)}
                             className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
                         >
@@ -158,6 +117,6 @@ export const Navbar = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </motion.nav>
+        </nav>
     );
 };

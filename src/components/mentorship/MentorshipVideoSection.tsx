@@ -43,7 +43,7 @@ export const MentorshipVideoSection = () => {
     const progressBarRef = useRef<HTMLDivElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const hasAutoPlayed = useRef(false);
-    const hasSnapped = useRef(false);
+
     const [showOverlay, setShowOverlay] = useState(true);
 
     useEffect(() => {
@@ -54,19 +54,7 @@ export const MentorshipVideoSection = () => {
                 setShowContent(true);
             }
 
-            if (!hasSnapped.current && !((window as any).__anchorScrolling) && rect.top <= window.innerHeight * 0.8 && rect.top > 0) {
-                hasSnapped.current = true;
-                const lenis = (window as any).__lenis;
-                if (lenis && videoContainerRef.current) {
-                    const videoEl = videoContainerRef.current;
-                    const videoH = videoEl.offsetHeight;
-                    const offset = -(window.innerHeight - videoH) / 2;
-                    lenis.scrollTo(videoEl, {
-                        offset,
-                        duration: 1.5
-                    });
-                }
-            }
+
         };
         window.addEventListener('scroll', handleScroll);
         handleScroll();

@@ -29,7 +29,7 @@ const reviews: Review[] = [
     {
         author: "Noah",
         handle: "@noah",
-        result: "359k shlédnutí",
+        result: "359k zhlédnutí",
         image: "/images/testimonials/noah.png"
     },
     {
@@ -52,19 +52,19 @@ const reviews: Review[] = [
     {
         author: "Johneez",
         handle: "@johneez",
-        result: "5k shlédnutí (20 dní)",
+        result: "5k zhlédnutí (20 dní)",
         image: "/images/testimonials/johneez.png"
     },
     {
         author: "Yamini",
         handle: "@yamini",
-        result: "6k shlédnutí (2 dny)",
+        result: "6k zhlédnutí (2 dny)",
         image: "/images/testimonials/yamini.png"
     },
     {
         author: "AshenOne",
         handle: "@ashenone",
-        result: "2k shlédnutí",
+        result: "2k zhlédnutí",
         image: "/images/testimonials/AshenOne.png"
     },
     {
@@ -76,7 +76,7 @@ const reviews: Review[] = [
     {
         author: "Julia",
         handle: "@julia",
-        result: "57k shlédnutí"
+        result: "57k zhlédnutí"
     },
     {
         author: "Atharv Kaizen",
