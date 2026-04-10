@@ -113,7 +113,8 @@ export const VideoSection = () => {
                     }
 
                     // Clamp to duration
-                    const time = Math.min(interpolatedTime, duration);
+                    // Apply 1.5x speed multiplier to visual progress as requested
+                    const time = Math.min(interpolatedTime * 1.5, duration);
 
                     // Detect end of video to reset and hide recommended videos
                     if (playerTime >= duration - 0.5 && duration > 5) {
@@ -129,7 +130,7 @@ export const VideoSection = () => {
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
-                        const easeOut = 1 - Math.pow(1 - t, 2.5);
+                        const easeOut = 1 - Math.pow(1 - t, 4.0);
                         width = easeOut * 50;
                     } else {
                         const remainingTime = time - midpointTime;

@@ -91,7 +91,7 @@ export const MentorshipVideoSection = () => {
                         interpolatedTime += (performance.now() - lastSyncTimestamp) / 1000;
                     }
 
-                    const time = Math.min(interpolatedTime, duration);
+                    const time = Math.min(interpolatedTime * 1.5, duration);
 
                     // Detect end of video to reset and hide recommended videos
                     if (playerTime >= duration - 0.5 && duration > 5) {
@@ -102,11 +102,11 @@ export const MentorshipVideoSection = () => {
                     }
 
                     let width = 0;
-                    const midpointTime = duration * 0.2;
+                    const midpointTime = duration * 0.25;
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
-                        const easeOut = 1 - Math.pow(1 - t, 2.5);
+                        const easeOut = 1 - Math.pow(1 - t, 4.0);
                         width = easeOut * 50;
                     } else {
                         const remainingTime = time - midpointTime;
