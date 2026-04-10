@@ -22,7 +22,11 @@ const plyrOptions = {
     vimeo: {
         autoplay: true,
         muted: true,
-        responsive: true
+        responsive: true,
+        byline: false,
+        portrait: false,
+        title: false,
+        transparent: false
     },
     controls: [
         'play-large',
@@ -111,9 +115,17 @@ export const VideoSection = () => {
                     // Clamp to duration
                     const time = Math.min(interpolatedTime, duration);
 
+                    // Detect end of video to reset and hide recommended videos
+                    if (playerTime >= duration - 0.5 && duration > 5) {
+                        try {
+                            player.pause();
+                            player.currentTime = 0;
+                        } catch (e) { }
+                    }
+
                     let width = 0;
                     // Goal: Reach 50% width at 20% of total duration
-                    const midpointTime = duration * 0.2;
+                    const midpointTime = duration * 0.4;
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
