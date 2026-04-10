@@ -114,12 +114,10 @@ export const Footer = () => {
         {/* CTA Button */}
         <div className="flex justify-center">
           <a
-            href="https://calendly.com/tim-creationwithtim/strategicky-call-s-timem"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/"
             className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-3 rounded-full text-base font-bold tracking-tight-custom transition-all inline-block"
           >
-            Zarezervovat konzultaci
+            Mám zájem o 1:1
           </a>
         </div>
       </div>

@@ -146,7 +146,7 @@ export const ApplicationForm = () => {
                             </p>
                         </div>
                         <a
-                            href="/"
+                            href="/csp"
                             className="inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-4 rounded-full text-base md:text-lg font-bold tracking-tight-custom transition-all hover:scale-105"
                         >
                             Chci Creator Starter Pack →

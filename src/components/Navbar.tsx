@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { LogoAnimation } from './LogoAnimation';
 
 const springTransition = {
@@ -14,6 +15,14 @@ const springTransition = {
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
+    const pathname = usePathname();
+
+    const isCSP = pathname === '/csp';
+    const mainButtonHref = isCSP ? '/' : '/csp';
+    const mainButtonText = isCSP ? 'spolupracovat 1:1' : 'Creator Starter Pack';
+    const mainButtonStyle = isCSP 
+        ? "bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-6 py-2 rounded-full text-sm font-bold tracking-tight-custom transition-all"
+        : "text-white/80 hover:text-white transition-colors text-sm font-medium tracking-tight";
 
     // Periodic logo animation trigger
     useEffect(() => {
@@ -57,10 +66,10 @@ export const Navbar = () => {
                         7denní program zdarma
                     </a>
                     <a
-                        href="#footer"
-                        className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-6 py-2 rounded-full text-sm font-bold tracking-tight-custom transition-all"
+                        href={mainButtonHref}
+                        className={mainButtonStyle}
                     >
-                        spolupracovat 1:1
+                        {mainButtonText}
                     </a>
                 </div>
 
@@ -108,11 +117,14 @@ export const Navbar = () => {
                             7denní program zdarma
                         </a>
                         <a
-                            href="#footer"
+                            href={mainButtonHref}
                             onClick={() => setIsOpen(false)}
-                            className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
+                            className={isCSP 
+                                ? "bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
+                                : "text-white hover:text-brand-red transition-colors text-xl font-medium tracking-tight"
+                            }
                         >
-                            spolupracovat 1:1
+                            {mainButtonText}
                         </a>
                     </motion.div>
                 )}

@@ -5,11 +5,11 @@ import { FadeUp } from './FadeUp';
 import { motion } from 'framer-motion';
 
 const offerBenefits = [
-    { name: "Brandová Analýza", value: "990 Kč" },
+    { name: "Brandová Analýza", value: "1 990 Kč" },
     { name: "60min Strategický Call", value: "4 990 Kč" },
     { name: "Creator Map™", value: "1 990 Kč" },
-    { name: "Content Framework Pack™", value: "1 290 Kč" },
-    { name: "Creator OS™", value: "730 Kč" }
+    { name: "Content Framework Pack™", value: "2 990 Kč" },
+    { name: "Creator OS™", value: "990 Kč" }
 ];
 
 export const StarterPackOffer = () => {
@@ -55,15 +55,15 @@ export const StarterPackOffer = () => {
 
                         <div className="flex flex-col items-center justify-center gap-1 mb-10">
                             <div className="text-white font-serif italic text-6xl md:text-7xl leading-none">
-                                3 990 Kč
+                                9 990 Kč
                             </div>
                             <div className="mt-6 flex flex-col items-center gap-2">
                                 <span className="text-white/40 text-xs md:text-sm font-bold tracking-tight-custom uppercase">
-                                    Brzy za
+                                    Celková hodnota
                                 </span>
                                 <div>
                                     <span className="font-serif italic text-4xl md:text-5xl text-[#FF0E00] line-through decoration-[3px] decoration-white/60">
-                                        9 990 Kč
+                                        12 950 Kč
                                     </span>
                                 </div>
                             </div>
