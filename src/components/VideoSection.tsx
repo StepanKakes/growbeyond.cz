@@ -124,8 +124,8 @@ export const VideoSection = () => {
                     }
 
                     let width = 0;
-                    // Goal: Reach 50% width at 20% of total duration
-                    const midpointTime = duration * 0.4;
+                    // Goal: Reach 50% width at 10% of total duration
+                    const midpointTime = duration * 0.1;
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
