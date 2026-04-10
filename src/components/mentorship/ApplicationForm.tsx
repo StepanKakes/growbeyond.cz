@@ -15,10 +15,10 @@ type FormData = {
 };
 
 const q3Options = [
-    "Slabý positioning: Můj profil neříká jasně, pro koho jsem a jaký výsledek doručuji, nebo přitahuji nerelevantní cílovku.",
-    `Nefunkční funnel: Chybí mi systém, který by mi automaticky a předvídatelně přiváděl kvalifikované klienty. Nevím, jak diváka efektivně „zahřát" a dovést ho k nákupu ve správný moment.`,
-    `Slabá nabídka: Moje nabídka nikoho „nezvedne ze židle", nebo se snažím oslovit každého a ve výsledku neoslovuji nikoho konkrétního.`,
-    "Neefektivní procesy: Tvorba obsahu mi bere moc času a výsledky (prodeje) tomu vůbec neodpovídají. Moje osobní značka nefunguje jako jeden propojený celek."
+    "Slabý positioning: Můj profil neříká jasně, pro koho jsem a jaký výsledek doručuji, přitahuji nerelevantní cílovku.",
+    `Nefunkční funnel: Nevím, jak diváka efektivně „zahřát" a dovést ho k nákupu ve správný moment.`,
+    `Slabá nabídka: Moje nabídka nikoho nezvedne ze židle, snažím se oslovit každého a ve výsledku neoslovuji nikoho konkrétního.`,
+    "Neefektivní procesy: Tvorba obsahu mi bere moc času a výsledky tomu vůbec neodpovídají."
 ];
 
 const q4Options = [
@@ -122,6 +122,40 @@ export const ApplicationForm = () => {
     };
 
     if (isSubmitted) {
+        // Low budget → redirect to Creator Starter Pack
+        if (formData.q6 === "0 - 10tisíc Kč") {
+            return (
+                <div className="w-full animate-[fadeIn_1s_ease-out]">
+                    <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-8 md:p-12 text-center">
+                        <div className="mb-6">
+                            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand-red/10 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-brand-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                    <path d="M2 17l10 5 10-5" />
+                                    <path d="M2 12l10 5 10-5" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
+                                Díky za tvé odpovědi!
+                            </h3>
+                            <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-2">
+                                Na základě tvých odpovědí si myslíme, že 1:1 mentoring pro tebe momentálně není ta správná volba.
+                            </p>
+                            <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                                Ale máme pro tebe něco skvělého — náš <strong>Creator Starter Pack</strong>, který ti pomůže nastartovat růst za zlomek ceny.
+                            </p>
+                        </div>
+                        <a
+                            href="/"
+                            className="inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-4 rounded-full text-base md:text-lg font-bold tracking-tight-custom transition-all hover:scale-105"
+                        >
+                            Chci Creator Starter Pack →
+                        </a>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="w-full animate-[fadeIn_1s_ease-out]">
                 <CalendlySection prefillEmail={formData.email} />
@@ -164,15 +198,22 @@ export const ApplicationForm = () => {
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
                         <h3 className="text-xl md:text-2xl font-bold text-white mb-2">1. V čem vidíš ten největší problém? Co tě nejvíc drží zpátky?</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                            {q3Options.map((opt, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => autoAdvance('q3', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center ${formData.q3 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525]'}`}
-                                >
-                                    <p className={`text-sm leading-relaxed font-bold ${formData.q3 === opt ? 'text-white' : 'text-gray-400'}`}>{opt}</p>
-                                </div>
-                            ))}
+                            {q3Options.map((opt, i) => {
+                                const [title, ...rest] = opt.split(':');
+                                const description = rest.join(':').trim();
+                                return (
+                                    <div
+                                        key={i}
+                                        onClick={() => autoAdvance('q3', opt)}
+                                        className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1.5 ${formData.q3 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525]'}`}
+                                    >
+                                        <span className={`text-base md:text-lg font-bold leading-tight ${formData.q3 === opt ? 'text-white' : 'text-white'}`}>{title}</span>
+                                        {description && (
+                                            <span className={`text-xs md:text-sm leading-relaxed ${formData.q3 === opt ? 'text-white/80' : 'text-white/70'}`}>{description}</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );
@@ -185,7 +226,7 @@ export const ApplicationForm = () => {
                                 <div
                                     key={i}
                                     onClick={() => autoAdvance('q4', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q4 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-gray-400'}`}
+                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q4 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
                                 >
                                     {opt}
                                 </div>
@@ -202,7 +243,7 @@ export const ApplicationForm = () => {
                                 <div
                                     key={i}
                                     onClick={() => autoAdvance('q5', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q5 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-gray-400'}`}
+                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q5 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
                                 >
                                     {opt}
                                 </div>
@@ -219,7 +260,7 @@ export const ApplicationForm = () => {
                                 <div
                                     key={i}
                                     onClick={() => autoAdvance('q6', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q6 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-gray-400'}`}
+                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q6 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
                                 >
                                     {opt}
                                 </div>
