@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     const { email, igHandle, q3, q4, q5, q6, q7 } = await request.json();
 
+    // Extract just the short title (before colon) for Notion select fields
+    const q3Short = q3 ? q3.split(':')[0].trim() : '';
+
     const NOTION_TOKEN = process.env.NOTION_API_KEY;
     const DATABASE_ID = process.env.NOTION_MENTORSHIP_DB_ID;
 
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
                     },
                     'Problém': {
                         select: {
-                            name: q3 || '',
+                            name: q3Short || '',
                         },
                     },
                     'Současný příjem': {
