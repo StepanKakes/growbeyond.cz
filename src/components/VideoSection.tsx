@@ -9,8 +9,8 @@ const plyrSource = {
     type: 'video' as const,
     sources: [
         {
-            src: 'https://www.youtube.com/embed/OwzIIBkiQYM?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1&amp;cc_load_policy=1&amp;hl=cs',
-            provider: 'youtube' as const,
+            src: '1181937797',
+            provider: 'vimeo' as const,
         },
     ],
 };
@@ -18,23 +18,19 @@ const plyrSource = {
 const plyrOptions = {
     autoplay: true,
     muted: true,
+    ratio: '16:9',
+    vimeo: {
+        autoplay: true,
+        muted: true,
+        responsive: true
+    },
     controls: [
         'play-large',
         'play',
         'mute',
         'volume',
         'fullscreen'
-    ],
-    youtube: {
-        noCookie: true,
-        rel: 0,
-        showinfo: 0,
-        iv_load_policy: 3,
-        modestbranding: 1,
-        controls: 0,
-        autoplay: 1,
-        mute: 1
-    }
+    ]
 };
 
 export const VideoSection = () => {
@@ -81,29 +77,33 @@ export const VideoSection = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             const player = playerRef.current?.plyr;
-            if (player && player.currentTime !== undefined) {
-                // One-shot autoplay trigger — only runs once
-                if (!hasAutoPlayed.current && showContent) {
-                    hasAutoPlayed.current = true;
-                    player.muted = true;
-                    try { player.play(); } catch (_) { }
-                }
+            if (player && player.ready) {
+                try {
+                    // One-shot autoplay trigger — only runs once
+                    if (!hasAutoPlayed.current && showContent) {
+                        hasAutoPlayed.current = true;
+                        player.muted = true;
+                        player.play().catch(() => { });
+                    }
 
-                const time = player.currentTime || 0;
-                const duration = player.duration || 1;
-                let width = 0;
+                    const time = player.currentTime || 0;
+                    const duration = player.duration || 1;
+                    let width = 0;
 
-                // Smart progress: first 35s → 0-50% with ease-out, rest → 50-100% linear
-                if (time < 35) {
-                    const t = time / 35;
-                    width = (1 - Math.pow(1 - t, 2)) * 50;
-                } else {
-                    const remainingTime = time - 35;
-                    const remainingDuration = Math.max(duration - 35, 1);
-                    width = 50 + (remainingTime / remainingDuration) * 50;
-                }
-                if (progressBarRef.current) {
-                    progressBarRef.current.style.width = `${Math.min(width, 100)}%`;
+                    // Smart progress: first 35s → 0-50% with ease-out, rest → 50-100% linear
+                    if (time < 35) {
+                        const t = time / 35;
+                        width = (1 - Math.pow(1 - t, 2)) * 50;
+                    } else {
+                        const remainingTime = time - 35;
+                        const remainingDuration = Math.max(duration - 35, 1);
+                        width = 50 + (remainingTime / remainingDuration) * 50;
+                    }
+                    if (progressBarRef.current) {
+                        progressBarRef.current.style.width = `${Math.min(width, 100)}%`;
+                    }
+                } catch (e) {
+                    // Player might not be ready for property access yet
                 }
             }
         }, 100);
@@ -113,10 +113,14 @@ export const VideoSection = () => {
 
     const handleOverlayClick = () => {
         const player = playerRef.current?.plyr;
-        if (player) {
-            player.muted = false;
-            player.currentTime = 0;
-            player.play();
+        if (player && player.ready) {
+            try {
+                player.muted = false;
+                player.currentTime = 0;
+                player.play().catch(() => { });
+            } catch (e) {
+                console.error("Plyr interaction error:", e);
+            }
         }
         setShowOverlay(false);
     };
@@ -182,11 +186,16 @@ export const VideoSection = () => {
                                 </div>
                             )}
 
-                            <Plyr
-                                ref={playerRef}
-                                source={plyrSource}
-                                options={plyrOptions}
-                            />
+                            {/* 16:9 Aspect Ratio Wrapper */}
+                            <div className="w-full relative pb-[56.25%]">
+                                <div className="absolute inset-0">
+                                    <Plyr
+                                        ref={playerRef}
+                                        source={plyrSource}
+                                        options={plyrOptions}
+                                    />
+                                </div>
+                            </div>
 
                             {/* Smart Progress Bar */}
                             <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">

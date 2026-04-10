@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Notion API error:', errorData);
-            return NextResponse.json({ error: 'Failed to submit to Notion', details: errorData }, { status: response.status });
+            return NextResponse.json({ error: 'Failed to submit to Notion' }, { status: response.status });
         }
 
         return NextResponse.json({ success: true });
