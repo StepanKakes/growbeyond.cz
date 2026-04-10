@@ -73,9 +73,11 @@ export const VideoSection = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Custom progress bar tracking - Using requestAnimationFrame for ultimate smoothness
+    // Custom progress bar tracking - Using requestAnimationFrame + Predictive Interpolation for ultimate smoothness
     useEffect(() => {
         let requestRef: number;
+        let lastKnownTime = 0;
+        let lastSyncTimestamp = performance.now();
 
         const updateProgress = () => {
             const player = playerRef.current?.plyr;
@@ -88,27 +90,43 @@ export const VideoSection = () => {
                         player.play().catch(() => { });
                     }
 
-                    const time = player.currentTime || 0;
+                    const playerTime = player.currentTime || 0;
                     const duration = player.duration || 1;
-                    let width = 0;
+                    const isPlaying = player.playing;
 
+                    // If player reports a new time, sync our interpolation base
+                    if (playerTime !== lastKnownTime) {
+                        lastKnownTime = playerTime;
+                        lastSyncTimestamp = performance.now();
+                    }
+
+                    // Predictive time calculation:
+                    // interpolatedTime = baseTime + (time elapsed since last sync)
+                    // We only advance if the player is actually playing
+                    let interpolatedTime = lastKnownTime;
+                    if (isPlaying) {
+                        interpolatedTime += (performance.now() - lastSyncTimestamp) / 1000;
+                    }
+
+                    // Clamp to duration
+                    const time = Math.min(interpolatedTime, duration);
+
+                    let width = 0;
                     // Goal: Reach 50% width at 20% of total duration
                     const midpointTime = duration * 0.2;
 
                     if (time < midpointTime) {
-                        // First 20% of time: 0 -> 50% width
-                        // Ease-out curve: starts fast, slows down towards the 50% mark
                         const t = time / midpointTime;
-                        const easeOut = 1 - Math.pow(1 - t, 2.5); // 2.5 power for aggressive start and smooth slow down
+                        const easeOut = 1 - Math.pow(1 - t, 2.5);
                         width = easeOut * 50;
                     } else {
-                        // Remaining 80% of time: 50% -> 100% width (linear "normal" speed)
                         const remainingTime = time - midpointTime;
                         const remainingDuration = Math.max(duration - midpointTime, 0.1);
                         width = 50 + (remainingTime / remainingDuration) * 50;
                     }
 
                     if (progressBarRef.current) {
+                        // Direct style update for best performance with rAF
                         progressBarRef.current.style.width = `${Math.min(width, 100)}%`;
                     }
                 } catch (e) {
@@ -212,7 +230,7 @@ export const VideoSection = () => {
                             <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
                                 <div
                                     ref={progressBarRef}
-                                    className="absolute top-0 left-0 h-full bg-[#FF0E00] transition-all duration-[16ms] ease-linear"
+                                    className="absolute top-0 left-0 h-full bg-[#FF0E00]"
                                     style={{ width: '0%' }}
                                 >
                                     <div className="absolute top-0 right-0 w-4 h-full bg-white/30 blur-[2px]" />
