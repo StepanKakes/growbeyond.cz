@@ -46,6 +46,7 @@ export const VideoSection = () => {
     const hasAutoPlayed = useRef(false);
     const hasSnapped = useRef(false);
     const [showOverlay, setShowOverlay] = useState(true);
+    const [isPaused, setIsPaused] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -97,6 +98,11 @@ export const VideoSection = () => {
                     const playerTime = player.currentTime || 0;
                     const duration = player.duration || 1;
                     const isPlaying = player.playing;
+
+                    // Track paused state for pause-overlay
+                    if (!showOverlay) {
+                        setIsPaused(!isPlaying);
+                    }
 
                     // If player reports a new time, sync our interpolation base
                     if (playerTime !== lastKnownTime) {
@@ -205,25 +211,66 @@ export const VideoSection = () => {
                                 z-index: 1;
                                 pointer-events: none;
                             }
+                            @keyframes box-shadow-pulse {
+                                0% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.5); }
+                                100% { box-shadow: 0 0 0 40px rgba(255, 255, 255, 0); }
+                            }
+                            @keyframes wave-pulse {
+                                0%, 20% { opacity: 0; }
+                                40%, 100% { opacity: 1; }
+                            }
+                            .animate-box-shadow-pulse {
+                                animation: box-shadow-pulse 2s infinite;
+                            }
+                            .animate-wave-1 {
+                                animation: wave-pulse 2s infinite;
+                            }
+                            .animate-wave-2 {
+                                animation: wave-pulse 2s infinite 0.4s;
+                            }
                         `}</style>
                         <div className="relative">
-                            {/* Smart Autoplay Overlay */}
+                            {/* Smart Autoplay Overlay - muted video playing */}
                             {showOverlay && (
                                 <div
                                     onClick={handleOverlayClick}
-                                    className="absolute inset-0 z-[10] bg-black/40 flex items-center justify-center cursor-pointer transition-opacity duration-300"
+                                    className="absolute inset-0 z-[10] flex items-center justify-center cursor-pointer"
                                 >
-                                    <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-black/60 border border-white/10 hover:bg-black/80 transition-colors shadow-2xl">
-                                        <div className="w-16 h-16 rounded-full bg-[#FF0E00] flex items-center justify-center animate-pulse shadow-[0_0_30px_rgba(255,14,0,0.5)]">
-                                            <svg className="w-8 h-8 text-white relative right-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                {/* Speaker off icon */}
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                            </svg>
+                                    <div className="relative flex flex-col items-center gap-4 px-12 py-8 rounded-2xl border-2 border-white/40 animate-box-shadow-pulse"
+                                        style={{ background: 'rgba(255, 14, 0, 0.88)' }}
+                                    >
+                                        <svg className="w-14 h-14 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18.25l-4-4H5a1 1 0 01-1-1v-4a1 1 0 011-1h3l4-4v14z" />
+                                            <path className="animate-wave-1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.536 8.464a5 5 0 010 7.072" />
+                                            <path className="animate-wave-2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M18.364 5.636a9 9 0 010 12.728" />
+                                        </svg>
+                                        <div className="text-center">
+                                            <p className="text-white font-bold text-base md:text-lg tracking-wide uppercase leading-tight">
+                                                VIDEO SE PŘEHRÁVÁ
+                                            </p>
+                                            <p className="text-white/80 font-medium text-sm md:text-base mt-1">
+                                                Klikni pro zapnutí zvuku
+                                            </p>
                                         </div>
-                                        <span className="text-white font-bold text-xl tracking-tight-custom">
-                                            Klikni pro přehrání
-                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pause overlay - pulsing play button when paused after overlay dismissed */}
+                            {!showOverlay && isPaused && (
+                                <div
+                                    onClick={() => {
+                                        const player = playerRef.current?.plyr;
+                                        if (player && player.ready) {
+                                            try { player.play().catch(() => {}); } catch (e) {}
+                                        }
+                                    }}
+                                    className="absolute inset-0 z-[10] bg-black/30 flex items-center justify-center cursor-pointer"
+                                >
+                                    <div className="w-20 h-20 rounded-full bg-white/25 backdrop-blur-sm border border-white/40 flex items-center justify-center animate-box-shadow-pulse">
+                                        <svg className="w-9 h-9 text-white relative left-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
                                     </div>
                                 </div>
                             )}
