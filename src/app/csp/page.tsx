@@ -6,7 +6,6 @@ import { Hero } from '@/components/Hero';
 import { Testimonials } from '@/components/Testimonials';
 import { ReviewWall } from '@/components/ReviewWall';
 import { StarterPackOffer } from '@/components/StarterPackOffer';
-import { CountdownBanner } from '@/components/CountdownBanner';
 import { StarterPackIntro } from '@/components/StarterPackIntro';
 import { CreatorStarterPack } from '@/components/CreatorStarterPack';
 import { TruthAboutBuilding } from '@/components/TruthAboutBuilding';
@@ -35,7 +34,7 @@ export default function CSPPage() {
         <ReviewWall />
         <StarterPackOffer />
         <FAQ />
-        <CountdownBanner />
+
         <Footer />
       </main>
     </SmoothScroll>

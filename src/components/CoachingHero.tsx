@@ -96,6 +96,15 @@ export const CoachingHero = () => {
                     </h2>
                 </div>
 
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={step >= 3 ? { opacity: 1 } : { opacity: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    className="mb-4 text-brand-red text-sm md:text-[16px] font-bold tracking-[0.15em] uppercase"
+                >
+                    Pro kouče a podnikatele
+                </motion.div>
+
                 <div className="flex flex-col items-center gap-2 md:gap-3 mb-10 w-full">
                     {/* Line 1 */}
                     <div className="relative inline-block px-3 py-1 md:py-2">

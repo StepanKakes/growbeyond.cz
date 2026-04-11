@@ -102,7 +102,7 @@ export const MentorshipVideoSection = () => {
                     }
 
                     let width = 0;
-                    const midpointTime = duration * 0.25;
+                    const midpointTime = duration * 0.3;
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
