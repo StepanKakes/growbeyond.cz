@@ -16,8 +16,8 @@ const plyrSource = {
 };
 
 const plyrOptions = {
-    autoplay: true,
     muted: true,
+    loop: { active: true },
     ratio: '16:9',
     vimeo: {
         autoplay: true,
@@ -122,17 +122,17 @@ export const VideoSection = () => {
                     // Apply 1.5x speed multiplier to visual progress as requested
                     const time = Math.min(interpolatedTime * 1.5, duration);
 
-                    // Detect end of video to reset and hide recommended videos
+                    // Detect end of video to reset and loop (preventing recommended videos)
                     if (playerTime >= duration - 0.5 && duration > 5) {
                         try {
-                            player.pause();
                             player.currentTime = 0;
+                            player.play().catch(() => { });
                         } catch (e) { }
                     }
 
                     let width = 0;
                     // Goal: Reach 50% width at 10% of total duration
-                    const midpointTime = duration * 0.1;
+                    const midpointTime = duration * 0.3;
 
                     if (time < midpointTime) {
                         const t = time / midpointTime;
@@ -262,7 +262,7 @@ export const VideoSection = () => {
                                     onClick={() => {
                                         const player = playerRef.current?.plyr;
                                         if (player && player.ready) {
-                                            try { player.play().catch(() => {}); } catch (e) {}
+                                            try { player.play().catch(() => { }); } catch (e) { }
                                         }
                                     }}
                                     className="absolute inset-0 z-[10] bg-black/30 flex items-center justify-center cursor-pointer"

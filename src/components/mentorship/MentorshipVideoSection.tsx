@@ -15,8 +15,8 @@ const plyrSource = {
 };
 
 const plyrOptions = {
-    autoplay: true,
     muted: true,
+    loop: { active: true },
     ratio: '16:9',
     vimeo: {
         autoplay: true,
@@ -99,11 +99,11 @@ export const MentorshipVideoSection = () => {
 
                     const time = Math.min(interpolatedTime * 1.5, duration);
 
-                    // Detect end of video to reset and hide recommended videos
+                    // Detect end of video to reset and loop (preventing recommended videos)
                     if (playerTime >= duration - 0.5 && duration > 5) {
                         try {
-                            player.pause();
                             player.currentTime = 0;
+                            player.play().catch(() => { });
                         } catch (e) { }
                     }
 

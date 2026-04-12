@@ -4,7 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Beyond | Tvůj Instagram jako byznys",
+  title: "Pro kouče, podnikatele a tvůrce",
   description: "Proměň svůj Instagram na podnikání, které vydělává. Naučíme tě, jak na to pomocí našeho Creator Starter Packu.",
 };
 
