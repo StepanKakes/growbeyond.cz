@@ -17,15 +17,15 @@ export default function SOPLibraryPage() {
     try {
       // Normalize query for diacritics
       const normalizedQ = q.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      
+
       let url = folderId ? `/api/sop/items?folderId=${folderId}` : '/api/sop/items';
       if (normalizedQ.trim()) {
         url += `${url.includes('?') ? '&' : '?'}q=${encodeURIComponent(normalizedQ.trim())}`;
       }
-      
+
       const res = await fetch(url);
       const data = await res.json();
-      
+
       if (Array.isArray(data)) {
         setItems(data);
       } else {
@@ -39,6 +39,9 @@ export default function SOPLibraryPage() {
   };
 
   useEffect(() => {
+    // Start loading immediately when params change to prevent flickering old data
+    setIsLoading(true);
+
     const timer = setTimeout(() => {
       fetchItems(currentFolderId, searchQuery);
     }, 300);
@@ -48,6 +51,7 @@ export default function SOPLibraryPage() {
 
   const handleItemClick = (item: SOPItem) => {
     if (item.isFolder) {
+      setItems([]); // Clear items immediately
       setFolderPath(prev => [...prev, { id: item.id, name: item.name }]);
       setCurrentFolderId(item.id);
       setSearchQuery('');
@@ -60,6 +64,7 @@ export default function SOPLibraryPage() {
   };
 
   const navigateBack = () => {
+    setItems([]); // Clear items immediately
     const newPath = [...folderPath];
     newPath.pop();
     setFolderPath(newPath);
@@ -68,6 +73,7 @@ export default function SOPLibraryPage() {
   };
 
   const navigateToRoot = () => {
+    setItems([]); // Clear items immediately
     setFolderPath([]);
     setCurrentFolderId(null);
     setSearchQuery('');
@@ -85,9 +91,6 @@ export default function SOPLibraryPage() {
           <h1 className="text-2xl font-bold tracking-tight mb-1">
             SOP Knihovna
           </h1>
-          <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-medium">
-            SOP Library
-          </p>
         </div>
 
         {/* Search Bar */}
@@ -107,30 +110,30 @@ export default function SOPLibraryPage() {
         {/* Breadcrumbs / Group Header */}
         {isListView && (
           <div className="mb-6">
-             <button 
-                onClick={navigateBack}
-                className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors mb-4 group px-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span className="text-xs font-medium uppercase tracking-widest text-[10px]">Back</span>
-              </button>
-              
-              <div className="bg-[#121212] border border-white/[0.05] rounded-2xl p-6 mb-4 flex items-center gap-5 shadow-2xl">
-                 <div className="p-3 rounded-xl bg-white/[0.03] text-brand-red">
-                    {searchQuery.trim() ? <Search className="w-6 h-6" /> : <Folder className="w-6 h-6" />}
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red/60 mb-1">
-                        SOP Knihovna
-                    </p>
-                    <h2 className="text-xl font-bold leading-tight">
-                       {searchQuery.trim() ? 'Search Results' : folderPath[folderPath.length - 1]?.name}
-                    </h2>
-                    <p className="text-xs text-white/20 mt-1">
-                       {items.length} {items.length === 1 ? 'found' : 'found'}
-                    </p>
-                 </div>
+            <button
+              onClick={navigateBack}
+              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors mb-4 group px-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-xs font-medium uppercase tracking-widest text-[10px]">Back</span>
+            </button>
+
+            <div className="bg-[#121212] border border-white/[0.05] rounded-2xl p-6 mb-4 flex items-center gap-5 shadow-2xl">
+              <div className="p-3 rounded-xl bg-white/[0.03] text-brand-red">
+                {searchQuery.trim() ? <Search className="w-6 h-6" /> : <Folder className="w-6 h-6" />}
               </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red/60 mb-1">
+                  SOP Knihovna
+                </p>
+                <h2 className="text-xl font-bold leading-tight">
+                  {searchQuery.trim() ? 'Search Results' : folderPath[folderPath.length - 1]?.name}
+                </h2>
+                <p className="text-xs text-white/20 mt-1">
+                  {items.length} {items.length === 1 ? 'found' : 'found'}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -145,11 +148,11 @@ export default function SOPLibraryPage() {
             <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
               {items.length > 0 ? (
                 items.map((item) => (
-                  <SOPCard 
-                    key={item.id} 
-                    item={item} 
+                  <SOPCard
+                    key={item.id}
+                    item={item}
                     variant={isListView ? 'list' : 'grid'}
-                    onClick={() => handleItemClick(item)} 
+                    onClick={() => handleItemClick(item)}
                   />
                 ))
               ) : (
