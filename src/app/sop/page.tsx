@@ -100,10 +100,10 @@ export default function SOPLibraryPage() {
           </div>
           <input
             type="text"
-            placeholder="Search SOPs..."
+            placeholder="Hledat v dokumentaci..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0d0d0d] border border-white/[0.08] focus:border-brand-red/50 rounded-xl py-4 px-12 text-sm focus:outline-none transition-all shadow-inner"
+            className="w-full bg-[#1a1a1a] border border-white/[0.08] focus:border-brand-red/50 rounded-xl py-4 px-12 text-sm focus:outline-none transition-all shadow-inner"
           />
         </div>
 
@@ -115,7 +115,7 @@ export default function SOPLibraryPage() {
               className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors mb-4 group px-1"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-widest text-[10px]">Back</span>
+              <span className="text-xs font-medium uppercase tracking-widest text-[10px]">Zpět</span>
             </button>
 
             <div className="bg-[#121212] border border-white/[0.05] rounded-2xl p-6 mb-4 flex items-center gap-5 shadow-2xl">
@@ -127,10 +127,10 @@ export default function SOPLibraryPage() {
                   SOP Knihovna
                 </p>
                 <h2 className="text-xl font-bold leading-tight">
-                  {searchQuery.trim() ? 'Search Results' : folderPath[folderPath.length - 1]?.name}
+                  {searchQuery.trim() ? 'Výsledky hledání' : folderPath[folderPath.length - 1]?.name}
                 </h2>
                 <p className="text-xs text-white/20 mt-1">
-                  {items.length} {items.length === 1 ? 'found' : 'found'}
+                  {items.length} {items.length === 1 ? 'položka' : (items.length < 5 ? 'položky' : 'položek')}
                 </p>
               </div>
             </div>
@@ -158,7 +158,8 @@ export default function SOPLibraryPage() {
               ) : (
                 <div className="py-24 text-center opacity-10 flex flex-col items-center">
                   <Search className="w-12 h-12 mb-4" />
-                  <p className="text-sm font-bold uppercase tracking-widest">No results found</p>
+                  <p className="text-sm font-bold uppercase tracking-widest">Žádné výsledky</p>
+                  <button onClick={() => setSearchQuery('')} className="mt-4 text-[10px] text-brand-red font-black uppercase tracking-widest hover:underline">Zobrazit vše</button>
                 </div>
               )}
             </div>

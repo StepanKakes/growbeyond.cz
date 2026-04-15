@@ -18,21 +18,21 @@ export interface SOPItem {
   itemCount?: number;
 }
 
-const getIcon = (name: string, isFolder: boolean) => {
+const getIcon = (name: string, description: string = "", isFolder: boolean) => {
   if (!isFolder) return <FileText className="w-5 h-5" />;
   
-  const lowerName = name.toLowerCase();
+  const searchText = `${name} ${description}`.toLowerCase();
   
-  if (lowerName.includes('dm') || lowerName.includes('setting')) return <MessageSquare className="w-5 h-5" />;
-  if (lowerName.includes('sale') || lowerName.includes('call') || lowerName.includes('closing')) return <Phone className="w-5 h-5" />;
-  if (lowerName.includes('marketing') || lowerName.includes('content') || lowerName.includes('youtube')) return <Video className="w-5 h-5" />;
-  if (lowerName.includes('report') || lowerName.includes('kpi') || lowerName.includes('data')) return <BarChart3 className="w-5 h-5" />;
-  if (lowerName.includes('fulfillment') || lowerName.includes('delivery') || lowerName.includes('onboarding')) return <Package className="w-5 h-5" />;
-  if (lowerName.includes('team') || lowerName.includes('management') || lowerName.includes('hiring')) return <Users className="w-5 h-5" />;
-  if (lowerName.includes('system') || lowerName.includes('operation') || lowerName.includes('automation')) return <Settings className="w-5 h-5" />;
-  if (lowerName.includes('va ') || lowerName.includes('assistant') || lowerName.includes('delegat')) return <UserCircle className="w-5 h-5" />;
-  if (lowerName.includes('offer') || lowerName.includes('building') || lowerName.includes('pitch')) return <Diamond className="w-5 h-5" />;
-  if (lowerName.includes('success') || lowerName.includes('client') || lowerName.includes('retention')) return <Heart className="w-5 h-5" />;
+  if (searchText.includes('dm') || searchText.includes('setting')) return <MessageSquare className="w-5 h-5" />;
+  if (searchText.includes('sale') || searchText.includes('call') || searchText.includes('closing')) return <Phone className="w-5 h-5" />;
+  if (searchText.includes('marketing') || searchText.includes('content') || searchText.includes('youtube')) return <Video className="w-5 h-5" />;
+  if (searchText.includes('report') || searchText.includes('kpi') || searchText.includes('data')) return <BarChart3 className="w-5 h-5" />;
+  if (searchText.includes('fulfillment') || searchText.includes('delivery') || searchText.includes('onboarding')) return <Package className="w-5 h-5" />;
+  if (searchText.includes('team') || searchText.includes('management') || searchText.includes('hiring')) return <Users className="w-5 h-5" />;
+  if (searchText.includes('system') || searchText.includes('operation') || searchText.includes('automation')) return <Settings className="w-5 h-5" />;
+  if (searchText.includes('va ') || searchText.includes('assistant') || searchText.includes('delegat')) return <UserCircle className="w-5 h-5" />;
+  if (searchText.includes('offer') || searchText.includes('building') || searchText.includes('pitch')) return <Diamond className="w-5 h-5" />;
+  if (searchText.includes('success') || searchText.includes('client') || searchText.includes('retention')) return <Heart className="w-5 h-5" />;
   
   return <Folder className="w-5 h-5" />;
 };
@@ -42,10 +42,10 @@ export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; on
     return (
       <div
         onClick={onClick}
-        className="group flex items-center gap-4 bg-[#0d0d0d] hover:bg-[#121212] border border-white/[0.04] rounded-xl p-4 cursor-pointer transition-all"
+        className="group flex items-center gap-4 bg-[#1a1a1a] hover:bg-[#222222] border border-white/[0.04] rounded-xl p-4 cursor-pointer transition-all"
       >
         <div className="p-2.5 rounded-lg bg-white/[0.02] text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all">
-          {getIcon(item.name, item.isFolder)}
+          {getIcon(item.name, item.description, item.isFolder)}
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-bold text-white group-hover:text-brand-red transition-colors truncate">
@@ -65,11 +65,11 @@ export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; on
   return (
     <div
       onClick={onClick}
-      className="group relative bg-[#0d0d0d] border border-white/[0.04] hover:border-white/[0.08] rounded-2xl p-6 cursor-pointer transition-all flex flex-col h-full"
+      className="group relative bg-[#1a1a1a] border border-white/[0.04] hover:border-white/[0.08] rounded-2xl p-6 cursor-pointer transition-all flex flex-col h-full"
     >
       <div className="flex justify-between items-start mb-6">
-        <div className="p-2.5 rounded-xl bg-white/[0.02] text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all">
-          {getIcon(item.name, item.isFolder)}
+        <div className="p-3 rounded-xl bg-white/[0.02] text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all">
+          {getIcon(item.name, item.description, item.isFolder)}
         </div>
         
         {item.isFolder && item.itemCount !== undefined && (

@@ -25,8 +25,15 @@ function LoginForm() {
     const newPins = [...pins];
     newPins[index] = value.slice(-1);
     setPins(newPins);
+    
+    // Auto-focus next input
     if (value && index < 3) {
       inputRefs[index + 1].current?.focus();
+    }
+    
+    // Auto-login trigger when all fields are filled
+    if (newPins.every(p => p !== '') && !isLoading) {
+      handleLogin(newPins.join(''));
     }
   };
 
@@ -39,9 +46,9 @@ function LoginForm() {
     }
   };
 
-  const handleLogin = async () => {
-    const pin = pins.join('');
-    if (pin.length < 4) return;
+  const handleLogin = async (explicitPin?: string) => {
+    const pin = explicitPin || pins.join('');
+    if (pin.length < 4 || isLoading) return;
     
     setIsLoading(true);
     setError('');
@@ -69,11 +76,7 @@ function LoginForm() {
     }
   };
 
-  useEffect(() => {
-    if (pins.every(p => p !== '')) {
-      handleLogin();
-    }
-  }, [pins]);
+  // The login is now triggered directly in handleInputChange for maximum responsiveness
 
   return (
     <div className="w-full max-w-sm relative z-10">
