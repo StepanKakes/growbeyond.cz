@@ -51,7 +51,10 @@ export default function SOPLibraryPage() {
 
   const handleItemClick = (item: SOPItem) => {
     if (item.isFolder) {
-      setItems([]); // Clear items immediately
+      if (currentFolderId !== item.id) {
+        setIsLoading(true);
+        setItems([]); // Clear items immediately only if navigating
+      }
       setFolderPath(prev => [...prev, { id: item.id, name: item.name }]);
       setCurrentFolderId(item.id);
       setSearchQuery('');
@@ -64,6 +67,7 @@ export default function SOPLibraryPage() {
   };
 
   const navigateBack = () => {
+    setIsLoading(true);
     setItems([]); // Clear items immediately
     const newPath = [...folderPath];
     newPath.pop();
@@ -73,10 +77,13 @@ export default function SOPLibraryPage() {
   };
 
   const navigateToRoot = () => {
-    setItems([]); // Clear items immediately
-    setFolderPath([]);
-    setCurrentFolderId(null);
-    setSearchQuery('');
+    if (currentFolderId !== null || searchQuery !== '') {
+      setIsLoading(true);
+      setItems([]); // Clear only if we are not already at root
+      setFolderPath([]);
+      setCurrentFolderId(null);
+      setSearchQuery('');
+    }
   };
 
   const isListView = searchQuery.trim() !== '' || folderPath.length > 0;
