@@ -6,55 +6,53 @@ import { SOPCard, SOPItem } from '@/components/SOPCard';
 import { instrumentSerif } from "@/app/fonts";
 
 export default function SOPLibraryPage() {
-  const [items, setItems] = useState<SOPItem[]>([]);
+  const [allItems, setAllItems] = useState<SOPItem[]>([]);
+  const [rootItems, setRootItems] = useState<SOPItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [folderPath, setFolderPath] = useState<{ id: string; name: string }[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
 
-  const fetchItems = async (folderId: string | null = null, q: string = '') => {
-    setIsLoading(true);
-    try {
-      // Normalize query for diacritics
-      const normalizedQ = q.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-      let url = folderId ? `/api/sop/items?folderId=${folderId}` : '/api/sop/items';
-      if (normalizedQ.trim()) {
-        url += `${url.includes('?') ? '&' : '?'}q=${encodeURIComponent(normalizedQ.trim())}`;
-      }
-
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setItems(data);
-      } else {
-        setItems([]);
-      }
-    } catch (error) {
-      setItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    // Start loading immediately when params change to prevent flickering old data
-    setIsLoading(true);
+    const fetchInitialData = async () => {
+      try {
+        const [allRes, rootRes] = await Promise.all([
+          fetch('/api/sop/items?all=true'),
+          fetch('/api/sop/items')
+        ]);
+        const allData = await allRes.json();
+        const rootData = await rootRes.json();
 
-    const timer = setTimeout(() => {
-      fetchItems(currentFolderId, searchQuery);
-    }, 300);
+        if (Array.isArray(allData)) setAllItems(allData);
+        if (Array.isArray(rootData)) setRootItems(rootData);
+      } catch (error) {
+        console.error("Failed to fetch SOP items", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, [currentFolderId, searchQuery]);
+    fetchInitialData();
+  }, []);
+
+  const displayedItems = React.useMemo(() => {
+    if (searchQuery.trim()) {
+      const normalizedQuery = searchQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      return allItems.filter(item => 
+        (item.name?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)) ||
+        (item.description?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery))
+      );
+    }
+    
+    if (currentFolderId) {
+      return allItems.filter(item => item.parents?.includes(currentFolderId));
+    }
+
+    return rootItems;
+  }, [allItems, rootItems, searchQuery, currentFolderId]);
 
   const handleItemClick = (item: SOPItem) => {
     if (item.isFolder) {
-      if (currentFolderId !== item.id) {
-        setIsLoading(true);
-        setItems([]); // Clear items immediately only if navigating
-      }
       setFolderPath(prev => [...prev, { id: item.id, name: item.name }]);
       setCurrentFolderId(item.id);
       setSearchQuery('');
@@ -67,8 +65,6 @@ export default function SOPLibraryPage() {
   };
 
   const navigateBack = () => {
-    setIsLoading(true);
-    setItems([]); // Clear items immediately
     const newPath = [...folderPath];
     newPath.pop();
     setFolderPath(newPath);
@@ -78,8 +74,6 @@ export default function SOPLibraryPage() {
 
   const navigateToRoot = () => {
     if (currentFolderId !== null || searchQuery !== '') {
-      setIsLoading(true);
-      setItems([]); // Clear only if we are not already at root
       setFolderPath([]);
       setCurrentFolderId(null);
       setSearchQuery('');
@@ -114,54 +108,70 @@ export default function SOPLibraryPage() {
           />
         </div>
 
-        {/* Breadcrumbs / Group Header */}
+        {/* Back Button outside the window */}
         {isListView && (
-          <div className="mb-6">
+          <div className="mb-4">
             <button
               onClick={navigateBack}
-              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors mb-4 group px-1"
+              className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors group px-1"
             >
               <ChevronLeft className="w-4 h-4" />
               <span className="text-xs font-medium uppercase tracking-widest text-[10px]">Zpět</span>
             </button>
+          </div>
+        )}
 
-            <div className="bg-[#121212] border border-white/[0.05] rounded-2xl p-6 mb-4 flex items-center gap-5 shadow-2xl">
-              <div className="p-3 rounded-xl bg-white/[0.03] text-brand-red">
+        {/* Window Container */}
+        <div className={isListView ? "bg-[#121212] border border-white/[0.05] rounded-[24px] shadow-2xl flex flex-col overflow-hidden" : ""}>
+          
+          {/* Group Header inside window */}
+          {isListView && (
+            <div className="p-8 border-b border-white/[0.05] shrink-0 bg-[#121212] flex items-center gap-5 relative z-10">
+              <div className="p-3 rounded-xl bg-brand-red/10 border border-brand-red/20 text-brand-red">
                 {searchQuery.trim() ? <Search className="w-6 h-6" /> : <Folder className="w-6 h-6" />}
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-red/60 mb-1">
                   SOP Knihovna
                 </p>
-                <h2 className="text-xl font-bold leading-tight">
+                <h2 className="text-xl font-bold leading-tight text-white/90">
                   {searchQuery.trim() ? 'Výsledky hledání' : folderPath[folderPath.length - 1]?.name}
                 </h2>
-                <p className="text-xs text-white/20 mt-1">
-                  {items.length} {items.length === 1 ? 'položka' : (items.length < 5 ? 'položky' : 'položek')}
+                <p className="text-xs text-white/30 mt-1">
+                  {displayedItems.length} SOPs
                 </p>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Grid or List View */}
-        <div className="relative min-h-[400px]">
-          {isLoading ? (
+          {/* Grid or List View */}
+          <div className={`relative ${isListView ? "p-8 max-h-[60vh] overflow-y-auto" : "min-h-[400px]"}`}>
+            {isLoading ? (
             <div className="absolute inset-x-0 top-32 flex flex-col items-center justify-center gap-4">
               <Loader2 className="w-6 h-6 text-brand-red animate-spin" />
               <p className="text-[10px] uppercase tracking-widest text-white/10 font-bold">Syncing...</p>
             </div>
           ) : (
             <div className={isListView ? "space-y-2" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
-              {items.length > 0 ? (
-                items.map((item) => (
-                  <SOPCard
-                    key={item.id}
-                    item={item}
-                    variant={isListView ? 'list' : 'grid'}
-                    onClick={() => handleItemClick(item)}
-                  />
-                ))
+              {displayedItems.length > 0 ? (
+                displayedItems.map((item) => {
+                  let parentName = null;
+                  if (item.parents && item.parents.length > 0) {
+                    const parent = allItems.find(p => p.id === item.parents![0]);
+                    if (parent) parentName = parent.name;
+                  }
+
+                  return (
+                    <SOPCard
+                      key={item.id}
+                      item={item}
+                      variant={isListView ? 'list' : 'grid'}
+                      isSearching={searchQuery.trim() !== ''}
+                      parentName={parentName}
+                      onClick={() => handleItemClick(item)}
+                    />
+                  );
+                })
               ) : (
                 <div className="py-24 text-center opacity-10 flex flex-col items-center">
                   <Search className="w-12 h-12 mb-4" />
@@ -172,6 +182,7 @@ export default function SOPLibraryPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {/* Footer Branding */}

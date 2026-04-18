@@ -93,7 +93,7 @@ async function fetchFullLibrary(): Promise<SOPItem[]> {
   return items;
 }
 
-export async function getSOPItems(folderId: string, searchQuery?: string): Promise<SOPItem[]> {
+export async function getSOPItems(folderId: string, searchQuery?: string, fetchAll?: boolean): Promise<SOPItem[]> {
   const currentTime = Date.now();
   
   // Refresh cache if stale or empty
@@ -108,6 +108,10 @@ export async function getSOPItems(folderId: string, searchQuery?: string): Promi
   }
 
   let results = driveCache || [];
+
+  if (fetchAll) {
+    return results;
+  }
 
   if (searchQuery && searchQuery.trim().length > 0) {
     // Global diacritics-insensitive search across ALL files in cache

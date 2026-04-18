@@ -4,7 +4,7 @@
 import React from 'react';
 import { 
   MessageSquare, Phone, Video, BarChart3, Package, Users, 
-  Settings, UserCircle, Diamond, Heart, FileText, ExternalLink, Folder
+  Settings, UserCircle, Diamond, Heart, FileText, ExternalLink, Folder, LayoutGrid
 } from 'lucide-react';
 
 export interface SOPItem {
@@ -57,7 +57,7 @@ const getTypeLabel = (item: SOPItem) => {
   return 'Dokument';
 };
 
-export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; onClick: () => void; variant?: 'grid' | 'list' }) => {
+export const SOPCard = ({ item, onClick, variant = 'grid', parentName, isSearching }: { item: SOPItem; onClick: () => void; variant?: 'grid' | 'list'; parentName?: string | null; isSearching?: boolean }) => {
   if (variant === 'list') {
     return (
       <div
@@ -72,7 +72,11 @@ export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; on
             {item.name}
           </h4>
           <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest truncate">
-             {getTypeLabel(item)}
+             {isSearching && parentName ? (
+               <span className="text-brand-red">{parentName} <span className="opacity-50">•</span> {getTypeLabel(item)}</span>
+             ) : (
+               getTypeLabel(item)
+             )}
           </p>
         </div>
         {item.externalLink && (
@@ -100,8 +104,8 @@ export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; on
       </div>
 
       <div className="space-y-0.5 mt-auto">
-        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-red/60 mb-2">
-          GrowBeyond
+        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-red/60 mb-2 truncate">
+          {isSearching && parentName ? parentName : "GrowBeyond"}
         </p>
         
         <h3 className="text-base font-bold text-white group-hover:text-brand-red transition-colors line-clamp-1 tracking-tight">
@@ -112,7 +116,7 @@ export const SOPCard = ({ item, onClick, variant = 'grid' }: { item: SOPItem; on
            {getTypeLabel(item)}
         </p>
         
-        {item.description && !item.externalLink && (
+        {item.description && !item.externalLink && !item.isFolder && (
           <p className="text-[11px] text-white/20 line-clamp-2 mt-2 leading-relaxed">
             {item.description.replace(/https?:\/\/[^\s]+/g, '').trim()}
           </p>
