@@ -16,6 +16,7 @@ export interface SOPItem {
   externalLink?: string;
   isFolder: boolean;
   itemCount?: number;
+  parents?: string[];
 }
 
 const getIcon = (item: SOPItem) => {
