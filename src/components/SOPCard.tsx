@@ -63,13 +63,13 @@ export const SOPCard = ({ item, onClick, variant = 'grid', parentName, isSearchi
     return (
       <div
         onClick={onClick}
-        className="group flex items-center gap-4 bg-[#1a1a1a] hover:bg-[#222222] border border-white/[0.04] rounded-xl p-4 cursor-pointer transition-all"
+        className="group flex items-center gap-4 bg-[#1a1a1a] hover:bg-brand-red/[0.02] hover:border-brand-red/50 border border-white/[0.04] rounded-xl p-4 cursor-pointer transition-all"
       >
-        <div className="p-2.5 rounded-lg bg-white/[0.02] text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all">
+        <div className="p-2.5 rounded-lg bg-white/[0.02] text-brand-red transition-all">
           {getIcon(item)}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-bold text-white group-hover:text-brand-red transition-colors truncate">
+          <h4 className="text-sm font-bold text-white transition-colors truncate">
             {item.name}
           </h4>
           <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest truncate">
@@ -90,10 +90,10 @@ export const SOPCard = ({ item, onClick, variant = 'grid', parentName, isSearchi
   return (
     <div
       onClick={onClick}
-      className="group relative bg-[#1a1a1a] border border-white/[0.04] hover:border-white/[0.08] rounded-2xl p-6 cursor-pointer transition-all flex flex-col h-full"
+      className="group relative bg-[#1a1a1a] border border-white/[0.04] hover:border-brand-red/50 hover:bg-brand-red/[0.02] rounded-2xl p-6 cursor-pointer transition-all flex flex-col h-full"
     >
       <div className="flex justify-between items-start mb-6">
-        <div className="p-3 rounded-xl bg-white/[0.02] text-brand-red group-hover:bg-brand-red group-hover:text-white transition-all">
+        <div className="p-3 rounded-xl bg-white/[0.02] text-brand-red transition-all">
           {getIcon(item)}
         </div>
         
@@ -109,7 +109,7 @@ export const SOPCard = ({ item, onClick, variant = 'grid', parentName, isSearchi
           {isSearching && parentName ? parentName : "GrowBeyond"}
         </p>
         
-        <h3 className="text-base font-bold text-white group-hover:text-brand-red transition-colors line-clamp-1 tracking-tight">
+        <h3 className="text-base font-bold text-white transition-colors line-clamp-1 tracking-tight">
           {item.name}
         </h3>
         
