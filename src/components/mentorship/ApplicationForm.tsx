@@ -98,7 +98,7 @@ export const ApplicationForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isStepValid()) return;
+        if (currentStep !== 6 || !isStepValid()) return;
         setIsSubmitting(true);
 
         try {
