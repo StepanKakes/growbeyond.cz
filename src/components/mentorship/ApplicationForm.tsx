@@ -47,6 +47,7 @@ export const ApplicationForm = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [budgetConfirmed, setBudgetConfirmed] = useState<boolean | null>(null);
     const [formData, setFormData] = useState<FormData>({
         email: '',
         igHandle: '',
@@ -122,38 +123,80 @@ export const ApplicationForm = () => {
     };
 
     if (isSubmitted) {
-        // Low budget → redirect to Creator Starter Pack
+        // Low budget → check if they want to invest more
         if (formData.q6 === "0 - 10tisíc Kč") {
-            return (
-                <div className="w-full animate-[fadeIn_1s_ease-out]">
-                    <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-8 md:p-12 text-center">
-                        <div className="mb-6">
-                            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand-red/10 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-brand-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                    <path d="M2 17l10 5 10-5" />
-                                    <path d="M2 12l10 5 10-5" />
-                                </svg>
+            if (budgetConfirmed === null) {
+                return (
+                    <div className="w-full animate-[fadeIn_1s_ease-out]">
+                        <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-8 md:p-12 text-center">
+                            <div className="mb-8">
+                                <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
+                                    Ještě jedna důležitá věc...
+                                </h3>
+                                <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
+                                    V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 10 tisíc Kč. Abychom k tobě byli úplně upřímní, naše intenzivní 1:1 spolupráce vyžaduje vyšší investici.
+                                </p>
+                                <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                                    Jsi případně otevřený/á najít způsob, jak do sebe investovat víc, pokud ti ukážeme přesný plán, jak se ti to vrátí?
+                                </p>
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
-                                Díky za tvé odpovědi!
-                            </h3>
-                            <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-2">
-                                Na základě tvých odpovědí si myslíme, že 1:1 mentoring pro tebe momentálně není ta správná volba.
-                            </p>
-                            <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                                Ale máme pro tebe něco skvělého — náš <strong>Creator Starter Pack</strong>, který ti pomůže nastartovat růst za zlomek ceny.
-                            </p>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <button
+                                    onClick={() => {
+                                        setBudgetConfirmed(true);
+                                        setTimeout(() => {
+                                            const calElem = document.getElementById('calendly');
+                                            calElem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }, 100);
+                                    }}
+                                    className="w-full sm:w-auto bg-brand-red hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-base font-bold tracking-tight-custom transition-all"
+                                >
+                                    Ano, chci najít způsob
+                                </button>
+                                <button
+                                    onClick={() => setBudgetConfirmed(false)}
+                                    className="w-full sm:w-auto bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 text-white px-8 py-4 rounded-full text-base font-bold transition-all"
+                                >
+                                    Ne, to je moje maximum
+                                </button>
+                            </div>
                         </div>
-                        <a
-                            href="/csp"
-                            className="inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-4 rounded-full text-base md:text-lg font-bold tracking-tight-custom transition-all hover:scale-105"
-                        >
-                            Chci Creator Starter Pack →
-                        </a>
                     </div>
-                </div>
-            );
+                );
+            }
+
+            if (budgetConfirmed === false) {
+                return (
+                    <div className="w-full animate-[fadeIn_1s_ease-out]">
+                        <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-8 md:p-12 text-center">
+                            <div className="mb-6">
+                                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand-red/10 flex items-center justify-center">
+                                    <svg className="w-8 h-8 text-brand-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                        <path d="M2 17l10 5 10-5" />
+                                        <path d="M2 12l10 5 10-5" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
+                                    Díky za tvé odpovědi!
+                                </h3>
+                                <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-2">
+                                    Vzhledem k tvému rozpočtu si myslíme, že 1:1 mentoring pro tebe momentálně není ta správná volba.
+                                </p>
+                                <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                                    Ale máme pro tebe něco skvělého — náš <strong>Creator Starter Pack</strong>, který ti pomůže nastartovat růst za zlomek ceny.
+                                </p>
+                            </div>
+                            <a
+                                href="/csp"
+                                className="inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-4 rounded-full text-base md:text-lg font-bold tracking-tight-custom transition-all hover:scale-105"
+                            >
+                                Chci Creator Starter Pack →
+                            </a>
+                        </div>
+                    </div>
+                );
+            }
         }
 
         return (
