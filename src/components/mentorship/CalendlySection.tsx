@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 
 export const CalendlySection = ({ prefillEmail }: { prefillEmail?: string }) => {
+    const router = useRouter();
+
     useEffect(() => {
         const head = document.querySelector('head');
         const script = document.createElement('script');
@@ -11,9 +14,19 @@ export const CalendlySection = ({ prefillEmail }: { prefillEmail?: string }) => 
         head?.appendChild(script);
 
         return () => {
-            head?.removeChild(script);
+            if (head?.contains(script)) head.removeChild(script);
         };
     }, []);
+
+    useEffect(() => {
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.event === 'calendly.event_scheduled') {
+                router.push('/po-rezervaci');
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [router]);
 
     const calendlyUrl = prefillEmail
         ? `https://calendly.com/tim-creationwithtim/strategicky-call-s-timem?hide_gdpr_banner=1&email=${encodeURIComponent(prefillEmail)}`
