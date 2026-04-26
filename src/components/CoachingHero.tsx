@@ -22,7 +22,7 @@ export const CoachingHero = () => {
 
     return (
         <section className="relative pt-24 pb-8 px-4 z-10 selection:bg-brand-red selection:text-white flex flex-col items-center top-0 overflow-hidden">
-            {/* Background elements removed for pure noise/gray overlay from global app styles */}
+
 
             <div
                 className="absolute inset-0 z-0 pointer-events-none"
