@@ -4,7 +4,7 @@
 import React from 'react';
 import { 
   MessageSquare, Phone, Video, BarChart3, Package, Users, 
-  Settings, UserCircle, Diamond, Heart, FileText, ExternalLink, Folder, LayoutGrid
+  Settings, UserCircle, Diamond, Heart, FileText, ExternalLink, Folder, LayoutGrid, Filter
 } from 'lucide-react';
 
 export interface SOPItem {
@@ -32,6 +32,7 @@ const getIcon = (item: SOPItem) => {
     if (searchText.includes('va ') || searchText.includes('assistant') || searchText.includes('delegat')) return <UserCircle className="w-5 h-5" />;
     if (searchText.includes('offer') || searchText.includes('building') || searchText.includes('pitch')) return <Diamond className="w-5 h-5" />;
     if (searchText.includes('success') || searchText.includes('client') || searchText.includes('retention')) return <Heart className="w-5 h-5" />;
+    if (searchText.includes('funnel')) return <Filter className="w-5 h-5" />;
     return <Folder className="w-5 h-5" />;
   }
   
