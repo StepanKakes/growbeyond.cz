@@ -31,6 +31,7 @@ export const CalendlySection = ({ prefillEmail }: { prefillEmail?: string }) => 
                             style={{ width: '100%', minHeight: '700px' }}
                             config={{
                                 layout: 'month_view',
+                                locale: 'cs',
                                 ...(prefillEmail ? { email: prefillEmail } : {}),
                             }}
                         />
