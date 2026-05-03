@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Cal, { getCalApi } from '@calcom/embed-react';
 import { FadeUp } from '../FadeUp';
 
-const CAL_LINK = process.env.NEXT_PUBLIC_CAL_LINK ?? 'tim-creationwithtim/strategicky-call';
+const CAL_LINK = process.env.NEXT_PUBLIC_CAL_LINK ?? 'creationwithtim/30min';
 
 export const CalendlySection = ({ prefillEmail }: { prefillEmail?: string }) => {
     const router = useRouter();
