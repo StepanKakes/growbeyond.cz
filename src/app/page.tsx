@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { initUtmTracking } from '@/lib/utm';
 import { Navbar } from '@/components/Navbar';
 import { CoachingHero } from '@/components/CoachingHero';
 import { Testimonials } from '@/components/Testimonials';
@@ -15,6 +16,8 @@ const ApplicationForm = dynamic(() => import('@/components/mentorship/Applicatio
 
 export default function HomePage() {
     useEffect(() => {
+        initUtmTracking();
+
         if (!window.location.hash) return;
         const id = window.location.hash.slice(1);
         const scrollToTarget = () => {

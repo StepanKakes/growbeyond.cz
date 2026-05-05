@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FadeUp } from '../FadeUp';
 import { CalendlySection } from './CalendlySection';
+import { getStoredUtm } from '@/lib/utm';
 
 type FormData = {
     email: string;
@@ -106,7 +107,7 @@ export const ApplicationForm = () => {
             await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ ...formData, utm: getStoredUtm() })
             });
 
             setIsSubmitted(true);
