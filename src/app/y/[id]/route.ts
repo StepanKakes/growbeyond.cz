@@ -28,6 +28,6 @@ export async function GET(
         // keep default campaign
     }
 
-    const target = `${request.nextUrl.origin}/?utm_source=youtube&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${id}#apply`;
+    const target = `${request.nextUrl.origin}/?utm_source=youtube&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${id}`;
     return NextResponse.redirect(target, 302);
 }

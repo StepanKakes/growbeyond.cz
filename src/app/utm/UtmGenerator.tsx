@@ -45,7 +45,7 @@ export const UtmGenerator = () => {
             utm_campaign: slug,
             utm_content: videoId,
         });
-        return `${BASE_URL}?${params.toString()}#apply`;
+        return `${BASE_URL}?${params.toString()}`;
     }, [videoId, campaign]);
 
     const handleCopy = async (text: string) => {
