@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { extractYouTubeId, slugify } from '@/lib/youtube';
 
 const BASE_URL = 'https://growbeyond.cz/';
@@ -8,9 +8,32 @@ const BASE_URL = 'https://growbeyond.cz/';
 export const UtmGenerator = () => {
     const [ytInput, setYtInput] = useState('');
     const [campaign, setCampaign] = useState('');
+    const [campaignEdited, setCampaignEdited] = useState(false);
+    const [videoTitle, setVideoTitle] = useState('');
+    const [titleLoading, setTitleLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
     const videoId = useMemo(() => extractYouTubeId(ytInput), [ytInput]);
+
+    useEffect(() => {
+        if (!videoId) {
+            setVideoTitle('');
+            return;
+        }
+        let cancelled = false;
+        setTitleLoading(true);
+        fetch(`/api/youtube-title?id=${videoId}`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then((data: { title?: string }) => {
+                if (cancelled) return;
+                const title = data.title ?? '';
+                setVideoTitle(title);
+                if (!campaignEdited && title) setCampaign(title);
+            })
+            .catch(() => { if (!cancelled) setVideoTitle(''); })
+            .finally(() => { if (!cancelled) setTitleLoading(false); });
+        return () => { cancelled = true; };
+    }, [videoId, campaignEdited]);
 
     const generated = useMemo(() => {
         if (!videoId) return '';
@@ -53,18 +76,22 @@ export const UtmGenerator = () => {
                             <p className="text-red-400 text-sm mt-2">Nepodařilo se rozpoznat YouTube ID</p>
                         )}
                         {videoId && (
-                            <p className="text-white/40 text-sm mt-2">Video ID: <span className="font-mono text-white/70">{videoId}</span></p>
+                            <p className="text-white/40 text-sm mt-2">
+                                Video ID: <span className="font-mono text-white/70">{videoId}</span>
+                                {titleLoading && <span className="ml-2 text-white/30">načítám název…</span>}
+                                {videoTitle && !titleLoading && <span className="ml-2 text-white/70">— {videoTitle}</span>}
+                            </p>
                         )}
                     </div>
 
                     <div>
                         <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
-                            Název kampaně <span className="text-white/30 normal-case">(volitelné — slug se vygeneruje automaticky)</span>
+                            Název kampaně <span className="text-white/30 normal-case">(automaticky z názvu videa, můžeš upravit)</span>
                         </label>
                         <input
                             type="text"
                             value={campaign}
-                            onChange={e => setCampaign(e.target.value)}
+                            onChange={e => { setCampaign(e.target.value); setCampaignEdited(true); }}
                             placeholder="Jak začít s Instagramem"
                             className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-red"
                         />
