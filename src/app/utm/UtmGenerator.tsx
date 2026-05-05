@@ -35,7 +35,9 @@ export const UtmGenerator = () => {
         return () => { cancelled = true; };
     }, [videoId, campaignEdited]);
 
-    const generated = useMemo(() => {
+    const shortLink = useMemo(() => videoId ? `${BASE_URL}y/${videoId}` : '', [videoId]);
+
+    const fullLink = useMemo(() => {
         if (!videoId) return '';
         const slug = campaign.trim() ? slugify(campaign) : `video-${videoId}`;
         const params = new URLSearchParams({
@@ -46,9 +48,9 @@ export const UtmGenerator = () => {
         return `${BASE_URL}?${params.toString()}#apply`;
     }, [videoId, campaign]);
 
-    const handleCopy = async () => {
-        if (!generated) return;
-        await navigator.clipboard.writeText(generated);
+    const handleCopy = async (text: string) => {
+        if (!text) return;
+        await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
     };
@@ -102,31 +104,48 @@ export const UtmGenerator = () => {
 
                     <div>
                         <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
-                            Vygenerovaný link
+                            Krátký link <span className="text-white/30 normal-case">(doporučeno do popisu videa)</span>
                         </label>
-                        <div className="bg-[#1A1A1A] border border-white/10 rounded-lg p-4 font-mono text-sm break-all min-h-[80px] flex items-center">
-                            {generated ? (
-                                <span className="text-white/90">{generated}</span>
+                        <div className="bg-[#1A1A1A] border border-white/10 rounded-lg p-4 font-mono text-sm break-all min-h-[60px] flex items-center">
+                            {shortLink ? (
+                                <span className="text-white/90">{shortLink}</span>
                             ) : (
                                 <span className="text-white/30">Vlož YouTube URL výše…</span>
                             )}
                         </div>
                         <button
-                            onClick={handleCopy}
-                            disabled={!generated}
+                            onClick={() => handleCopy(shortLink)}
+                            disabled={!shortLink}
                             className="mt-3 w-full bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#333] disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors uppercase tracking-wider text-sm"
                         >
-                            {copied ? 'Zkopírováno ✓' : 'Zkopírovat'}
+                            {copied ? 'Zkopírováno ✓' : 'Zkopírovat krátký link'}
                         </button>
                     </div>
+
+                    <details className="bg-[#1A1A1A] border border-white/5 rounded-lg p-4">
+                        <summary className="text-xs uppercase tracking-wider text-white/60 cursor-pointer">
+                            Plný link s UTM parametry (pokud chceš ručně)
+                        </summary>
+                        <div className="mt-3 font-mono text-xs break-all text-white/70">
+                            {fullLink || <span className="text-white/30">—</span>}
+                        </div>
+                        {fullLink && (
+                            <button
+                                onClick={() => handleCopy(fullLink)}
+                                className="mt-3 text-xs text-white/60 hover:text-white underline"
+                            >
+                                Zkopírovat plný
+                            </button>
+                        )}
+                    </details>
                 </div>
 
                 <div className="mt-12 p-6 bg-[#1A1A1A] rounded-lg border border-white/5 text-sm text-white/60 leading-relaxed">
-                    <p className="font-bold text-white mb-2">Jak používat:</p>
+                    <p className="font-bold text-white mb-2">Jak to funguje:</p>
                     <ol className="list-decimal list-inside space-y-1">
-                        <li>Vlož URL videa z YouTube (nebo jen 11-znakový ID)</li>
-                        <li>Volitelně přejmenuj kampaň (jinak se použije <code className="text-white/80">video-ID</code>)</li>
-                        <li>Zkopíruj link a vlož ho do popisu YouTube videa</li>
+                        <li>Vlož URL videa z YouTube</li>
+                        <li>Zkopíruj krátký link a vlož ho do popisu videa</li>
+                        <li>Server udělá redirect, vytáhne název videa a doplní UTM parametry → uvidíš v Notion (Zdroj/Kampaň/Video)</li>
                     </ol>
                 </div>
             </div>
