@@ -5,6 +5,63 @@ import { extractYouTubeId, slugify } from '@/lib/youtube';
 
 const BASE_URL = 'https://growbeyond.cz/';
 
+type SimpleSourceProps = {
+    pathPrefix: 'i' | 'd';
+    defaultCampaign: string;
+    placeholder: string;
+};
+
+const SimpleSourceSection = ({ pathPrefix, defaultCampaign, placeholder }: SimpleSourceProps) => {
+    const [campaign, setCampaign] = useState(defaultCampaign);
+    const [copied, setCopied] = useState(false);
+    const slug = useMemo(() => slugify(campaign) || defaultCampaign, [campaign, defaultCampaign]);
+    const link = useMemo(
+        () => slug === defaultCampaign ? `${BASE_URL}${pathPrefix}` : `${BASE_URL}${pathPrefix}/${slug}`,
+        [slug, defaultCampaign, pathPrefix]
+    );
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
+                    Kampaň <span className="text-white/30 normal-case">{placeholder}</span>
+                </label>
+                <input
+                    type="text"
+                    value={campaign}
+                    onChange={e => setCampaign(e.target.value)}
+                    placeholder={defaultCampaign}
+                    className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-red"
+                />
+                {campaign && slug !== campaign && (
+                    <p className="text-white/40 text-sm mt-2">Slug: <span className="font-mono text-white/70">{slug}</span></p>
+                )}
+            </div>
+
+            <div>
+                <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">
+                    Krátký link
+                </label>
+                <div className="bg-[#1A1A1A] border border-white/10 rounded-lg p-4 font-mono text-sm break-all min-h-[60px] flex items-center">
+                    <span className="text-white/90">{link}</span>
+                </div>
+                <button
+                    onClick={handleCopy}
+                    className="mt-3 w-full bg-brand-red hover:bg-[#cc0b00] text-white font-bold py-3 rounded-lg transition-colors uppercase tracking-wider text-sm"
+                >
+                    {copied ? 'Zkopírováno ✓' : 'Zkopírovat'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
 export const UtmGenerator = () => {
     const [ytInput, setYtInput] = useState('');
     const [campaign, setCampaign] = useState('');
@@ -59,7 +116,10 @@ export const UtmGenerator = () => {
         <main className="min-h-screen bg-brand-dark text-white font-sans py-16 px-4">
             <div className="max-w-2xl mx-auto">
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">UTM Generator</h1>
-                <p className="text-white/60 mb-10">Vlož YouTube URL a získej hotový link pod video.</p>
+                <p className="text-white/60 mb-10">Krátké linky pro YouTube a Instagram s automatickým UTM trackingem.</p>
+
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">YouTube</h2>
+                <p className="text-white/60 mb-6">Vlož URL videa — server vytáhne název a vygeneruje link pod video.</p>
 
                 <div className="space-y-6">
                     <div>
@@ -140,12 +200,33 @@ export const UtmGenerator = () => {
                     </details>
                 </div>
 
+                <div className="mt-16 pt-12 border-t border-white/10">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2">Instagram</h2>
+                    <p className="text-white/60 mb-6">Krátký link pro bio, story nebo konkrétní reel.</p>
+                    <SimpleSourceSection
+                        pathPrefix="i"
+                        defaultCampaign="bio"
+                        placeholder="(např. bio, story, reel-jak-rust)"
+                    />
+                </div>
+
+                <div className="mt-16 pt-12 border-t border-white/10">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2">DMs</h2>
+                    <p className="text-white/60 mb-6">Krátký link pro direct messages (outreach, follow-up).</p>
+                    <SimpleSourceSection
+                        pathPrefix="d"
+                        defaultCampaign="default"
+                        placeholder="(např. default, outreach, follow-up)"
+                    />
+                </div>
+
                 <div className="mt-12 p-6 bg-[#1A1A1A] rounded-lg border border-white/5 text-sm text-white/60 leading-relaxed">
                     <p className="font-bold text-white mb-2">Jak to funguje:</p>
                     <ol className="list-decimal list-inside space-y-1">
-                        <li>Vlož URL videa z YouTube</li>
-                        <li>Zkopíruj krátký link a vlož ho do popisu videa</li>
-                        <li>Server udělá redirect, vytáhne název videa a doplní UTM parametry → uvidíš v Notion (Zdroj/Kampaň/Video)</li>
+                        <li>YouTube: vlož URL videa, zkopíruj krátký link, vlož do popisu videa</li>
+                        <li>Instagram: zvol kampaň (bio, story, reel-X), zkopíruj a vlož do bio/story</li>
+                        <li>DMs: zvol kampaň (outreach, follow-up), zkopíruj a pošli v DM</li>
+                        <li>Server udělá redirect a doplní UTM parametry → uvidíš v Notion (Zdroj/Kampaň/Video)</li>
                     </ol>
                 </div>
             </div>
