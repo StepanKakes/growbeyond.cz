@@ -298,7 +298,7 @@ export const ApplicationForm = () => {
             case 5:
                 return (
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">4. Kolik jsi teď schopný/á investovat do růstu tvé os. značky?</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">4. Kolik jsi teď schopný/á investovat do růstu svého podnikání?</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {q6Options.map((opt, i) => (
                                 <div
