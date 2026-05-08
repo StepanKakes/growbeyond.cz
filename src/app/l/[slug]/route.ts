@@ -2,7 +2,11 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { getLinkBySlug, parseClickContext, recordClick, buildYouTubeDeepLink } from '@/lib/notion-links';
 import { extractYouTubeId, resolveYouTubeThumbnail } from '@/lib/youtube';
 
-const BOT_REGEX = /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp|TelegramBot|Discordbot|Instagram|Pinterest|Skype|vk\.com|googlebot|bingbot|YandexBot|DuckDuckBot|Baiduspider|Applebot|Googlebot|preview|crawler|spider/i;
+// Scraper-specific patterns. Do NOT match in-app browser UAs (Instagram,
+// Pinterest, FBAN, etc.) — those are real users and must reach the deep-link
+// branch so YouTube opens in the app. Instagram & Facebook share Meta's
+// `facebookexternalhit` scraper, so previews still work for both.
+const BOT_REGEX = /facebookexternalhit\/|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp\/|TelegramBot|Discordbot|Pinterestbot|Skype|vk\.com|googlebot|bingbot|YandexBot|DuckDuckBot|Baiduspider|Applebot|preview-bot|link-checker|MetaInspector|Embedly|Iframely|crawler|spider/i;
 
 const escHtml = (s: string) =>
     s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c));
