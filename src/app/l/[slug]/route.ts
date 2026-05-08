@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { getLinkBySlug, parseClickContext, recordClick, buildYouTubeDeepLink } from '@/lib/notion-links';
-import { extractYouTubeId } from '@/lib/youtube';
+import { extractYouTubeId, resolveYouTubeThumbnail } from '@/lib/youtube';
 
 const BOT_REGEX = /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp|TelegramBot|Discordbot|Instagram|Pinterest|Skype|vk\.com|googlebot|bingbot|YandexBot|DuckDuckBot|Baiduspider|Applebot|Googlebot|preview|crawler|spider/i;
 
@@ -11,10 +11,13 @@ function ogHtml(opts: {
     title: string;
     description: string;
     image: string;
+    imageWidth: number;
+    imageHeight: number;
     url: string;
     redirectTo: string;
     isYouTube: boolean;
 }): string {
+    const twitterCard = opts.imageWidth >= 600 ? 'summary_large_image' : 'summary';
     return `<!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -27,10 +30,14 @@ function ogHtml(opts: {
 <meta property="og:title" content="${escHtml(opts.title)}">
 <meta property="og:description" content="${escHtml(opts.description)}">
 <meta property="og:image" content="${escHtml(opts.image)}">
-<meta property="og:image:width" content="1280">
-<meta property="og:image:height" content="720">
+<meta property="og:image:secure_url" content="${escHtml(opts.image)}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="${opts.imageWidth}">
+<meta property="og:image:height" content="${opts.imageHeight}">
+<meta property="og:image:alt" content="${escHtml(opts.title)}">
 <meta property="og:site_name" content="GrowBeyond">
-<meta name="twitter:card" content="summary_large_image">
+<meta property="og:locale" content="cs_CZ">
+<meta name="twitter:card" content="${twitterCard}">
 <meta name="twitter:title" content="${escHtml(opts.title)}">
 <meta name="twitter:description" content="${escHtml(opts.description)}">
 <meta name="twitter:image" content="${escHtml(opts.image)}">
@@ -63,9 +70,17 @@ export async function GET(
 
     // Bot / link preview crawler → serve OG HTML, don't track, don't deeplink
     if (BOT_REGEX.test(ua)) {
-        const image = ytId
-            ? `${request.nextUrl.origin}/api/yt-thumb/${ytId}`
-            : `${request.nextUrl.origin}/images/og-default.jpg`;
+        let image: string;
+        let imageWidth = 1200;
+        let imageHeight = 630;
+        if (ytId) {
+            const thumb = await resolveYouTubeThumbnail(ytId);
+            image = thumb.url;
+            imageWidth = thumb.width;
+            imageHeight = thumb.height;
+        } else {
+            image = `${request.nextUrl.origin}/images/og-default.jpg`;
+        }
         const description = ytId ? 'Pusť si video na YouTube' : (() => {
             try { return new URL(link.targetUrl).hostname.replace(/^www\./, ''); } catch { return ''; }
         })();
@@ -73,6 +88,8 @@ export async function GET(
             title: link.title || link.slug,
             description,
             image,
+            imageWidth,
+            imageHeight,
             url: `${request.nextUrl.origin}/l/${slug}`,
             redirectTo: link.targetUrl,
             isYouTube: !!ytId,
