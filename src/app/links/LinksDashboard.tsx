@@ -2,13 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import type { ShortLink, ClickListItem } from '@/lib/notion-links';
 import { extractYouTubeId } from '@/lib/youtube';
 
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'https://growbeyond.cz';
-
-const COLORS = ['#FF0E00', '#FF6B00', '#FFB800', '#00C896', '#0096FF', '#9B5BFF', '#FF4FC3'];
 
 const SOURCE_COLORS: Record<string, string> = {
     youtube: '#FF0E00',
@@ -17,6 +15,73 @@ const SOURCE_COLORS: Record<string, string> = {
     custom: '#0096FF',
     direct: '#888888',
 };
+
+const TRAFFIC_COLORS: Record<string, string> = {
+    Instagram: '#E1306C',
+    Facebook: '#1877F2',
+    Messenger: '#00B2FF',
+    WhatsApp: '#25D366',
+    Telegram: '#26A5E4',
+    TikTok: '#FE2C55',
+    YouTube: '#FF0000',
+    X: '#1DA1F2',
+    LinkedIn: '#0A66C2',
+    Snapchat: '#FFFC00',
+    Reddit: '#FF4500',
+    Pinterest: '#E60023',
+    Google: '#4285F4',
+    Chrome: '#4285F4',
+    Safari: '#1D9BF0',
+    Firefox: '#FF7139',
+    Edge: '#0078D7',
+    Opera: '#FF1B2D',
+    Brave: '#FB542B',
+    Direct: '#888888',
+};
+
+function classifyTrafficSource(c: { browser: string; referer: string }): string {
+    const browserName = (c.browser || '').split(' ')[0].toLowerCase();
+    if (browserName === 'instagram') return 'Instagram';
+    if (browserName === 'facebook' || browserName === 'fb') return 'Facebook';
+    if (browserName === 'tiktok') return 'TikTok';
+    if (browserName === 'snapchat') return 'Snapchat';
+    if (browserName === 'twitter' || browserName === 'x') return 'X';
+    if (browserName === 'linkedin') return 'LinkedIn';
+    if (browserName === 'whatsapp') return 'WhatsApp';
+    if (browserName === 'messenger') return 'Messenger';
+    if (browserName === 'telegram') return 'Telegram';
+    if (browserName === 'pinterest') return 'Pinterest';
+    if (browserName === 'reddit') return 'Reddit';
+
+    if (c.referer) {
+        try {
+            const host = new URL(c.referer).hostname.replace(/^www\./, '').toLowerCase();
+            if (host.includes('instagram')) return 'Instagram';
+            if (host === 'fb.me' || host === 'm.me' || host.includes('messenger')) return 'Messenger';
+            if (host.includes('facebook')) return 'Facebook';
+            if (host.includes('whatsapp')) return 'WhatsApp';
+            if (host === 't.me' || host.includes('telegram')) return 'Telegram';
+            if (host.includes('tiktok')) return 'TikTok';
+            if (host.includes('youtube') || host === 'youtu.be') return 'YouTube';
+            if (host === 't.co' || host === 'twitter.com' || host === 'x.com') return 'X';
+            if (host === 'lnkd.in' || host.includes('linkedin')) return 'LinkedIn';
+            if (host.includes('snapchat')) return 'Snapchat';
+            if (host.includes('pinterest')) return 'Pinterest';
+            if (host.includes('reddit')) return 'Reddit';
+            if (host.includes('google')) return 'Google';
+        } catch {}
+    }
+
+    if (browserName === 'chrome') return 'Chrome';
+    if (browserName === 'safari') return 'Safari';
+    if (browserName === 'mobile' && (c.browser || '').toLowerCase().includes('safari')) return 'Safari';
+    if (browserName === 'firefox') return 'Firefox';
+    if (browserName === 'edge') return 'Edge';
+    if (browserName === 'opera') return 'Opera';
+    if (browserName === 'brave') return 'Brave';
+
+    return 'Direct';
+}
 
 type Props = {
     links: ShortLink[];
@@ -136,11 +201,14 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
         }));
     }, [filteredClicks, days]);
 
-    const sourceBreakdown = useMemo(() => {
+    const trafficBreakdown = useMemo(() => {
         const map = new Map<string, number>();
-        filteredClicks.forEach(c => map.set(c.source || 'direct', (map.get(c.source || 'direct') ?? 0) + 1));
+        filteredClicks.forEach(c => {
+            const label = classifyTrafficSource(c);
+            map.set(label, (map.get(label) ?? 0) + 1);
+        });
         return [...map.entries()]
-            .map(([name, value]) => ({ name, value, color: SOURCE_COLORS[name] ?? '#888' }))
+            .map(([name, value]) => ({ name, value, color: TRAFFIC_COLORS[name] ?? '#888' }))
             .sort((a, b) => b.value - a.value);
     }, [filteredClicks]);
 
@@ -317,31 +385,33 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                     </ResponsiveContainer>
                 </div>
 
-                {/* Source + Device side by side */}
+                {/* Traffic sources + Device side by side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6">
-                        <h2 className="text-lg font-bold mb-4">Zdroje</h2>
-                        {sourceBreakdown.length === 0 ? (
+                        <h2 className="text-lg font-bold mb-1">Odkud chodí</h2>
+                        <p className="text-xs text-white/40 mb-4">In-app prohlížeče, sociální sítě a desktop browsery</p>
+                        {trafficBreakdown.length === 0 ? (
                             <p className="text-white/40 text-sm">Žádná data.</p>
                         ) : (
-                            <ResponsiveContainer width="100%" height={240}>
-                                <PieChart>
-                                    <Pie
-                                        data={sourceBreakdown}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={80}
-                                        label={(e: { name?: string; value?: number }) => `${e.name ?? ''} (${e.value ?? 0})`}
-                                    >
-                                        {sourceBreakdown.map((entry, i) => (
-                                            <Cell key={i} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <div className="space-y-2">
+                                {trafficBreakdown.slice(0, 10).map(t => {
+                                    const max = trafficBreakdown[0].value;
+                                    const pct = (t.value / max) * 100;
+                                    return (
+                                        <div key={t.name} className="flex items-center gap-3">
+                                            <div className="w-24 text-sm text-white/80 truncate" title={t.name}>{t.name}</div>
+                                            <div className="flex-1 bg-white/5 rounded-full h-6 overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full flex items-center justify-end pr-2 transition-all"
+                                                    style={{ width: `${pct}%`, background: t.color }}
+                                                >
+                                                    <span className="text-xs font-bold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">{t.value}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
 
@@ -473,21 +543,32 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                             <div className="flex-1 overflow-y-auto px-6 py-2 divide-y divide-white/5">
                                 {filteredClicks.slice(0, 50).map(c => {
                                     const link = links.find(l => l.slug === c.slug);
-                                    const refererHost = (() => {
-                                        if (!c.referer) return '';
-                                        try { return new URL(c.referer).hostname.replace(/^www\./, ''); } catch { return ''; }
-                                    })();
+                                    const traffic = classifyTrafficSource(c);
+                                    const trafficColor = TRAFFIC_COLORS[traffic] ?? '#888';
                                     return (
                                         <div key={c.id} className="py-4 first:pt-2 last:pb-2">
-                                            <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">{timeAgo(c.timestamp)}</div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="text-[10px] uppercase tracking-wider text-white/40">{timeAgo(c.timestamp)}</div>
+                                                <span
+                                                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                                                    style={{ background: trafficColor + '22', color: trafficColor }}
+                                                >
+                                                    {traffic}
+                                                </span>
+                                            </div>
                                             <div className="flex items-start gap-3 mb-2">
-                                                <SourceIcon source={c.source} />
-                                                {link?.targetUrl && <YouTubeThumb url={link.targetUrl} size="sm" />}
+                                                {link?.targetUrl ? (
+                                                    <YouTubeThumb url={link.targetUrl} size="lg" />
+                                                ) : (
+                                                    <div className="w-20 h-12 rounded bg-white/5 border border-white/10 flex-shrink-0" />
+                                                )}
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="text-white font-medium truncate">{link?.title || c.slug}</div>
+                                                    <div className="text-white font-medium text-sm leading-snug line-clamp-2 mb-1">
+                                                        {link?.title || c.slug}
+                                                    </div>
+                                                    <code className="inline-block text-[10px] font-mono bg-white/5 px-1.5 py-0.5 rounded text-white/50">/l/{c.slug}</code>
                                                 </div>
                                             </div>
-                                            <code className="inline-block text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded text-white/60 mb-2">/l/{c.slug}</code>
                                             <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-xs text-white/60">
                                                 {c.country && (
                                                     <span className="flex items-center gap-1.5">
@@ -499,15 +580,6 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                                                     <DeviceIcon os={c.os} device={c.device} />
                                                     <span>{shortOs(c.os) || c.device}</span>
                                                 </span>
-                                                {refererHost && (
-                                                    <span className="flex items-center gap-1.5 text-white/50">
-                                                        <span>↩</span>
-                                                        <span className="font-mono">{refererHost}</span>
-                                                    </span>
-                                                )}
-                                                {c.browser && (
-                                                    <span className="text-white/40">{c.browser.split(' ')[0]}</span>
-                                                )}
                                             </div>
                                         </div>
                                     );
@@ -571,9 +643,9 @@ function shortOs(os: string): string {
     return os.split(' ')[0];
 }
 
-const YouTubeThumb = ({ url, size = 'sm' }: { url: string; size?: 'sm' | 'md' }) => {
+const YouTubeThumb = ({ url, size = 'sm' }: { url: string; size?: 'sm' | 'md' | 'lg' }) => {
     const id = extractYouTubeId(url);
-    const dim = size === 'md' ? 'w-16 h-12' : 'w-12 h-9';
+    const dim = size === 'lg' ? 'w-20 h-12' : size === 'md' ? 'w-16 h-12' : 'w-12 h-9';
     if (!id) {
         let host = '';
         try { host = new URL(url).hostname.replace(/^www\./, ''); } catch {}
@@ -590,20 +662,6 @@ const YouTubeThumb = ({ url, size = 'sm' }: { url: string; size?: 'sm' | 'md' })
             alt=""
             className={`${dim} rounded object-cover flex-shrink-0 border border-white/10`}
         />
-    );
-};
-
-const SourceIcon = ({ source }: { source: string }) => {
-    const color = SOURCE_COLORS[source] ?? '#888';
-    const letter = (source || 'D')[0].toUpperCase();
-    return (
-        <div
-            className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-black flex-shrink-0"
-            style={{ background: color + '22', color }}
-            title={source}
-        >
-            {letter}
-        </div>
     );
 };
 
