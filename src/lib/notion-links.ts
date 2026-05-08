@@ -312,7 +312,11 @@ export function buildYouTubeDeepLink(videoId: string, ua: string): string {
     const isIOS = /iphone|ipad|ipod/i.test(ua);
 
     if (isAndroid) {
-        return `intent://www.youtube.com/watch?v=${videoId}#Intent;package=com.google.android.youtube;scheme=https;end`;
+        // S.browser_fallback_url ensures that webviews/browsers that can't
+        // resolve the intent (or where YouTube isn't installed) fall back to
+        // the mobile web URL instead of failing silently.
+        const fallback = encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`);
+        return `intent://www.youtube.com/watch?v=${videoId}#Intent;package=com.google.android.youtube;scheme=https;S.browser_fallback_url=${fallback};end`;
     }
     if (isIOS) {
         return `https://youtu.be/${videoId}`;
