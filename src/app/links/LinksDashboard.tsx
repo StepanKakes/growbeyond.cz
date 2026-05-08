@@ -388,130 +388,133 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                     )}
                 </div>
 
-                {/* Recent Click Activity */}
-                <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6 mb-8">
-                    <h2 className="text-lg font-bold mb-4">Recent Click Activity</h2>
-                    {filteredClicks.length === 0 ? (
-                        <p className="text-white/40 text-sm">Žádné kliky.</p>
-                    ) : (
-                        <div className="divide-y divide-white/5">
-                            {filteredClicks.slice(0, 25).map(c => {
-                                const link = links.find(l => l.slug === c.slug);
-                                const refererHost = (() => {
-                                    if (!c.referer) return '';
-                                    try { return new URL(c.referer).hostname.replace(/^www\./, ''); } catch { return ''; }
-                                })();
-                                return (
-                                    <div key={c.id} className="py-4 first:pt-0 last:pb-0">
-                                        <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">{timeAgo(c.timestamp)}</div>
-                                        <div className="flex items-start gap-3 mb-2">
-                                            <SourceIcon source={c.source} />
-                                            {link?.targetUrl && <YouTubeThumb url={link.targetUrl} size="sm" />}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-white font-medium truncate">{link?.title || c.slug}</div>
-                                            </div>
-                                            <code className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-white/60 whitespace-nowrap">/l/{c.slug}</code>
-                                        </div>
-                                        <div className="flex items-center gap-3 flex-wrap text-xs text-white/60">
-                                            {c.country && (
-                                                <span className="flex items-center gap-1.5">
-                                                    <span>{countryFlag(c.country)}</span>
-                                                    <span>{c.city ? `${c.city}, ${countryName(c.country)}` : countryName(c.country)}</span>
-                                                </span>
-                                            )}
-                                            <span className="flex items-center gap-1.5">
-                                                <DeviceIcon os={c.os} device={c.device} />
-                                                <span>{shortOs(c.os) || c.device}</span>
-                                            </span>
-                                            {refererHost && (
-                                                <span className="flex items-center gap-1.5 text-white/50">
-                                                    <span>↩</span>
-                                                    <span className="font-mono">{refererHost}</span>
-                                                </span>
-                                            )}
-                                            {c.browser && (
-                                                <span className="text-white/40">{c.browser.split(' ')[0]}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Links table */}
-                <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6">
-                    <h2 className="text-lg font-bold mb-4">Krátké linky <span className="text-white/40 text-sm font-normal">({links.length})</span></h2>
-                    {links.length === 0 ? (
-                        <p className="text-white/40 text-sm">Žádné linky. Vytvoř první nahoře.</p>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="text-white/40 text-xs uppercase tracking-wider border-b border-white/10">
-                                        <th className="text-left py-3 pr-4 w-[80px]">Náhled</th>
-                                        <th className="text-left py-3 pr-4">Short URL</th>
-                                        <th className="text-left py-3 pr-4">Title</th>
-                                        <th className="text-left py-3 pr-4">Source</th>
-                                        <th className="text-left py-3 pr-4">Target</th>
-                                        <th className="text-center py-3 pr-4">Aktivní</th>
-                                        <th className="text-right py-3 pr-4">Kliky</th>
-                                        <th className="text-right py-3"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {links.map(l => (
-                                        <tr key={l.pageId} className={`border-b border-white/5 hover:bg-white/[0.02] ${!l.active ? 'opacity-40' : ''}`}>
-                                            <td className="py-3 pr-4">
-                                                <YouTubeThumb url={l.targetUrl} size="md" />
-                                            </td>
-                                            <td className="py-3 pr-4">
-                                                <div className="flex items-center gap-2">
-                                                    <code className="font-mono text-white/90 text-xs">/l/{l.slug}</code>
-                                                    <button
-                                                        onClick={() => handleCopy(l.slug)}
-                                                        className="text-xs text-white/40 hover:text-white px-1.5 py-0.5 rounded border border-white/10 hover:border-white/30"
-                                                        title="Zkopírovat"
-                                                    >
-                                                        {copiedSlug === l.slug ? '✓' : '⎘'}
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 pr-4 text-white/70 max-w-[200px] truncate">{l.title || '—'}</td>
-                                            <td className="py-3 pr-4">
-                                                <span className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: (SOURCE_COLORS[l.source] ?? '#444') + '33', color: SOURCE_COLORS[l.source] ?? '#fff' }}>
-                                                    {l.source}
-                                                </span>
-                                            </td>
-                                            <td className="py-3 pr-4 text-white/40 max-w-[200px] truncate">
-                                                <a href={l.targetUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/80 underline">{l.targetUrl}</a>
-                                            </td>
-                                            <td className="py-3 pr-4 text-center">
-                                                <button
-                                                    onClick={() => handleToggle(l.pageId, !l.active)}
-                                                    className={`w-9 h-5 rounded-full transition-colors relative ${l.active ? 'bg-brand-red' : 'bg-white/10'}`}
-                                                    title={l.active ? 'Deaktivovat' : 'Aktivovat'}
-                                                >
-                                                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${l.active ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                                                </button>
-                                            </td>
-                                            <td className="py-3 pr-4 text-right font-bold">{linkClicks.get(l.slug) ?? 0}</td>
-                                            <td className="py-3 text-right">
-                                                <button
-                                                    onClick={() => handleDelete(l.pageId, l.slug)}
-                                                    className="text-white/30 hover:text-red-400 px-2"
-                                                    title="Smazat"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </td>
+                {/* Links + Activity side by side */}
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-6">
+                    {/* Links table */}
+                    <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6 min-w-0">
+                        <h2 className="text-lg font-bold mb-4">Krátké linky <span className="text-white/40 text-sm font-normal">({links.length})</span></h2>
+                        {links.length === 0 ? (
+                            <p className="text-white/40 text-sm">Žádné linky. Vytvoř první nahoře.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="text-white/40 text-xs uppercase tracking-wider border-b border-white/10">
+                                            <th className="text-left py-3 pr-4 w-[80px]">Náhled</th>
+                                            <th className="text-left py-3 pr-4">Short URL</th>
+                                            <th className="text-left py-3 pr-4">Title</th>
+                                            <th className="text-left py-3 pr-4">Source</th>
+                                            <th className="text-left py-3 pr-4">Target</th>
+                                            <th className="text-center py-3 pr-4">Aktivní</th>
+                                            <th className="text-right py-3 pr-4">Kliky</th>
+                                            <th className="text-right py-3"></th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                    </thead>
+                                    <tbody>
+                                        {links.map(l => (
+                                            <tr key={l.pageId} className={`border-b border-white/5 hover:bg-white/[0.02] ${!l.active ? 'opacity-40' : ''}`}>
+                                                <td className="py-3 pr-4">
+                                                    <YouTubeThumb url={l.targetUrl} size="md" />
+                                                </td>
+                                                <td className="py-3 pr-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <code className="font-mono text-white/90 text-xs">/l/{l.slug}</code>
+                                                        <button
+                                                            onClick={() => handleCopy(l.slug)}
+                                                            className="text-xs text-white/40 hover:text-white px-1.5 py-0.5 rounded border border-white/10 hover:border-white/30"
+                                                            title="Zkopírovat"
+                                                        >
+                                                            {copiedSlug === l.slug ? '✓' : '⎘'}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 pr-4 text-white/70 max-w-[200px] truncate">{l.title || '—'}</td>
+                                                <td className="py-3 pr-4">
+                                                    <span className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: (SOURCE_COLORS[l.source] ?? '#444') + '33', color: SOURCE_COLORS[l.source] ?? '#fff' }}>
+                                                        {l.source}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 pr-4 text-white/40 max-w-[200px] truncate">
+                                                    <a href={l.targetUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/80 underline">{l.targetUrl}</a>
+                                                </td>
+                                                <td className="py-3 pr-4 text-center">
+                                                    <button
+                                                        onClick={() => handleToggle(l.pageId, !l.active)}
+                                                        className={`w-9 h-5 rounded-full transition-colors relative ${l.active ? 'bg-brand-red' : 'bg-white/10'}`}
+                                                        title={l.active ? 'Deaktivovat' : 'Aktivovat'}
+                                                    >
+                                                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${l.active ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                                    </button>
+                                                </td>
+                                                <td className="py-3 pr-4 text-right font-bold">{linkClicks.get(l.slug) ?? 0}</td>
+                                                <td className="py-3 text-right">
+                                                    <button
+                                                        onClick={() => handleDelete(l.pageId, l.slug)}
+                                                        className="text-white/30 hover:text-red-400 px-2"
+                                                        title="Smazat"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Recent Click Activity */}
+                    <div className="bg-[#0d0d0d] border border-white/10 rounded-xl flex flex-col h-[720px] lg:sticky lg:top-6 self-start">
+                        <h2 className="text-lg font-bold px-6 pt-6 pb-4 border-b border-white/5">Recent Click Activity</h2>
+                        {filteredClicks.length === 0 ? (
+                            <p className="text-white/40 text-sm px-6 py-4">Žádné kliky.</p>
+                        ) : (
+                            <div className="flex-1 overflow-y-auto px-6 py-2 divide-y divide-white/5">
+                                {filteredClicks.slice(0, 50).map(c => {
+                                    const link = links.find(l => l.slug === c.slug);
+                                    const refererHost = (() => {
+                                        if (!c.referer) return '';
+                                        try { return new URL(c.referer).hostname.replace(/^www\./, ''); } catch { return ''; }
+                                    })();
+                                    return (
+                                        <div key={c.id} className="py-4 first:pt-2 last:pb-2">
+                                            <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">{timeAgo(c.timestamp)}</div>
+                                            <div className="flex items-start gap-3 mb-2">
+                                                <SourceIcon source={c.source} />
+                                                {link?.targetUrl && <YouTubeThumb url={link.targetUrl} size="sm" />}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-white font-medium truncate">{link?.title || c.slug}</div>
+                                                </div>
+                                            </div>
+                                            <code className="inline-block text-[10px] font-mono bg-white/5 px-2 py-0.5 rounded text-white/60 mb-2">/l/{c.slug}</code>
+                                            <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-xs text-white/60">
+                                                {c.country && (
+                                                    <span className="flex items-center gap-1.5">
+                                                        <span>{countryFlag(c.country)}</span>
+                                                        <span>{c.city ? `${c.city}, ${countryName(c.country)}` : countryName(c.country)}</span>
+                                                    </span>
+                                                )}
+                                                <span className="flex items-center gap-1.5">
+                                                    <DeviceIcon os={c.os} device={c.device} />
+                                                    <span>{shortOs(c.os) || c.device}</span>
+                                                </span>
+                                                {refererHost && (
+                                                    <span className="flex items-center gap-1.5 text-white/50">
+                                                        <span>↩</span>
+                                                        <span className="font-mono">{refererHost}</span>
+                                                    </span>
+                                                )}
+                                                {c.browser && (
+                                                    <span className="text-white/40">{c.browser.split(' ')[0]}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </main>

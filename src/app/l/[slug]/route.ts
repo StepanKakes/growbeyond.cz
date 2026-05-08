@@ -64,7 +64,7 @@ export async function GET(
     // Bot / link preview crawler → serve OG HTML, don't track, don't deeplink
     if (BOT_REGEX.test(ua)) {
         const image = ytId
-            ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+            ? `${request.nextUrl.origin}/api/yt-thumb/${ytId}`
             : `${request.nextUrl.origin}/images/og-default.jpg`;
         const description = ytId ? 'Pusť si video na YouTube' : (() => {
             try { return new URL(link.targetUrl).hostname.replace(/^www\./, ''); } catch { return ''; }
