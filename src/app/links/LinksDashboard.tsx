@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import type { ShortLink, ClickListItem } from '@/lib/notion-links';
+import { extractYouTubeId } from '@/lib/youtube';
 
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'https://growbeyond.cz';
 
@@ -405,6 +406,7 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                                         <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">{timeAgo(c.timestamp)}</div>
                                         <div className="flex items-start gap-3 mb-2">
                                             <SourceIcon source={c.source} />
+                                            {link?.targetUrl && <YouTubeThumb url={link.targetUrl} size="sm" />}
                                             <div className="flex-1 min-w-0">
                                                 <div className="text-white font-medium truncate">{link?.title || c.slug}</div>
                                             </div>
@@ -448,6 +450,7 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-white/40 text-xs uppercase tracking-wider border-b border-white/10">
+                                        <th className="text-left py-3 pr-4 w-[80px]">Náhled</th>
                                         <th className="text-left py-3 pr-4">Short URL</th>
                                         <th className="text-left py-3 pr-4">Title</th>
                                         <th className="text-left py-3 pr-4">Source</th>
@@ -460,6 +463,9 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                                 <tbody>
                                     {links.map(l => (
                                         <tr key={l.pageId} className={`border-b border-white/5 hover:bg-white/[0.02] ${!l.active ? 'opacity-40' : ''}`}>
+                                            <td className="py-3 pr-4">
+                                                <YouTubeThumb url={l.targetUrl} size="md" />
+                                            </td>
                                             <td className="py-3 pr-4">
                                                 <div className="flex items-center gap-2">
                                                     <code className="font-mono text-white/90 text-xs">/l/{l.slug}</code>
@@ -561,6 +567,28 @@ function shortOs(os: string): string {
     if (lower.includes('linux')) return 'Linux';
     return os.split(' ')[0];
 }
+
+const YouTubeThumb = ({ url, size = 'sm' }: { url: string; size?: 'sm' | 'md' }) => {
+    const id = extractYouTubeId(url);
+    const dim = size === 'md' ? 'w-16 h-12' : 'w-12 h-9';
+    if (!id) {
+        let host = '';
+        try { host = new URL(url).hostname.replace(/^www\./, ''); } catch {}
+        return (
+            <div className={`${dim} rounded bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-[8px] text-white/40 font-mono flex-shrink-0 truncate px-1`}>
+                {host ? host.slice(0, 8) : '🔗'}
+            </div>
+        );
+    }
+    return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+            src={`https://img.youtube.com/vi/${id}/mqdefault.jpg`}
+            alt=""
+            className={`${dim} rounded object-cover flex-shrink-0 border border-white/10`}
+        />
+    );
+};
 
 const SourceIcon = ({ source }: { source: string }) => {
     const color = SOURCE_COLORS[source] ?? '#888';
