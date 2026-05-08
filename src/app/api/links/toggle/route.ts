@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 
 const NOTION_API = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
@@ -29,6 +28,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Notion API failed' }, { status: 500 });
     }
 
-    revalidateTag('short-links', 'default');
     return NextResponse.json({ ok: true });
 }

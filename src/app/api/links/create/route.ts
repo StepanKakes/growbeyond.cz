@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { extractYouTubeId } from '@/lib/youtube';
 
 const NOTION_API = 'https://api.notion.com/v1';
@@ -49,75 +48,86 @@ async function fetchYoutubeTitle(videoId: string): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
-    const body = await request.json() as {
-        targetUrl?: string;
-        slug?: string;
-        title?: string;
-        source?: string;
-    };
-
-    const targetUrl = body.targetUrl?.trim();
-    if (!targetUrl) {
-        return NextResponse.json({ error: 'Target URL je povinné' }, { status: 400 });
-    }
-
-    let url: URL;
     try {
-        url = new URL(targetUrl);
-    } catch {
-        return NextResponse.json({ error: 'Neplatné URL' }, { status: 400 });
-    }
-
-    let slug = body.slug?.trim();
-    if (slug) {
-        if (!/^[a-zA-Z0-9_-]{1,32}$/.test(slug)) {
-            return NextResponse.json({ error: 'Slug může obsahovat jen písmena, čísla, _ a -' }, { status: 400 });
+        if (!SHORT_LINKS_DB_ID) {
+            return NextResponse.json({ error: 'Chybí env var NOTION_SHORT_LINKS_DB_ID' }, { status: 500 });
         }
-        if (await slugExists(slug)) {
-            return NextResponse.json({ error: 'Slug už existuje' }, { status: 409 });
+        if (!NOTION_TOKEN) {
+            return NextResponse.json({ error: 'Chybí env var NOTION_API_KEY' }, { status: 500 });
         }
-    } else {
-        for (let i = 0; i < 10; i++) {
-            slug = randomSlug(6);
-            if (!(await slugExists(slug))) break;
+
+        const body = await request.json() as {
+            targetUrl?: string;
+            slug?: string;
+            title?: string;
+            source?: string;
+        };
+
+        const targetUrl = body.targetUrl?.trim();
+        if (!targetUrl) {
+            return NextResponse.json({ error: 'Target URL je povinné' }, { status: 400 });
         }
-    }
 
-    let source = body.source ?? 'custom';
-    if (!['custom', 'youtube', 'instagram', 'dms'].includes(source)) source = 'custom';
-
-    let title = body.title?.trim() ?? '';
-    if (!title) {
-        const ytId = extractYouTubeId(targetUrl);
-        if (ytId) {
-            title = await fetchYoutubeTitle(ytId);
-            if (source === 'custom') source = 'youtube';
+        let url: URL;
+        try {
+            url = new URL(targetUrl);
+        } catch {
+            return NextResponse.json({ error: 'Neplatné URL' }, { status: 400 });
         }
-        if (!title) title = url.hostname;
+
+        let slug = body.slug?.trim();
+        if (slug) {
+            if (!/^[a-zA-Z0-9_-]{1,32}$/.test(slug)) {
+                return NextResponse.json({ error: 'Slug může obsahovat jen písmena, čísla, _ a -' }, { status: 400 });
+            }
+            if (await slugExists(slug)) {
+                return NextResponse.json({ error: 'Slug už existuje' }, { status: 409 });
+            }
+        } else {
+            for (let i = 0; i < 10; i++) {
+                slug = randomSlug(6);
+                if (!(await slugExists(slug))) break;
+            }
+        }
+
+        let source = body.source ?? 'custom';
+        if (!['custom', 'youtube', 'instagram', 'dms'].includes(source)) source = 'custom';
+
+        let title = body.title?.trim() ?? '';
+        if (!title) {
+            const ytId = extractYouTubeId(targetUrl);
+            if (ytId) {
+                title = await fetchYoutubeTitle(ytId);
+                if (source === 'custom') source = 'youtube';
+            }
+            if (!title) title = url.hostname;
+        }
+
+        const res = await fetch(`${NOTION_API}/pages`, {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+                parent: { database_id: SHORT_LINKS_DB_ID },
+                properties: {
+                    'Slug': { title: [{ text: { content: slug! } }] },
+                    'Target URL': { url: targetUrl },
+                    'Title': { rich_text: [{ text: { content: title } }] },
+                    'Source': { select: { name: source } },
+                    'Active': { checkbox: true },
+                },
+            }),
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            console.error('[create-link] Notion error:', err);
+            return NextResponse.json({ error: `Notion API ${res.status}: ${err.slice(0, 200)}` }, { status: 500 });
+        }
+
+        return NextResponse.json({ slug, title, source, targetUrl });
+    } catch (e) {
+        console.error('[create-link] unexpected:', e);
+        const msg = e instanceof Error ? e.message : 'Unknown error';
+        return NextResponse.json({ error: `Server error: ${msg}` }, { status: 500 });
     }
-
-    const res = await fetch(`${NOTION_API}/pages`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({
-            parent: { database_id: SHORT_LINKS_DB_ID },
-            properties: {
-                'Slug': { title: [{ text: { content: slug! } }] },
-                'Target URL': { url: targetUrl },
-                'Title': { rich_text: [{ text: { content: title } }] },
-                'Source': { select: { name: source } },
-                'Active': { checkbox: true },
-            },
-        }),
-    });
-
-    if (!res.ok) {
-        const err = await res.text();
-        console.error('[create-link] Notion error:', err);
-        return NextResponse.json({ error: 'Notion API selhalo' }, { status: 500 });
-    }
-
-    revalidateTag('short-links', 'default');
-
-    return NextResponse.json({ slug, title, source, targetUrl });
 }
