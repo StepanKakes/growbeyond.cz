@@ -1,8 +1,11 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import type { ShortLink, ClickListItem } from '@/lib/notion-links';
+
+const ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'https://growbeyond.cz';
 
 const COLORS = ['#FF0E00', '#FF6B00', '#FFB800', '#00C896', '#0096FF', '#9B5BFF', '#FF4FC3'];
 
@@ -23,8 +26,76 @@ const SOURCE_FILTERS = ['all', 'youtube', 'instagram', 'dms', 'custom'] as const
 type SourceFilter = typeof SOURCE_FILTERS[number];
 
 export const LinksDashboard = ({ links, clicks }: Props) => {
+    const router = useRouter();
     const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
     const [days, setDays] = useState(30);
+
+    // Create form state
+    const [createUrl, setCreateUrl] = useState('');
+    const [createSlug, setCreateSlug] = useState('');
+    const [createTitle, setCreateTitle] = useState('');
+    const [createSource, setCreateSource] = useState<'custom' | 'youtube' | 'instagram' | 'dms'>('custom');
+    const [advancedOpen, setAdvancedOpen] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [createError, setCreateError] = useState('');
+    const [createdSlug, setCreatedSlug] = useState('');
+    const [copiedSlug, setCopiedSlug] = useState('');
+
+    const handleCreate = async () => {
+        if (!createUrl.trim()) return;
+        setCreating(true);
+        setCreateError('');
+        try {
+            const res = await fetch('/api/links/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    targetUrl: createUrl,
+                    slug: createSlug || undefined,
+                    title: createTitle || undefined,
+                    source: createSource,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error ?? 'Vytvoření selhalo');
+            setCreatedSlug(data.slug);
+            setCreateUrl('');
+            setCreateSlug('');
+            setCreateTitle('');
+            setCreateSource('custom');
+            setAdvancedOpen(false);
+            router.refresh();
+        } catch (e) {
+            setCreateError(e instanceof Error ? e.message : 'Chyba');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const handleCopy = async (slug: string) => {
+        await navigator.clipboard.writeText(`${ORIGIN}/l/${slug}`);
+        setCopiedSlug(slug);
+        setTimeout(() => setCopiedSlug(''), 1500);
+    };
+
+    const handleToggle = async (pageId: string, active: boolean) => {
+        await fetch('/api/links/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pageId, active }),
+        });
+        router.refresh();
+    };
+
+    const handleDelete = async (pageId: string, slug: string) => {
+        if (!confirm(`Smazat link /l/${slug}? (Klick history zůstane v Notion.)`)) return;
+        await fetch('/api/links/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pageId }),
+        });
+        router.refresh();
+    };
 
     const filteredClicks = useMemo(() => {
         const since = Date.now() - days * 86400000;
@@ -122,6 +193,79 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                             UTM Generator
                         </a>
                     </div>
+                </div>
+
+                {/* Create Link Form */}
+                <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold">Vytvořit krátký link</h2>
+                        <button
+                            onClick={() => setAdvancedOpen(!advancedOpen)}
+                            className="text-xs text-white/50 hover:text-white/80 underline"
+                        >
+                            {advancedOpen ? 'Skrýt nastavení' : 'Pokročilé nastavení'}
+                        </button>
+                    </div>
+                    <div className="flex gap-2">
+                        <input
+                            type="url"
+                            value={createUrl}
+                            onChange={e => setCreateUrl(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' && !creating) handleCreate(); }}
+                            placeholder="Vlož URL (např. https://youtube.com/watch?v=...)"
+                            className="flex-1 bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-red"
+                        />
+                        <button
+                            onClick={handleCreate}
+                            disabled={creating || !createUrl.trim()}
+                            className="px-6 py-3 bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#333] disabled:cursor-not-allowed text-white font-bold rounded-lg uppercase text-sm tracking-wider"
+                        >
+                            {creating ? '...' : 'Vytvořit'}
+                        </button>
+                    </div>
+                    {advancedOpen && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                            <input
+                                type="text"
+                                value={createSlug}
+                                onChange={e => setCreateSlug(e.target.value)}
+                                placeholder="Custom slug (volitelné)"
+                                className="bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand-red"
+                            />
+                            <input
+                                type="text"
+                                value={createTitle}
+                                onChange={e => setCreateTitle(e.target.value)}
+                                placeholder="Title (auto-detect z YouTube)"
+                                className="bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand-red"
+                            />
+                            <select
+                                value={createSource}
+                                onChange={e => setCreateSource(e.target.value as typeof createSource)}
+                                className="bg-[#1A1A1A] border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-red"
+                            >
+                                <option value="custom">custom</option>
+                                <option value="youtube">youtube</option>
+                                <option value="instagram">instagram</option>
+                                <option value="dms">dms</option>
+                            </select>
+                        </div>
+                    )}
+                    {createError && (
+                        <p className="text-red-400 text-sm mt-3">{createError}</p>
+                    )}
+                    {createdSlug && (
+                        <div className="mt-3 flex items-center gap-3 bg-brand-red/10 border border-brand-red/20 rounded-lg px-4 py-3">
+                            <span className="text-sm text-white/80">Vytvořeno:</span>
+                            <code className="font-mono text-sm text-white">{ORIGIN}/l/{createdSlug}</code>
+                            <button
+                                onClick={() => handleCopy(createdSlug)}
+                                className="ml-auto text-xs text-white/70 hover:text-white underline"
+                            >
+                                {copiedSlug === createdSlug ? 'Zkopírováno ✓' : 'Zkopírovat'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Filters */}
@@ -245,35 +389,66 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
 
                 {/* Links table */}
                 <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6">
-                    <h2 className="text-lg font-bold mb-4">Krátké linky</h2>
+                    <h2 className="text-lg font-bold mb-4">Krátké linky <span className="text-white/40 text-sm font-normal">({links.length})</span></h2>
                     {links.length === 0 ? (
-                        <p className="text-white/40 text-sm">Žádné linky. Vytvoř první v Notion DB nebo přes UTM Generator.</p>
+                        <p className="text-white/40 text-sm">Žádné linky. Vytvoř první nahoře.</p>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-white/40 text-xs uppercase tracking-wider border-b border-white/10">
-                                        <th className="text-left py-3 pr-4">Slug</th>
+                                        <th className="text-left py-3 pr-4">Short URL</th>
                                         <th className="text-left py-3 pr-4">Title</th>
                                         <th className="text-left py-3 pr-4">Source</th>
                                         <th className="text-left py-3 pr-4">Target</th>
-                                        <th className="text-right py-3">Kliky</th>
+                                        <th className="text-center py-3 pr-4">Aktivní</th>
+                                        <th className="text-right py-3 pr-4">Kliky</th>
+                                        <th className="text-right py-3"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {links.map(l => (
-                                        <tr key={l.pageId} className="border-b border-white/5 hover:bg-white/[0.02]">
-                                            <td className="py-3 pr-4 font-mono text-white/90">{l.slug}</td>
-                                            <td className="py-3 pr-4 text-white/70">{l.title || '—'}</td>
+                                        <tr key={l.pageId} className={`border-b border-white/5 hover:bg-white/[0.02] ${!l.active ? 'opacity-40' : ''}`}>
+                                            <td className="py-3 pr-4">
+                                                <div className="flex items-center gap-2">
+                                                    <code className="font-mono text-white/90 text-xs">/l/{l.slug}</code>
+                                                    <button
+                                                        onClick={() => handleCopy(l.slug)}
+                                                        className="text-xs text-white/40 hover:text-white px-1.5 py-0.5 rounded border border-white/10 hover:border-white/30"
+                                                        title="Zkopírovat"
+                                                    >
+                                                        {copiedSlug === l.slug ? '✓' : '⎘'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 pr-4 text-white/70 max-w-[200px] truncate">{l.title || '—'}</td>
                                             <td className="py-3 pr-4">
                                                 <span className="px-2 py-0.5 rounded text-xs font-mono" style={{ background: (SOURCE_COLORS[l.source] ?? '#444') + '33', color: SOURCE_COLORS[l.source] ?? '#fff' }}>
                                                     {l.source}
                                                 </span>
                                             </td>
-                                            <td className="py-3 pr-4 text-white/40 max-w-xs truncate">
+                                            <td className="py-3 pr-4 text-white/40 max-w-[200px] truncate">
                                                 <a href={l.targetUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/80 underline">{l.targetUrl}</a>
                                             </td>
-                                            <td className="py-3 text-right font-bold">{linkClicks.get(l.slug) ?? 0}</td>
+                                            <td className="py-3 pr-4 text-center">
+                                                <button
+                                                    onClick={() => handleToggle(l.pageId, !l.active)}
+                                                    className={`w-9 h-5 rounded-full transition-colors relative ${l.active ? 'bg-brand-red' : 'bg-white/10'}`}
+                                                    title={l.active ? 'Deaktivovat' : 'Aktivovat'}
+                                                >
+                                                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${l.active ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                                </button>
+                                            </td>
+                                            <td className="py-3 pr-4 text-right font-bold">{linkClicks.get(l.slug) ?? 0}</td>
+                                            <td className="py-3 text-right">
+                                                <button
+                                                    onClick={() => handleDelete(l.pageId, l.slug)}
+                                                    className="text-white/30 hover:text-red-400 px-2"
+                                                    title="Smazat"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
