@@ -387,6 +387,57 @@ export const LinksDashboard = ({ links, clicks }: Props) => {
                     )}
                 </div>
 
+                {/* Recent Click Activity */}
+                <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6 mb-8">
+                    <h2 className="text-lg font-bold mb-4">Recent Click Activity</h2>
+                    {filteredClicks.length === 0 ? (
+                        <p className="text-white/40 text-sm">Žádné kliky.</p>
+                    ) : (
+                        <div className="divide-y divide-white/5">
+                            {filteredClicks.slice(0, 25).map(c => {
+                                const link = links.find(l => l.slug === c.slug);
+                                const refererHost = (() => {
+                                    if (!c.referer) return '';
+                                    try { return new URL(c.referer).hostname.replace(/^www\./, ''); } catch { return ''; }
+                                })();
+                                return (
+                                    <div key={c.id} className="py-4 first:pt-0 last:pb-0">
+                                        <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">{timeAgo(c.timestamp)}</div>
+                                        <div className="flex items-start gap-3 mb-2">
+                                            <SourceIcon source={c.source} />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-white font-medium truncate">{link?.title || c.slug}</div>
+                                            </div>
+                                            <code className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-white/60 whitespace-nowrap">/l/{c.slug}</code>
+                                        </div>
+                                        <div className="flex items-center gap-3 flex-wrap text-xs text-white/60">
+                                            {c.country && (
+                                                <span className="flex items-center gap-1.5">
+                                                    <span>{countryFlag(c.country)}</span>
+                                                    <span>{c.city ? `${c.city}, ${countryName(c.country)}` : countryName(c.country)}</span>
+                                                </span>
+                                            )}
+                                            <span className="flex items-center gap-1.5">
+                                                <DeviceIcon os={c.os} device={c.device} />
+                                                <span>{shortOs(c.os) || c.device}</span>
+                                            </span>
+                                            {refererHost && (
+                                                <span className="flex items-center gap-1.5 text-white/50">
+                                                    <span>↩</span>
+                                                    <span className="font-mono">{refererHost}</span>
+                                                </span>
+                                            )}
+                                            {c.browser && (
+                                                <span className="text-white/40">{c.browser.split(' ')[0]}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
                 {/* Links table */}
                 <div className="bg-[#0d0d0d] border border-white/10 rounded-xl p-6">
                     <h2 className="text-lg font-bold mb-4">Krátké linky <span className="text-white/40 text-sm font-normal">({links.length})</span></h2>
@@ -467,3 +518,71 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
         <div className="text-2xl md:text-3xl font-bold">{value}</div>
     </div>
 );
+
+// ───── Helpers ─────
+
+function timeAgo(iso: string): string {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'Just now';
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr === 1 ? '1 hour ago' : `${hr} hours ago`;
+    const days = Math.floor(hr / 24);
+    return days === 1 ? '1 day ago' : `${days} days ago`;
+}
+
+function countryFlag(cc: string): string {
+    if (!cc || cc.length !== 2) return '🌐';
+    return cc.toUpperCase().replace(/./g, c => String.fromCodePoint(127397 + c.charCodeAt(0)));
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+    CZ: 'Czechia', SK: 'Slovakia', US: 'USA', GB: 'UK', DE: 'Germany',
+    AT: 'Austria', PL: 'Poland', HU: 'Hungary', FR: 'France', IT: 'Italy',
+    ES: 'Spain', NL: 'Netherlands', BE: 'Belgium', CH: 'Switzerland',
+    UA: 'Ukraine', RU: 'Russia', CA: 'Canada', AU: 'Australia',
+    BR: 'Brazil', MX: 'Mexico', IN: 'India', JP: 'Japan', CN: 'China',
+};
+
+function countryName(cc: string): string {
+    if (!cc) return '';
+    return COUNTRY_NAMES[cc.toUpperCase()] ?? cc.toUpperCase();
+}
+
+function shortOs(os: string): string {
+    if (!os) return '';
+    const lower = os.toLowerCase();
+    if (lower.includes('ios')) return 'iPhone';
+    if (lower.includes('mac')) return 'Mac';
+    if (lower.includes('android')) return 'Android';
+    if (lower.includes('windows')) return 'Windows';
+    if (lower.includes('linux')) return 'Linux';
+    return os.split(' ')[0];
+}
+
+const SourceIcon = ({ source }: { source: string }) => {
+    const color = SOURCE_COLORS[source] ?? '#888';
+    const letter = (source || 'D')[0].toUpperCase();
+    return (
+        <div
+            className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-black flex-shrink-0"
+            style={{ background: color + '22', color }}
+            title={source}
+        >
+            {letter}
+        </div>
+    );
+};
+
+const DeviceIcon = ({ os, device }: { os: string; device: string }) => {
+    const lower = (os || '').toLowerCase();
+    if (lower.includes('ios') || lower.includes('mac')) return <span></span>;
+    if (lower.includes('android')) return <span>🤖</span>;
+    if (lower.includes('windows')) return <span>🪟</span>;
+    if (lower.includes('linux')) return <span>🐧</span>;
+    if (device === 'mobile') return <span>📱</span>;
+    if (device === 'tablet') return <span>📱</span>;
+    return <span>💻</span>;
+};
