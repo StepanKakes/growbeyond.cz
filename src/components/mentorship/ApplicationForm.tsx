@@ -138,7 +138,7 @@ export const ApplicationForm = () => {
                                     V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 10 tisíc Kč. Abychom k tobě byli úplně upřímní, naše intenzivní 1:1 spolupráce vyžaduje vyšší investici.
                                 </p>
                                 <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                                    Jsi případně otevřený/á najít způsob, jak do sebe investovat víc, pokud ti ukážeme přesný plán, jak se ti to vrátí?
+                                    Jsi případně otevřený/á najít způsob, jak do sebe investovat víc?
                                 </p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

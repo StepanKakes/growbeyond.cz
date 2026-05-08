@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { slugify } from '@/lib/youtube';
+import { parseClickContext, recordClick, buildYouTubeDeepLink } from '@/lib/notion-links';
 
 export async function GET(
     request: NextRequest,
@@ -28,6 +29,20 @@ export async function GET(
         // keep default campaign
     }
 
-    const target = `${request.nextUrl.origin}/?utm_source=youtube&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${id}`;
+    const ua = request.headers.get('user-agent') ?? '';
+    const target = buildYouTubeDeepLink(id, ua);
+
+    const ctx = parseClickContext(request);
+    after(async () => {
+        await recordClick({
+            slug: `y/${id}`,
+            source: 'youtube',
+            campaign,
+            content: id,
+            targetUrl: target,
+            ctx,
+        });
+    });
+
     return NextResponse.redirect(target, 302);
 }
