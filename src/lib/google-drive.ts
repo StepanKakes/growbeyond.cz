@@ -18,12 +18,13 @@ export async function getGoogleDriveClient() {
   let formattedKey = privateKey
     .replace(/\\n/g, '\n')
     .replace(/\r\n/g, '\n')
+    .replace(/\\+\n/g, '\n')
     .trim();
   if (
     (formattedKey.startsWith('"') && formattedKey.endsWith('"')) ||
     (formattedKey.startsWith("'") && formattedKey.endsWith("'"))
   ) {
-    formattedKey = formattedKey.slice(1, -1).replace(/\\n/g, '\n').trim();
+    formattedKey = formattedKey.slice(1, -1).replace(/\\n/g, '\n').replace(/\\+\n/g, '\n').trim();
   }
 
   // Diagnostic log (doesn't expose key content, just format markers)
