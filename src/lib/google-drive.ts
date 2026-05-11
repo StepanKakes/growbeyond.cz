@@ -26,6 +26,21 @@ export async function getGoogleDriveClient() {
     formattedKey = formattedKey.slice(1, -1).replace(/\\n/g, '\n').trim();
   }
 
+  // Diagnostic log (doesn't expose key content, just format markers)
+  console.log('[google-drive] key diagnostic:', {
+    rawLength: privateKey.length,
+    formattedLength: formattedKey.length,
+    rawStartsWith: privateKey.substring(0, 30),
+    rawEndsWith: privateKey.substring(privateKey.length - 30),
+    formattedStartsWith: formattedKey.substring(0, 30),
+    formattedEndsWith: formattedKey.substring(formattedKey.length - 30),
+    hasBeginMarker: formattedKey.includes('BEGIN PRIVATE KEY'),
+    hasEndMarker: formattedKey.includes('END PRIVATE KEY'),
+    realNewlineCount: (formattedKey.match(/\n/g) || []).length,
+    literalBackslashNCount: (formattedKey.match(/\\n/g) || []).length,
+    nodeVersion: process.version,
+  });
+
   try {
     const auth = new google.auth.JWT({
       email: clientEmail,
