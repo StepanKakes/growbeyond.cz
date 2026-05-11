@@ -15,7 +15,16 @@ export async function getGoogleDriveClient() {
     throw new Error('Google Drive credentials missing in .env');
   }
 
-  const formattedKey = privateKey.replace(/\\n/g, '\n');
+  let formattedKey = privateKey
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .trim();
+  if (
+    (formattedKey.startsWith('"') && formattedKey.endsWith('"')) ||
+    (formattedKey.startsWith("'") && formattedKey.endsWith("'"))
+  ) {
+    formattedKey = formattedKey.slice(1, -1).replace(/\\n/g, '\n').trim();
+  }
 
   try {
     const auth = new google.auth.JWT({
