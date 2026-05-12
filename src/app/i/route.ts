@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { parseClickContext, recordClick } from '@/lib/notion-links';
+import { getPublicOrigin, parseClickContext, recordClick } from '@/lib/notion-links';
 
 export async function GET(request: NextRequest) {
-    const target = `${request.nextUrl.origin}/?utm_source=instagram&utm_campaign=bio#apply`;
+    const origin = getPublicOrigin(request);
+    const target = `${origin}/?utm_source=instagram&utm_campaign=bio#apply`;
     const ctx = parseClickContext(request);
     after(async () => {
         await recordClick({

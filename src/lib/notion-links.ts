@@ -138,6 +138,17 @@ export async function listLinks(): Promise<ShortLink[]> {
 
 // ───── Click Recording ─────
 
+export function getPublicOrigin(request: NextRequest): string {
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+        return process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, '');
+    }
+    const proto = request.headers.get('x-forwarded-proto') ?? 'https';
+    const host = request.headers.get('x-forwarded-host')
+        ?? request.headers.get('host')
+        ?? request.nextUrl.host;
+    return `${proto}://${host}`;
+}
+
 export function parseClickContext(request: NextRequest): ClickContext {
     const ua = request.headers.get('user-agent') ?? '';
     const referer = request.headers.get('referer') ?? '';
