@@ -129,6 +129,7 @@ function mapPageToResource(page: any): Resource {
         publicTitle: getText('PublicTitle'),
         subtitle: getText('Subtitle'),
         buttonText: getText('ButtonText'),
+        plunkEvent: getText('PlunkEvent'),
         kitFormId: getText('KitFormId'),
         kitTagId: getText('KitTagId'),
         kitSequenceId: getText('KitSequenceId'),

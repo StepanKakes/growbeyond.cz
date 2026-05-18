@@ -5,7 +5,7 @@ const PLUNK_API_URL = 'https://next-api.useplunk.com';
 
 export async function POST(req: Request) {
     try {
-        const { email, firstName, formId, tagId, sequenceId } = await req.json();
+        const { email, firstName, plunkEvent, formId, tagId, sequenceId } = await req.json();
 
         if (!email) {
             return NextResponse.json({ error: 'Email is required' }, { status: 400 });
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
             ? rawVocative.charAt(0).toUpperCase() + rawVocative.slice(1)
             : undefined;
 
-        const eventName = formId || 'signup';
+        const eventName = plunkEvent || formId || 'signup';
         const contactData: Record<string, string> = {};
         if (justFirstName) contactData.firstName = justFirstName;
         if (firstName) contactData.fullName = firstName;

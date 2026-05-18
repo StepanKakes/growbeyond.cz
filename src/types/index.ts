@@ -5,6 +5,7 @@ export interface Resource {
     publicTitle: string;
     subtitle: string;
     buttonText: string;
+    plunkEvent: string;
     kitFormId: string;
     kitTagId: string;
     kitSequenceId?: string;

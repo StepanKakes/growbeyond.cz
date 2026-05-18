@@ -80,6 +80,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
                         {/* Form */}
                         <ResourceForm
+                            plunkEvent={resource.plunkEvent}
                             formId={resource.kitFormId}
                             tagId={resource.kitTagId}
                             redirectUrl={resource.redirectUrl}

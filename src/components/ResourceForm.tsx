@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { instrumentSerif, helvetica } from "@/app/fonts";
 
 interface ResourceFormProps {
+    plunkEvent?: string;
     formId?: string;
     tagId?: string;
     redirectUrl?: string;
@@ -11,7 +12,7 @@ interface ResourceFormProps {
     sequenceId?: string;
 }
 
-export function ResourceForm({ formId, tagId, redirectUrl, buttonText, sequenceId }: ResourceFormProps) {
+export function ResourceForm({ plunkEvent, formId, tagId, redirectUrl, buttonText, sequenceId }: ResourceFormProps) {
     const [firstName, setFirstName] = useState('');
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
@@ -59,6 +60,7 @@ export function ResourceForm({ formId, tagId, redirectUrl, buttonText, sequenceI
                     body: JSON.stringify({
                         email,
                         firstName,
+                        plunkEvent,
                         formId,
                         tagId,
                         sequenceId,
