@@ -65,6 +65,63 @@ export async function resolveYouTubeThumbnail(videoId: string): Promise<YouTubeT
     };
 }
 
+export type YouTubeMeta = {
+    title: string;
+    author: string;
+    description: string;
+};
+
+const decodeHtmlEntities = (s: string) =>
+    s.replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+        .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)));
+
+/**
+ * Fetches title + author from YouTube oEmbed (always available, no key) and
+ * tries to extract og:description from the public watch page HTML so social
+ * previews match a raw YouTube share. Falls back gracefully on any failure.
+ */
+export async function fetchYouTubeMeta(videoId: string): Promise<YouTubeMeta> {
+    let title = '';
+    let author = '';
+    let description = '';
+
+    try {
+        const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+        const res = await fetch(oembedUrl, { next: { revalidate: 86400 } });
+        if (res.ok) {
+            const data = (await res.json()) as { title?: string; author_name?: string };
+            title = data.title ?? '';
+            author = data.author_name ?? '';
+        }
+    } catch {}
+
+    try {
+        const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        const res = await fetch(watchUrl, {
+            headers: {
+                'user-agent':
+                    'Mozilla/5.0 (compatible; GrowBeyondLinkPreview/1.0; +https://growbeyond.cz)',
+                'accept-language': 'en-US,en;q=0.9',
+            },
+            next: { revalidate: 86400 },
+        });
+        if (res.ok) {
+            const html = await res.text();
+            const m = html.match(
+                /<meta\s+name="description"\s+content="([^"]*)"|<meta\s+property="og:description"\s+content="([^"]*)"/i,
+            );
+            if (m) description = decodeHtmlEntities(m[1] || m[2] || '');
+        }
+    } catch {}
+
+    return { title, author, description };
+}
+
 export function slugify(text: string): string {
     return text
         .toLowerCase()
