@@ -12,6 +12,8 @@ const plyrOptions = {
     ratio: '16:9',
     muted: false,
     autoplay: false,
+    volume: 1,
+    storage: { enabled: false },
     youtube: { noCookie: true, rel: 0, showinfo: 0, iv_load_policy: 3, modestbranding: 1 },
     quality: { default: 2160, options: [4320, 2160, 1440, 1080, 720, 480, 360, 240, 144] },
     controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
