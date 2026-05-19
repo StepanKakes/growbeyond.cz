@@ -164,7 +164,7 @@ function OnboardingContent() {
                                 Krok 1
                             </p>
                             <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.1] mb-6">
-                                Vyplň krátký dotazník
+                                Vyplň vstupní audit
                             </h2>
                             <a
                                 href={tallyUrl}
@@ -172,7 +172,7 @@ function OnboardingContent() {
                                 rel="noopener noreferrer"
                                 className="inline-block bg-brand-red hover:bg-brand-red/90 text-white font-bold px-8 py-4 rounded-lg text-base md:text-lg transition-colors shadow-xl shadow-brand-red/20"
                             >
-                                Otevřít dotazník →
+                                Otevřít audit →
                             </a>
                         </FadeUp>
                     </div>
