@@ -1,11 +1,10 @@
 "use client";
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { FadeUp } from '@/components/FadeUp';
 import { firstNameFrom, toVokativ } from '@/lib/vokativ';
@@ -27,23 +26,75 @@ function buildTallyUrl(params: {
     return `https://tally.so/r/${TALLY_FORM_ID}${q.toString() ? `?${q}` : ''}`;
 }
 
+// Brand-colored "let's go" celebration. Initial burst + two side cannons +
+// a delayed finale, then stops. ~3s total, non-disruptive.
+function launchCelebration() {
+    if (typeof window === 'undefined') return;
+    void import('canvas-confetti').then(({ default: confetti }) => {
+        const colors = ['#FF0E00', '#FFFFFF', '#FFD700', '#FFB347'];
+        const defaults = { ticks: 200, gravity: 0.9, decay: 0.94, colors };
+
+        // Initial center burst
+        confetti({ ...defaults, particleCount: 120, spread: 90, startVelocity: 50, origin: { y: 0.6 } });
+        confetti({ ...defaults, particleCount: 60, spread: 140, startVelocity: 35, scalar: 1.2, origin: { y: 0.6 } });
+
+        // Side cannons
+        setTimeout(() => {
+            confetti({ ...defaults, particleCount: 80, angle: 60, spread: 70, startVelocity: 55, origin: { x: 0, y: 0.7 } });
+            confetti({ ...defaults, particleCount: 80, angle: 120, spread: 70, startVelocity: 55, origin: { x: 1, y: 0.7 } });
+        }, 350);
+
+        // Finale — big spread, slow drift
+        setTimeout(() => {
+            confetti({ ...defaults, particleCount: 150, spread: 180, startVelocity: 45, scalar: 1.1, origin: { y: 0.5 } });
+        }, 900);
+
+        // Side cannons round 2
+        setTimeout(() => {
+            confetti({ ...defaults, particleCount: 60, angle: 60, spread: 90, startVelocity: 45, origin: { x: 0, y: 0.8 } });
+            confetti({ ...defaults, particleCount: 60, angle: 120, spread: 90, startVelocity: 45, origin: { x: 1, y: 0.8 } });
+        }, 1600);
+    });
+}
+
 function OnboardingContent() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const notion_page_id = searchParams.get('notion_page_id') ?? '';
     const email = searchParams.get('email') ?? '';
     const jmeno = (searchParams.get('jmeno') ?? '').trim();
-    // N8N preferably passes precomputed `jmeno_vokativ`; fall back to local
-    // computation so older e-mail links still render correctly.
     const vokativParam = searchParams.get('jmeno_vokativ');
+    const fired = useRef(false);
+
+    // Guard: only legit visitors from the welcome e-mail (which always carries
+    // notion_page_id + email + jmeno) see this page. Anyone else → homepage.
+    const hasRequiredParams = !!(notion_page_id && email && jmeno);
+
+    useEffect(() => {
+        if (!hasRequiredParams) {
+            router.replace('/');
+            return;
+        }
+        if (fired.current) return;
+        fired.current = true;
+        launchCelebration();
+    }, [hasRequiredParams, router]);
+
+    if (!hasRequiredParams) {
+        return (
+            <main className="min-h-screen bg-brand-dark flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+            </main>
+        );
+    }
+
     const firstName = firstNameFrom(jmeno);
     const oslovení = (vokativParam && vokativParam.trim()) || toVokativ(firstName) || firstName;
-
     const tallyUrl = buildTallyUrl({ notion_page_id, email, jmeno });
 
     return (
         <SmoothScroll>
             <main className="min-h-screen relative bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white">
-                <Navbar />
                 <TextureOverlay />
 
                 {/* Hero */}
@@ -51,13 +102,13 @@ function OnboardingContent() {
                     <div
                         className="absolute inset-0 z-0 pointer-events-none"
                         style={{
-                            backgroundImage: `url('/images/hero/Still%202026-03-12%20235253.jpg')`,
-                            backgroundPosition: 'center top',
+                            backgroundImage: `url('/images/hero/onboarding-hero.jpg')`,
+                            backgroundPosition: 'center center',
                             backgroundSize: 'cover',
                             backgroundRepeat: 'no-repeat',
                             maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
                             WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 65%, transparent 100%)',
-                            opacity: 0.8,
+                            opacity: 0.85,
                         }}
                     />
 
@@ -71,9 +122,7 @@ function OnboardingContent() {
                                     className="absolute inset-0 bg-brand-red origin-left"
                                 />
                                 <h1 className="relative z-10 text-[28px] md:text-[52px] font-bold text-white tracking-tight-custom leading-none">
-                                    {oslovení
-                                        ? <>Vítej v rodině Beyond, {oslovení}.</>
-                                        : <>Vítej v rodině Beyond.</>}
+                                    Vítej v rodině Beyond, {oslovení}
                                 </h1>
                             </div>
                         </div>
