@@ -1,0 +1,56 @@
+{
+  "mission90": {
+    "templates": {
+      "9679326": "afa02faf-037d-42b3-b8fd-63318f91af39"
+    },
+    "workflow_id": "efc83955-dec4-4805-a0d0-902e4d03a532",
+    "steps": {
+      "send_E0": "169b0865-56cc-4409-aafc-2ba80e7aeaf8"
+    }
+  },
+  "consistency-blueprint": {
+    "templates": {
+      "9609157": "ac7a0846-51bd-44cf-ab2e-12677a83e1ef"
+    },
+    "workflow_id": "548b3346-8b87-4a78-9ea5-bba6a5514110",
+    "steps": {
+      "send_E0": "da5ff383-c822-4833-b404-c5fc5c5b71d1"
+    }
+  },
+  "personal-brand-2026": {
+    "templates": {
+      "9604719": "92810cab-d8b5-4a1a-bef2-0dddee5db23c"
+    },
+    "workflow_id": "fa63d573-2ccd-4b1e-8646-876433a0d0a2",
+    "steps": {
+      "send_E0": "22e696d6-70d7-4f13-8cd8-5c704cf4e228"
+    }
+  },
+  "csp-call-schedule": {
+    "templates": {
+      "9595463": "f55b9f73-5ac8-4e84-b870-c5eb3a7a3974"
+    },
+    "workflow_id": "ffbd870e-2516-4698-a397-5e022276f870",
+    "steps": {
+      "send_E0": "31582897-b22c-4bba-af38-c9ef4a311498"
+    }
+  },
+  "csp-welcome": {
+    "templates": {
+      "9595255": "7dba4cd6-2cad-46b3-9c59-48a7b560af15"
+    },
+    "workflow_id": "9f6b7e06-ce33-4c46-a025-664fe1aca0bd",
+    "steps": {
+      "send_E0": "75738a24-891e-4c30-9194-a320ae69acf8"
+    }
+  },
+  "identity-blueprint": {
+    "templates": {
+      "9506223": "0ea5329d-ac21-4c9a-b971-487f6555eb03"
+    },
+    "workflow_id": "b9630e0a-cc35-492f-af37-9c3b83d13539",
+    "steps": {
+      "send_E0": "7af7af50-8743-43d3-a503-9f154a0dbf0f"
+    }
+  }
+}

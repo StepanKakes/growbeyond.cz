@@ -166,9 +166,6 @@ function OnboardingContent() {
                             <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.1] mb-6">
                                 Vyplň krátký dotazník
                             </h2>
-                            <p className="text-gray-300 text-[15px] md:text-base leading-relaxed mb-10 max-w-xl mx-auto">
-                                Abych tě pořádně poznal ještě před první session a mohl ti rovnou jít naproti. Zabere to ~5 minut.
-                            </p>
                             <a
                                 href={tallyUrl}
                                 target="_blank"
@@ -192,10 +189,7 @@ function OnboardingContent() {
                                 Rezervuj si první session
                             </h2>
                             <p className="text-gray-300 text-[15px] md:text-lg leading-relaxed max-w-xl mx-auto">
-                                Po vyplnění dotazníku ti přijde e-mail s rezervačním linkem na tvou první 1:1 session.
-                            </p>
-                            <p className="text-gray-500 text-[13px] md:text-sm leading-relaxed mt-4 max-w-xl mx-auto">
-                                Doporučuju projet oba kroky do 48 hodin — co dřív se potkáme, tím dřív rozjedeme program.
+                                Po vyplnění dotazníku ti přijde e-mail s rezervačním linkem na tvou první 1:1 session
                             </p>
                         </FadeUp>
                     </div>
