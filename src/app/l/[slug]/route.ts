@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
-import { getLinkBySlug, parseClickContext, recordClick, buildYouTubeDeepLink } from '@/lib/notion-links';
+import { getLinkBySlug, getPublicOrigin, parseClickContext, recordClick, buildYouTubeDeepLink } from '@/lib/notion-links';
 import { extractYouTubeId, fetchYouTubeMeta, resolveYouTubeThumbnail } from '@/lib/youtube';
 
 // Scraper-specific patterns. Do NOT match in-app browser UAs (Instagram,
@@ -114,6 +114,7 @@ export async function GET(
 
     const ua = request.headers.get('user-agent') ?? '';
     const ytId = extractYouTubeId(link.targetUrl);
+    const origin = getPublicOrigin(request);
 
     // Bot / link preview crawler → serve OG HTML, don't track, don't deeplink
     if (BOT_REGEX.test(ua)) {
@@ -133,7 +134,7 @@ export async function GET(
             imageWidth = thumb.width;
             imageHeight = thumb.height;
             if (meta.title) title = meta.title;
-            description = meta.description || meta.author || 'YouTube';
+            description = 'Pusť si video na YouTube';
             youtube = {
                 videoId: ytId,
                 author: meta.author,
@@ -141,7 +142,7 @@ export async function GET(
                 canonicalUrl: `https://www.youtube.com/watch?v=${ytId}`,
             };
         } else {
-            image = `${request.nextUrl.origin}/images/og-default.jpg`;
+            image = `${origin}/images/og-default.jpg`;
             try {
                 description = new URL(link.targetUrl).hostname.replace(/^www\./, '');
             } catch {}
@@ -153,7 +154,7 @@ export async function GET(
             image,
             imageWidth,
             imageHeight,
-            url: `${request.nextUrl.origin}/l/${slug}`,
+            url: `${origin}/l/${slug}`,
             redirectTo: link.targetUrl,
             youtube,
         });
