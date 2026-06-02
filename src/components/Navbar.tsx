@@ -65,12 +65,14 @@ export const Navbar = () => {
                     >
                         7denní program zdarma
                     </a>
-                    <a
-                        href={mainButtonHref}
-                        className={mainButtonStyle}
-                    >
-                        {mainButtonText}
-                    </a>
+                    {isCSP && (
+                        <a
+                            href={mainButtonHref}
+                            className={mainButtonStyle}
+                        >
+                            {mainButtonText}
+                        </a>
+                    )}
                 </div>
 
                 {/* Mobile Hamburger Button */}
@@ -116,16 +118,15 @@ export const Navbar = () => {
                         >
                             7denní program zdarma
                         </a>
-                        <a
-                            href={mainButtonHref}
-                            onClick={() => setIsOpen(false)}
-                            className={isCSP 
-                                ? "bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
-                                : "text-white hover:text-brand-red transition-colors text-xl font-medium tracking-tight"
-                            }
-                        >
-                            {mainButtonText}
-                        </a>
+                        {isCSP && (
+                            <a
+                                href={mainButtonHref}
+                                onClick={() => setIsOpen(false)}
+                                className="bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-lg font-bold tracking-tight-custom transition-all"
+                            >
+                                {mainButtonText}
+                            </a>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
