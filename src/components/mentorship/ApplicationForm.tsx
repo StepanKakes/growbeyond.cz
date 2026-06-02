@@ -387,6 +387,20 @@ export const ApplicationForm = () => {
                                 </button>
                             )}
                         </div>
+
+                        {(currentStep === 1 || currentStep === 6) && (
+                            <p className="text-gray-500 text-xs leading-relaxed mt-4 text-center md:text-right">
+                                {currentStep === 1 ? 'Pokračováním' : 'Odesláním formuláře'} souhlasíš se zpracováním osobních údajů dle{' '}
+                                <a
+                                    href="/ochrana-osobnich-udaju"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline underline-offset-2 hover:text-white transition-colors"
+                                >
+                                    zásad ochrany osobních údajů
+                                </a>.
+                            </p>
+                        )}
                     </form>
                 </div>
             </FadeUp>

@@ -133,7 +133,16 @@ export function ResourceForm({ plunkEvent, formId, tagId, redirectUrl, buttonTex
                         className="mt-1 w-4 h-4 rounded border-gray-300 text-accent focus:ring-accent bg-transparent disabled:opacity-50"
                     />
                     <label htmlFor="terms" className={`text-xs leading-tight ${errors.agreed ? 'text-red-500' : 'text-gray-400'}`}>
-                        Odesláním formuláře udělujete souhlas se zpracováním osobních údajů v rámci growbeyond.cz.
+                        Souhlasím se zpracováním osobních údajů dle{' '}
+                        <a
+                            href="/ochrana-osobnich-udaju"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2 hover:text-white transition-colors"
+                        >
+                            zásad ochrany osobních údajů
+                        </a>
+                        {' '}a se zasíláním obsahových e-mailů, ze kterých se můžu kdykoliv odhlásit.
                     </label>
                 </div>
             </div>

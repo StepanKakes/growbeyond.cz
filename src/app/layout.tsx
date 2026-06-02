@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { helvetica, instrumentSerif } from "./fonts";
 import "./globals.css";
-import Script from "next/script";
+import { CookieConsent } from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
   title: "Pro kouče, podnikatele a tvůrce",
@@ -14,24 +14,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <Script id="clarity-script" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "vuqnag017s");
-          `}
-        </Script>
-      </head>
+    <html lang="cs">
       <body className={`${helvetica.className} antialiased min-h-screen relative bg-[#111111] overflow-x-hidden`}>
 
         {/* CONTENT LAYER */}
         <main className="relative z-20">
           {children}
         </main>
+
+        {/* Cookie lišta — Clarity se načte až po souhlasu */}
+        <CookieConsent />
 
       </body>
     </html>

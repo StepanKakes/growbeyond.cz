@@ -107,6 +107,28 @@ export const StarterPackOffer = () => {
                             >
                                 {isLoading ? 'Připravuji pokladnu...' : 'Chci Creator Starter Pack'}
                             </motion.button>
+                            <p className="text-gray-500 text-xs leading-relaxed mt-4 max-w-md">
+                                Kliknutím na tlačítko a dokončením platby souhlasíte s{' '}
+                                <a
+                                    href="/obchodni-podminky"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline underline-offset-2 hover:text-white transition-colors"
+                                >
+                                    obchodními podmínkami
+                                </a>
+                                , se zpracováním osobních údajů dle{' '}
+                                <a
+                                    href="/ochrana-osobnich-udaju"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline underline-offset-2 hover:text-white transition-colors"
+                                >
+                                    zásad ochrany osobních údajů
+                                </a>
+                                {' '}a výslovně souhlasíte s dodáním digitálního obsahu před uplynutím lhůty pro
+                                odstoupení od smlouvy.
+                            </p>
                         </div>
                     </div>
                 </FadeUp>

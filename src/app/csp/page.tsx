@@ -13,6 +13,7 @@ import { FAQ } from '@/components/FAQ';
 import { HowWeTeach } from '@/components/HowWeTeach';
 import { HowItWorks } from '@/components/HowItWorks';
 import { Footer } from '@/components/Footer';
+import { LegalFooter } from '@/components/LegalFooter';
 import { TextureOverlay } from '@/components/TextureOverlay';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
@@ -36,6 +37,7 @@ export default function CSPPage() {
         <FAQ />
 
         <Footer />
+        <LegalFooter />
       </main>
     </SmoothScroll>
   );

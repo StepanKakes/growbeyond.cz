@@ -9,6 +9,7 @@ import { Testimonials } from '@/components/Testimonials';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { CallBenefits } from '@/components/mentorship/CallBenefits';
 import { ScreenshotGallery } from '@/components/mentorship/ScreenshotGallery';
+import { LegalFooter } from '@/components/LegalFooter';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
 const MentorshipVideoSection = dynamic(() => import('@/components/mentorship/MentorshipVideoSection').then(mod => mod.MentorshipVideoSection), { ssr: false });
@@ -78,6 +79,7 @@ export default function HomePage() {
 
                 <ScreenshotGallery />
 
+                <LegalFooter />
 
             </main>
         </SmoothScroll>
