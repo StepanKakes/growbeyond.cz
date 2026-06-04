@@ -145,16 +145,20 @@ export default function PoRezervaci() {
                 <div className="pt-6 pb-24 relative z-20 overflow-visible">
                     <div className="w-full max-w-[95vw] md:max-w-[55vw] lg:max-w-[1100px] mx-auto px-4">
                         <FadeUp>
-                            <div className="relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515]">
-                                <div className="w-full relative pb-[56.25%]">
-                                    <iframe
-                                        className="absolute inset-0 w-full h-full"
-                                        src="https://www.youtube.com/embed/gLnRxa2cXJE?rel=0&modestbranding=1"
-                                        title="Mohlo by tě zajímat"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowFullScreen
-                                    />
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {['gLnRxa2cXJE', 'O6hQdQgIBT4'].map((id) => (
+                                    <div key={id} className="relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515]">
+                                        <div className="w-full relative pb-[56.25%]">
+                                            <iframe
+                                                className="absolute inset-0 w-full h-full"
+                                                src={`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`}
+                                                title="Mohlo by tě zajímat"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </FadeUp>
                     </div>

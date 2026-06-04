@@ -202,7 +202,10 @@ export const ApplicationForm = () => {
 
         return (
             <div className="w-full animate-[fadeIn_1s_ease-out]">
-                <CalendlySection prefillEmail={formData.email} />
+                <CalendlySection
+                    prefillEmail={formData.email}
+                    followupEligible={formData.q6 !== "0 - 10tisíc Kč"}
+                />
             </div>
         );
     }
