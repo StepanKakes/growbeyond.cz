@@ -17,7 +17,7 @@ export const CoachingHero = () => {
         return () => clearTimeout(timer);
     }, [step]);
 
-    const words = ["kouč", "podnikatel", "tvůrce"];
+    const words = ["kouč", "mentor", "konzultant"];
     const rotations = [-1.8, 1.4, -1.1];
 
     return (
@@ -77,7 +77,7 @@ export const CoachingHero = () => {
                                         transition={{ delay: 0.1 }}
                                         className="bg-brand-red px-2 md:px-2.5 text-white inline-block"
                                     >
-                                        podnikatel
+                                        mentor
                                     </motion.span>
                                     <span className="text-white">nebo</span>
                                     <motion.span
@@ -86,7 +86,7 @@ export const CoachingHero = () => {
                                         transition={{ delay: 0.15 }}
                                         className="bg-brand-red px-2 md:px-2.5 text-white inline-block"
                                     >
-                                        tvůrce
+                                        konzultant
                                     </motion.span>
                                 </motion.div>
                             )}
@@ -144,7 +144,7 @@ export const CoachingHero = () => {
                                     paddingBottom: '8px'
                                 }}
                             >
-                                Abys získal/a kvalitnější klienty a dosahoval/a každý měsíc stabilně šestimístných příjmů
+                                Abys svůj program, koučink nebo konzultace prodával/a kvalitnějším klientům a každý měsíc stabilně dosahoval/a šestimístných příjmů
                             </span>
                         </p>
                     </div>

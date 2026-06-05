@@ -23,26 +23,31 @@ const q3Options = [
 ];
 
 const q4Options = [
-    "0 - 10tisíc Kč",
-    "10 - 30tisíc Kč",
-    "35 - 100tisíc Kč",
-    "100tisíc a víc"
+    "Nic",
+    "Do 30 tisíc Kč",
+    "30 - 50 tisíc Kč",
+    "50 - 80 tisíc Kč",
+    "80 - 100 tisíc Kč",
+    "100 - 200 tisíc Kč",
+    "Více než 200 tisíc Kč"
 ];
 
 const q5Options = [
-    "Nemonetizuji",
-    "Prodej produktu",
-    "Služba (coachuji, pomáhám, konzultuji)",
-    "Brand deals (placené spolupráce)"
+    "1:1 koučink nebo konzultace",
+    "Skupinový program nebo mastermind",
+    "Online kurz nebo digitální produkt",
+    "Zatím neprodávám / teprve začínám"
 ];
 
 const q6Options = [
-    "0 - 10tisíc Kč",
-    "15 - 30tisíc Kč",
-    "35 - 60tisíc Kč",
-    "65 - 90tisíc",
-    "100tis. a víc"
+    "0 - 25 tisíc Kč",
+    "25 - 50 tisíc Kč",
+    "50 - 90 tisíc Kč",
+    "90 - 150 tisíc Kč"
 ];
+
+// Nejnižší stupeň investice → diskvalifikace na CSP a vyřazení z follow-up e-mailu.
+const LOWEST_BUDGET = "0 - 25 tisíc Kč";
 
 export const ApplicationForm = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -125,7 +130,7 @@ export const ApplicationForm = () => {
 
     if (isSubmitted) {
         // Low budget → check if they want to invest more
-        if (formData.q6 === "0 - 10tisíc Kč") {
+        if (formData.q6 === LOWEST_BUDGET) {
             if (budgetConfirmed === null) {
                 return (
                     <div className="w-full animate-[fadeIn_1s_ease-out]">
@@ -135,7 +140,7 @@ export const ApplicationForm = () => {
                                     Ještě jedna důležitá věc...
                                 </h3>
                                 <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
-                                    V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 10 tisíc Kč. Abychom k tobě byli úplně upřímní, naše intenzivní 1:1 spolupráce vyžaduje vyšší investici.
+                                    V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 25 tisíc Kč. Abychom k tobě byli úplně upřímní, naše intenzivní 1:1 spolupráce vyžaduje vyšší investici.
                                 </p>
                                 <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
                                     Jsi případně otevřený/á najít způsob, jak do sebe investovat víc?
@@ -204,7 +209,7 @@ export const ApplicationForm = () => {
             <div className="w-full animate-[fadeIn_1s_ease-out]">
                 <CalendlySection
                     prefillEmail={formData.email}
-                    followupEligible={formData.q6 !== "0 - 10tisíc Kč"}
+                    followupEligible={formData.q6 !== LOWEST_BUDGET}
                 />
             </div>
         );
@@ -267,7 +272,7 @@ export const ApplicationForm = () => {
             case 3:
                 return (
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">2. Kolik ti vydělá Instagram za měsíc?</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">2. Kolik ti teď měsíčně vydělává tvoje podnikání?</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {q4Options.map((opt, i) => (
                                 <div
@@ -284,7 +289,7 @@ export const ApplicationForm = () => {
             case 4:
                 return (
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">3. Jakým způsobem monetizuješ?</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">3. Jak aktuálně prodáváš?</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {q5Options.map((opt, i) => (
                                 <div
