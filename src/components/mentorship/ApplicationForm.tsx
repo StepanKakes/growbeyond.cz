@@ -24,12 +24,9 @@ const q3Options = [
 
 const q4Options = [
     "Nic",
-    "Do 30 tisíc Kč",
-    "30 - 50 tisíc Kč",
-    "50 - 80 tisíc Kč",
-    "80 - 100 tisíc Kč",
-    "100 - 200 tisíc Kč",
-    "Více než 200 tisíc Kč"
+    "Do 50 tisíc Kč",
+    "50 - 150 tisíc Kč",
+    "Více než 150 tisíc Kč"
 ];
 
 const q5Options = [
