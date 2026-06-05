@@ -25,8 +25,9 @@ const q3Options = [
 const q4Options = [
     "Nic",
     "Do 50 tisíc Kč",
-    "50 - 150 tisíc Kč",
-    "Více než 150 tisíc Kč"
+    "50 - 80 tisíc Kč",
+    "80 - 120 tisíc Kč",
+    "Více než 120 tisíc Kč"
 ];
 
 const q5Options = [
@@ -136,8 +137,8 @@ export const ApplicationForm = () => {
                                 <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
                                     Ještě jedna důležitá věc...
                                 </h3>
-                                <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
-                                    V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 25 tisíc Kč. Abychom k tobě byli úplně upřímní, naše intenzivní 1:1 spolupráce vyžaduje vyšší investici.
+                                <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
+                                    V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 25 tisíc Kč. Buďme k sobě na rovinu — naše intenzivní 1:1 spolupráce vyžaduje vyšší investici. Chci, abychom na hovoru oba neztráceli čas, pokud by to nakonec nedávalo smysl.
                                 </p>
                                 <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
                                     Jsi případně otevřený/á najít způsob, jak do sebe investovat víc?
@@ -183,19 +184,10 @@ export const ApplicationForm = () => {
                                 <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
                                     Díky za tvé odpovědi!
                                 </h3>
-                                <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-2">
-                                    Vzhledem k tvému rozpočtu si myslíme, že 1:1 mentoring pro tebe momentálně není ta správná volba.
-                                </p>
                                 <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                                    Ale máme pro tebe něco skvělého — náš <strong>Creator Starter Pack</strong>, který ti pomůže nastartovat růst za zlomek ceny.
+                                    Vzhledem k tvému rozpočtu si myslíme, že tahle 1:1 spolupráce pro tebe teď není ta správná volba. Díky za tvůj čas a přejeme ti hodně úspěchů na cestě dál.
                                 </p>
                             </div>
-                            <a
-                                href="/csp"
-                                className="inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-4 rounded-full text-base md:text-lg font-bold tracking-tight-custom transition-all hover:scale-105"
-                            >
-                                Chci Creator Starter Pack →
-                            </a>
                         </div>
                     </div>
                 );
