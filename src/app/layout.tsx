@@ -4,7 +4,7 @@ import "./globals.css";
 import { CookieConsent } from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
-  title: "Pro kouče, podnikatele a tvůrce",
+  title: "Pro kouče, mentory a konzultanty",
   description: "Proměň svůj Instagram na podnikání, které vydělává. Naučíme tě, jak na to pomocí našeho Creator Starter Packu.",
 };
 
