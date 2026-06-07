@@ -25,7 +25,7 @@ export default function StrategiePage() {
     return (
         <SmoothScroll>
             <main className="min-h-screen relative bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white">
-                <Navbar />
+                <Navbar minimal />
                 <TextureOverlay />
 
                 {/* 1 — Callout hero + qualifier + social proof */}

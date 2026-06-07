@@ -12,7 +12,7 @@ const springTransition = {
     mass: 1,
 };
 
-export const Navbar = () => {
+export const Navbar = ({ minimal = false }: { minimal?: boolean }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
     const pathname = usePathname();
@@ -56,7 +56,7 @@ export const Navbar = () => {
                 </div>
 
                 {/* Right side: Desktop Buttons */}
-                <div className="hidden md:flex items-center gap-5 flex-1 justify-end">
+                <div className={`${minimal ? 'hidden' : 'hidden md:flex'} items-center gap-5 flex-1 justify-end`}>
                     <a
                         href="https://www.growbeyond.cz/resources/7dni-email-program"
                         target="_blank"
@@ -76,7 +76,7 @@ export const Navbar = () => {
                 </div>
 
                 {/* Mobile Hamburger Button */}
-                <div className="md:hidden flex flex-1 justify-end z-50">
+                <div className={`${minimal ? 'hidden' : 'md:hidden flex'} flex-1 justify-end z-50`}>
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="text-white p-2"

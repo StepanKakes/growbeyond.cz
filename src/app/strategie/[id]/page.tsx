@@ -26,7 +26,7 @@ export default async function StrategieVideoPage({ params }: { params: Promise<{
 
     return (
         <main className="min-h-screen relative bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white">
-            <Navbar />
+            <Navbar minimal />
             <TextureOverlay />
 
             {/* Hero */}

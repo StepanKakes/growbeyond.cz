@@ -25,14 +25,14 @@ export const StrategieHero = () => {
             <div className="max-w-[1200px] mx-auto w-full text-center relative z-20 flex flex-col items-center pt-8">
                 {/* Statický callout — stejný styl jako homepage, bez rotující bubliny */}
                 <FadeUp>
-                    <h2 className="text-[22px] md:text-[32px] font-bold text-white mb-5 tracking-tight-custom leading-[1.2]">
-                        Jsi <span className="text-brand-red">kouč</span>, <span className="text-brand-red">mentor</span> nebo <span className="text-brand-red">konzultant</span>?
+                    <h2 className="text-[22px] md:text-[32px] font-bold text-white mb-5 tracking-tight-custom leading-[1.5]">
+                        Jsi <span className="bg-brand-red text-white px-1.5 md:px-2.5">kouč</span>, <span className="bg-brand-red text-white px-1.5 md:px-2.5">mentor</span> nebo <span className="bg-brand-red text-white px-1.5 md:px-2.5">konzultant</span>?
                     </h2>
                 </FadeUp>
 
                 {/* Hlavní nadpis — červené zvýraznění obepíná jen text (per řádek) */}
                 <FadeUp delay={0.1}>
-                    <h1 className="text-[30px] md:text-[54px] font-bold text-white tracking-tight-custom leading-[1.5] max-w-[16ch] md:max-w-[18ch] mx-auto mb-8">
+                    <h1 className="text-[30px] md:text-[54px] font-bold text-white tracking-tight-custom leading-[1.5] max-w-[22ch] md:max-w-[34ch] mx-auto mb-8">
                         <span
                             style={{
                                 backgroundColor: '#FF0E00',

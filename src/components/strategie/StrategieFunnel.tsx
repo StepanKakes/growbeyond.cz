@@ -8,12 +8,12 @@ const reveals = [
     {
         tag: 'Odhalení #1',
         title: 'Positioning, který přitahuje platící klienty',
-        desc: 'Jak nastavit profil tak, aby tě oslovovali jen lidé ochotní platit tvé ceny — a přestali ti psát „kolik to stojí?" ti, co stejně nekoupí.',
+        desc: 'Jak nastavit profil tak, aby tě oslovovali jen lidé ochotní platit tvé ceny, a přestali ti psát „kolik to stojí?" ti, co stejně nekoupí.',
     },
     {
         tag: 'Odhalení #2',
         title: 'Funnel, který za tebe prodává',
-        desc: 'Přesná cesta, kterou diváka „zahřeješ" a dovedeš k nákupu ve správný moment — i když máš teď jen pár stovek sledujících.',
+        desc: 'Přesná cesta, kterou diváka „zahřeješ" a dovedeš k nákupu ve správný moment, i když máš teď jen pár stovek sledujících.',
     },
     {
         tag: 'Odhalení #3',
@@ -26,7 +26,7 @@ const forYou = [
     'Jsi kouč, mentor nebo konzultant (nebo se jím chceš stát) a chceš z toho stabilní příjem.',
     'Máš co nabídnout a chceš to prodávat kvalitnějším klientům za vyšší ceny.',
     'Jsi ochotný/á do svého růstu reálně investovat čas i peníze.',
-    'Chceš funnel, který funguje dlouhodobě — ne jednorázový hack.',
+    'Chceš funnel, který funguje dlouhodobě, ne jednorázový hack.',
     'Jsi připravený/á jednat, ne jen sbírat další obsah „zdarma".',
 ];
 
