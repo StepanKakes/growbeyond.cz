@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { FadeUp } from '../FadeUp';
 import { SocialProof } from '../SocialProof';
+import { openStrategieForm } from './strategieForm';
 
 export const StrategieHero = () => {
     return (
@@ -59,12 +60,13 @@ export const StrategieHero = () => {
                 </motion.div>
 
                 <FadeUp delay={0.3}>
-                    <a
-                        href="#apply"
+                    <button
+                        type="button"
+                        onClick={openStrategieForm}
                         className="bg-brand-red hover:bg-[#cc0b00] text-white px-9 py-4 rounded-full text-sm md:text-lg font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
                     >
                         Chci video zdarma
-                    </a>
+                    </button>
                     <p className="text-gray-400 text-xs md:text-sm mt-4">
                         Zabere ti to 2&nbsp;minuty · video se odemkne okamžitě
                     </p>

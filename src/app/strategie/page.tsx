@@ -8,13 +8,14 @@ import { TextureOverlay } from '@/components/TextureOverlay';
 import { StrategieHero } from '@/components/strategie/StrategieHero';
 import { StrategieVideoTeaser } from '@/components/strategie/StrategieVideoTeaser';
 import { StrategieReveal, StrategieForWho, StrategieCta } from '@/components/strategie/StrategieFunnel';
+import { StrategieFormModal } from '@/components/strategie/StrategieFormModal';
+import { openStrategieForm } from '@/components/strategie/strategieForm';
 import { FadeUp } from '@/components/FadeUp';
 import { Testimonials } from '@/components/Testimonials';
 import { ScreenshotGallery } from '@/components/mentorship/ScreenshotGallery';
 import { LegalFooter } from '@/components/LegalFooter';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
-const ApplicationForm = dynamic(() => import('@/components/mentorship/ApplicationForm').then(mod => mod.ApplicationForm), { ssr: false });
 
 export default function StrategiePage() {
     useEffect(() => {
@@ -47,26 +48,30 @@ export default function StrategiePage() {
                 <Testimonials />
                 <ScreenshotGallery />
 
-                {/* 6 — Formulář jako brána před videem (kvalifikační dotazník) */}
-                <section className="pt-20 pb-2 px-4 relative z-20 text-center">
+                {/* 6 — Finální CTA — formulář se otevře v popupu */}
+                <section className="pt-20 pb-24 px-4 relative z-20 text-center">
                     <FadeUp>
                         <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.15] max-w-2xl mx-auto">
                             Vyplň dotazník a&nbsp;odemkni si strategické video
                         </h2>
-                        <p className="text-gray-300 text-sm md:text-base mt-3 max-w-xl mx-auto">
+                        <p className="text-gray-300 text-sm md:text-base mt-3 max-w-xl mx-auto mb-8">
                             Pár otázek, ať víme, kde teď jsi. Hned poté se ti odemkne video a&nbsp;možnost rezervovat hovor.
                         </p>
+                        <button
+                            type="button"
+                            onClick={openStrategieForm}
+                            className="bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-5 rounded-full text-lg md:text-xl font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
+                        >
+                            Chci video zdarma
+                        </button>
                     </FadeUp>
                 </section>
 
-                <div id="apply" className="pt-6 pb-24 relative overflow-visible">
-                    <div className="w-full max-w-[95vw] md:max-w-[70vw] lg:max-w-[1000px] mx-auto relative px-4">
-                        <ApplicationForm redirectMode />
-                    </div>
-                </div>
-
                 <LegalFooter />
             </main>
+
+            {/* Formulářový popup */}
+            <StrategieFormModal />
         </SmoothScroll>
     );
 }

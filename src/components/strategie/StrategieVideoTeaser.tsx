@@ -2,18 +2,20 @@
 
 import React from 'react';
 import { FadeUp } from '../FadeUp';
+import { openStrategieForm } from './strategieForm';
 
 // Uzamčený náhled VSL videa. Skutečné video se odemkne až po vyplnění
-// dotazníku (na unikátní stránce leadu), proto teaser jen scrolluje na #apply.
+// dotazníku (na unikátní stránce leadu), proto teaser otevře formulářový popup.
 export const StrategieVideoTeaser = () => {
     return (
         <div className="pt-2 pb-10 relative z-20 overflow-visible">
             <div className="w-full max-w-[95vw] md:max-w-[60vw] lg:max-w-[920px] mx-auto px-4">
                 <FadeUp>
-                    <a
-                        href="#apply"
+                    <button
+                        type="button"
+                        onClick={openStrategieForm}
                         aria-label="Vyplň dotazník a odemkni si celé video"
-                        className="group block relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515] cursor-pointer"
+                        className="group block w-full text-left relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515] cursor-pointer"
                     >
                         <style>{`
                             @keyframes teaser-pulse {
@@ -26,9 +28,9 @@ export const StrategieVideoTeaser = () => {
                         {/* Poster 16:9 */}
                         <div className="w-full relative pb-[56.25%]">
                             <img
-                                src="/images/hero/Still%202026-03-12%20235253.jpg"
+                                src="/images/vsl-nahled.png"
                                 alt="Náhled strategického videa"
-                                className="absolute inset-0 w-full h-full object-cover opacity-70 transition-transform duration-700 group-hover:scale-[1.03]"
+                                className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-[1.03]"
                             />
                             {/* Tmavý gradient + jemný blur, ať je jasné, že je zamčené */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/30 backdrop-blur-[2px]" />
@@ -51,7 +53,7 @@ export const StrategieVideoTeaser = () => {
                                 </div>
                             </div>
                         </div>
-                    </a>
+                    </button>
                 </FadeUp>
             </div>
         </div>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FadeUp } from '../FadeUp';
+import { openStrategieForm } from './strategieForm';
 
 const reveals = [
     {
@@ -38,12 +39,13 @@ const notForYou = [
 
 export const StrategieCta = ({ label = 'Chci video zdarma' }: { label?: string }) => (
     <div className="pt-2 flex justify-center relative z-20">
-        <a
-            href="#apply"
+        <button
+            type="button"
+            onClick={openStrategieForm}
             className="bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-5 rounded-full text-lg md:text-xl font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
         >
             {label}
-        </a>
+        </button>
     </div>
 );
 
