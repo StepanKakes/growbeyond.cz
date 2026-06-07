@@ -6,6 +6,7 @@ import { initUtmTracking } from '@/lib/utm';
 import { Navbar } from '@/components/Navbar';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { StrategieHero } from '@/components/strategie/StrategieHero';
+import { StrategieVideoTeaser } from '@/components/strategie/StrategieVideoTeaser';
 import { StrategieReveal, StrategieForWho, StrategieCta } from '@/components/strategie/StrategieFunnel';
 import { FadeUp } from '@/components/FadeUp';
 import { Testimonials } from '@/components/Testimonials';
@@ -28,6 +29,9 @@ export default function StrategiePage() {
 
                 {/* 1 — Callout hero + qualifier + social proof */}
                 <StrategieHero />
+
+                {/* 1b — Uzamčený náhled videa */}
+                <StrategieVideoTeaser />
 
                 {/* 2 — Co ve videu zdarma odhalíme */}
                 <StrategieReveal />

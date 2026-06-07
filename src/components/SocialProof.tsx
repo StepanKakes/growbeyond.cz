@@ -16,7 +16,7 @@ export const SocialProof = () => {
                 className="text-white tracking-tight-custom font-sans font-bold relative inline-block z-10 whitespace-nowrap"
                 style={{ fontSize: '15px' }}
             >
-                <span className="relative z-10">5 500+ tvůrců prošlo mými programy</span>
+                <span className="relative z-10">4 500+ tvůrců prošlo mými programy</span>
                 {/* Hand-drawn marker red underline */}
                 <svg className="absolute left-[-2%] bottom-[-8px] w-[104%] h-3 text-[#FF0E00] z-0 pointer-events-none" viewBox="0 0 300 12" fill="none" preserveAspectRatio="none">
                     <path d="M2 9C50 3 150 3 298 9" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
