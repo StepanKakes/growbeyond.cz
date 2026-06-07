@@ -6,6 +6,7 @@ import { initUtmTracking } from '@/lib/utm';
 import { Navbar } from '@/components/Navbar';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { StrategieHero } from '@/components/strategie/StrategieHero';
+import { StrategieReveal, StrategieForWho, StrategieCta } from '@/components/strategie/StrategieFunnel';
 import { FadeUp } from '@/components/FadeUp';
 import { CallBenefits } from '@/components/mentorship/CallBenefits';
 import { Testimonials } from '@/components/Testimonials';
@@ -26,12 +27,30 @@ export default function StrategiePage() {
                 <Navbar />
                 <TextureOverlay />
 
+                {/* 1 — Callout hero + qualifier + social proof */}
                 <StrategieHero />
 
-                {/* Krok 1 — kvalifikační dotazník, po odeslání přesměruje na video */}
-                <section className="pt-2 pb-2 px-4 relative z-20 text-center">
+                {/* 2 — Co ve videu zdarma odhalíme */}
+                <StrategieReveal />
+                <StrategieCta />
+
+                {/* 3 — Co na strategickém hovoru získáš */}
+                <div className="pt-20">
+                    <CallBenefits />
+                </div>
+
+                {/* 4 — Je to pro tebe / není to pro tebe */}
+                <StrategieForWho />
+                <StrategieCta />
+
+                {/* 5 — Sociální důkaz */}
+                <Testimonials />
+                <ScreenshotGallery />
+
+                {/* 6 — Formulář jako brána před videem (kvalifikační dotazník) */}
+                <section className="pt-20 pb-2 px-4 relative z-20 text-center">
                     <FadeUp>
-                        <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight-custom leading-[1.15] max-w-2xl mx-auto">
+                        <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.15] max-w-2xl mx-auto">
                             Vyplň dotazník a&nbsp;odemkni si strategické video
                         </h2>
                         <p className="text-gray-300 text-sm md:text-base mt-3 max-w-xl mx-auto">
@@ -45,21 +64,6 @@ export default function StrategiePage() {
                         <ApplicationForm redirectMode />
                     </div>
                 </div>
-
-                <CallBenefits />
-
-                <div className="pt-4 flex flex-col items-center relative z-20 pb-16">
-                    <a
-                        href="#apply"
-                        className="bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-5 rounded-full text-lg md:text-xl font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
-                    >
-                        Chci video zdarma
-                    </a>
-                </div>
-
-                <Testimonials />
-
-                <ScreenshotGallery />
 
                 <LegalFooter />
             </main>
