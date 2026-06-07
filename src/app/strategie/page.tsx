@@ -8,7 +8,6 @@ import { TextureOverlay } from '@/components/TextureOverlay';
 import { StrategieHero } from '@/components/strategie/StrategieHero';
 import { StrategieReveal, StrategieForWho, StrategieCta } from '@/components/strategie/StrategieFunnel';
 import { FadeUp } from '@/components/FadeUp';
-import { CallBenefits } from '@/components/mentorship/CallBenefits';
 import { Testimonials } from '@/components/Testimonials';
 import { ScreenshotGallery } from '@/components/mentorship/ScreenshotGallery';
 import { LegalFooter } from '@/components/LegalFooter';
@@ -34,13 +33,10 @@ export default function StrategiePage() {
                 <StrategieReveal />
                 <StrategieCta />
 
-                {/* 3 — Co na strategickém hovoru získáš */}
-                <div className="pt-20">
-                    <CallBenefits />
+                {/* 3 — Je to pro tebe / není to pro tebe */}
+                <div className="pt-12">
+                    <StrategieForWho />
                 </div>
-
-                {/* 4 — Je to pro tebe / není to pro tebe */}
-                <StrategieForWho />
                 <StrategieCta />
 
                 {/* 5 — Sociální důkaz */}

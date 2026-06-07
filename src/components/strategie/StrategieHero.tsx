@@ -5,16 +5,6 @@ import { motion } from 'motion/react';
 import { FadeUp } from '../FadeUp';
 import { SocialProof } from '../SocialProof';
 
-const redUnderline = {
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 12' fill='none' preserveAspectRatio='none'%3E%3Cpath d='M2 9C100 3 300 3 398 9' stroke='%23FF0E00' stroke-width='4' stroke-linecap='round' /%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat' as const,
-    backgroundPosition: 'left bottom' as const,
-    backgroundSize: '100% 10px',
-    WebkitBoxDecorationBreak: 'clone' as const,
-    boxDecorationBreak: 'clone' as React.CSSProperties['boxDecorationBreak'],
-    paddingBottom: '8px',
-};
-
 export const StrategieHero = () => {
     return (
         <section className="relative pt-24 pb-8 px-4 z-10 flex flex-col items-center overflow-hidden">
@@ -31,31 +21,49 @@ export const StrategieHero = () => {
                 }}
             />
 
-            <div className="max-w-[1100px] mx-auto w-full text-center relative z-20 flex flex-col items-center pt-6">
-                {/* Qualifier badge */}
+            <div className="max-w-[1200px] mx-auto w-full text-center relative z-20 flex flex-col items-center pt-8">
+                {/* Statický callout — stejný styl jako homepage, bez rotující bubliny */}
                 <FadeUp>
-                    <span className="inline-flex items-center gap-2 mb-7 px-4 py-2 rounded-full border border-brand-red/50 bg-brand-red/10 text-white text-[11px] md:text-sm font-bold uppercase tracking-wider">
-                        🎯 Jen pro kouče, mentory a&nbsp;konzultanty, co to s&nbsp;růstem myslí vážně
-                    </span>
+                    <h2 className="text-[22px] md:text-[32px] font-bold text-white mb-5 tracking-tight-custom leading-[1.2]">
+                        Jsi <span className="text-brand-red">kouč</span>, <span className="text-brand-red">mentor</span> nebo <span className="text-brand-red">konzultant</span>?
+                    </h2>
                 </FadeUp>
 
-                {/* Hero headline — formát „Jak [vyřešit pain] a [dosáhnout výsledku]" */}
-                <FadeUp delay={0.1}>
-                    <h1 className="text-[30px] md:text-[56px] font-bold text-white tracking-tight-custom leading-[1.1] max-w-[18ch] md:max-w-[20ch] mx-auto mb-7">
-                        Jak proměnit svůj Instagram v&nbsp;podnikání, které ti každý měsíc{' '}
-                        <span style={redUnderline}>stabilně vydělává šestimístně</span>
-                    </h1>
-                </FadeUp>
+                {/* Hlavní nadpis — červené-bar styl jako homepage */}
+                <div className="flex flex-col items-center gap-2 md:gap-3 mb-8 w-full">
+                    <div className="relative inline-block px-3 py-1 md:py-2">
+                        <motion.div
+                            initial={{ scaleX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ delay: 0.2, duration: 0.8, ease: 'easeInOut' }}
+                            className="absolute inset-0 bg-brand-red origin-left"
+                        />
+                        <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
+                            Dostaň svůj coaching na
+                        </h1>
+                    </div>
+                    <div className="relative inline-block px-3 py-1 md:py-2">
+                        <motion.div
+                            initial={{ scaleX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ delay: 0.6, duration: 0.8, ease: 'easeInOut' }}
+                            className="absolute inset-0 bg-brand-red origin-left"
+                        />
+                        <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
+                            stabilních 300–500&nbsp;tis. Kč měsíčně
+                        </h1>
+                    </div>
+                </div>
 
-                {/* Subhead — „aniž bys" negativy */}
+                {/* Zkrácený podnadpis */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.5 }}
+                    transition={{ duration: 0.8, delay: 1 }}
                 >
-                    <div className="mb-8 max-w-2xl mx-auto px-2">
-                        <p className="text-[18px] md:text-[25px] text-white font-medium leading-[1.6]">
-                            Vyplň krátký dotazník a&nbsp;hned se ti odemkne video, kde ti krok za krokem ukážeme přesný funnel, kterým prodáváš svůj program kvalitnějším klientům — bez tlačení na&nbsp;sílu, bez vypalování tisíců do&nbsp;reklam a&nbsp;bez hodin nad obsahem, který stejně neprodává.
+                    <div className="mb-9 max-w-xl mx-auto px-2">
+                        <p className="text-[19px] md:text-[26px] text-white font-medium leading-[1.5]">
+                            Vyplň krátký dotazník a&nbsp;hned se ti odemkne video s&nbsp;přesným funnelem, který to dělá za tebe.
                         </p>
                     </div>
                 </motion.div>
