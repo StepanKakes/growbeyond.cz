@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 import { CalendlySection } from './CalendlySection';
 import { getStoredUtm } from '@/lib/utm';
@@ -47,11 +48,38 @@ const q6Options = [
 // Nejnižší stupeň investice → diskvalifikace na CSP a vyřazení z follow-up e-mailu.
 const LOWEST_BUDGET = "0 - 25 tisíc Kč";
 
-export const ApplicationForm = () => {
+// Po kvalifikaci v reklamním funnelu přesměruj na unikátní stránku leadu
+// s VSL videem a kalendářem (/strategie/<id>). Když API nevrátilo ID,
+// spadni zpět na inline rezervaci, ať lead nepropadne.
+const RedirectToVideo = ({ leadId, email, followupEligible }: { leadId: string | null; email: string; followupEligible: boolean }) => {
+    const router = useRouter();
+
+    useEffect(() => {
+        if (leadId) router.push(`/strategie/${leadId}`);
+    }, [leadId, router]);
+
+    if (!leadId) {
+        return (
+            <div className="w-full animate-[fadeIn_1s_ease-out]">
+                <CalendlySection prefillEmail={email} followupEligible={followupEligible} />
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full flex flex-col items-center justify-center py-24 gap-6 animate-[fadeIn_0.6s_ease-out]">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-brand-red rounded-full animate-spin" />
+            <p className="text-white text-lg font-bold tracking-tight-custom">Připravujeme tvé strategické video…</p>
+        </div>
+    );
+};
+
+export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boolean }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [budgetConfirmed, setBudgetConfirmed] = useState<boolean | null>(null);
+    const [leadId, setLeadId] = useState<string | null>(null);
     const [formData, setFormData] = useState<FormData>({
         email: '',
         igHandle: '',
@@ -107,17 +135,21 @@ export const ApplicationForm = () => {
         setIsSubmitting(true);
 
         try {
-            await fetch('/api/mentorship-submit', {
+            const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...formData, utm: getStoredUtm() })
             });
+            const data = await res.json().catch(() => ({} as { id?: string }));
+            if (data?.id) setLeadId(data.id);
 
             setIsSubmitted(true);
-            setTimeout(() => {
-                const calElem = document.getElementById('calendly');
-                calElem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 300);
+            if (!redirectMode) {
+                setTimeout(() => {
+                    const calElem = document.getElementById('calendly');
+                    calElem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
         } catch (error) {
             console.error("Error submitting form", error);
             setIsSubmitted(true);
@@ -192,6 +224,16 @@ export const ApplicationForm = () => {
                     </div>
                 );
             }
+        }
+
+        if (redirectMode) {
+            return (
+                <RedirectToVideo
+                    leadId={leadId}
+                    email={formData.email}
+                    followupEligible={formData.q6 !== LOWEST_BUDGET}
+                />
+            );
         }
 
         return (
@@ -379,7 +421,7 @@ export const ApplicationForm = () => {
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                        "Rezervovat hovor"
+                                        redirectMode ? "Odemknout video" : "Rezervovat hovor"
                                     )}
                                 </button>
                             )}

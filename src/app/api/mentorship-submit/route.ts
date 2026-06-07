@@ -112,7 +112,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to submit to Notion' }, { status: response.status });
         }
 
-        return NextResponse.json({ success: true });
+        const created = await response.json();
+        // Vrať ID vytvořené Notion stránky — funnel z reklamy podle něj
+        // přesměruje na unikátní stránku leadu (/strategie/<id>).
+        return NextResponse.json({ success: true, id: created.id });
     } catch (error) {
         console.error('Submission error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
