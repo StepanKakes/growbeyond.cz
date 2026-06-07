@@ -29,41 +29,31 @@ export const StrategieHero = () => {
                     </h2>
                 </FadeUp>
 
-                {/* Hlavní nadpis — červené-bar styl jako homepage */}
-                <div className="flex flex-col items-center gap-2 md:gap-3 mb-8 w-full">
-                    <div className="relative inline-block px-3 py-1 md:py-2">
-                        <motion.div
-                            initial={{ scaleX: 0 }}
-                            animate={{ scaleX: 1 }}
-                            transition={{ delay: 0.2, duration: 0.8, ease: 'easeInOut' }}
-                            className="absolute inset-0 bg-brand-red origin-left"
-                        />
-                        <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
-                            Dostaň svůj coaching na
-                        </h1>
-                    </div>
-                    <div className="relative inline-block px-3 py-1 md:py-2">
-                        <motion.div
-                            initial={{ scaleX: 0 }}
-                            animate={{ scaleX: 1 }}
-                            transition={{ delay: 0.6, duration: 0.8, ease: 'easeInOut' }}
-                            className="absolute inset-0 bg-brand-red origin-left"
-                        />
-                        <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
-                            stabilních 300–500&nbsp;tis. Kč měsíčně
-                        </h1>
-                    </div>
-                </div>
+                {/* Hlavní nadpis — červené zvýraznění obepíná jen text (per řádek) */}
+                <FadeUp delay={0.1}>
+                    <h1 className="text-[30px] md:text-[54px] font-bold text-white tracking-tight-custom leading-[1.5] max-w-[16ch] md:max-w-[18ch] mx-auto mb-8">
+                        <span
+                            style={{
+                                backgroundColor: '#FF0E00',
+                                WebkitBoxDecorationBreak: 'clone',
+                                boxDecorationBreak: 'clone',
+                                padding: '0.06em 0.28em',
+                            }}
+                        >
+                            Dostaň svůj coaching na stabilních 300–500&nbsp;tis. Kč měsíčně
+                        </span>
+                    </h1>
+                </FadeUp>
 
-                {/* Zkrácený podnadpis */}
+                {/* Zkrácený podnadpis — bez tečky na konci */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5 }}
                 >
                     <div className="mb-9 max-w-xl mx-auto px-2">
                         <p className="text-[19px] md:text-[26px] text-white font-medium leading-[1.5]">
-                            Vyplň krátký dotazník a&nbsp;hned se ti odemkne video s&nbsp;přesným funnelem, který to dělá za tebe.
+                            Získej kompletní video strategii, díky které prodáváš svůj coaching kvalitnějším klientům za vyšší ceny
                         </p>
                     </div>
                 </motion.div>
