@@ -40,7 +40,7 @@ export const StrategieHero = () => {
                                 padding: '0.06em 0.28em',
                             }}
                         >
-                            Dostaň svůj coaching na stabilních 300&nbsp;tis.+ Kč měsíčně
+                            Dostaň svůj coaching na stabilních 500+&nbsp;tisíc měsíčně
                         </span>
                     </h1>
                 </FadeUp>
