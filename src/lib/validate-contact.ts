@@ -166,73 +166,6 @@ export function normalizeIg(raw: string): string {
         .trim();
 }
 
-// ── IG existence: cache + proxy ─────────────────────────────────────────────
-type IgCached = { ok: boolean; status: 'exists' | 'not_found'; reason?: string };
-const IG_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
-const igCache = new Map<string, { res: IgCached; exp: number }>();
-
-function igCacheGet(handle: string): IgCached | null {
-    const hit = igCache.get(handle.toLowerCase());
-    if (hit && hit.exp > Date.now()) return hit.res;
-    if (hit) igCache.delete(handle.toLowerCase());
-    return null;
-}
-function igCacheSet(handle: string, res: IgCached) {
-    // pojistka proti neomezenému růstu
-    if (igCache.size > 5000) igCache.clear();
-    igCache.set(handle.toLowerCase(), { res, exp: Date.now() + IG_CACHE_TTL_MS });
-}
-
-const IG_HEADERS = (handle: string): Record<string, string> => ({
-    'x-ig-app-id': '936619743392459',
-    'x-asbd-id': '129477',
-    'x-ig-www-claim': '0',
-    'x-requested-with': 'XMLHttpRequest',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    accept: '*/*',
-    'accept-language': 'en-US,en;q=0.9',
-    referer: `https://www.instagram.com/${encodeURIComponent(handle)}/`,
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-});
-
-// Vrátí status + JSON profilu. Přes ScrapingBee (rezidenční proxy, obchází 429
-// z datacentra) pokud je klíč; jinak přímý dotaz (funguje z rezidenční IP).
-// Pozn.: bez plné sady browser-XHR hlaviček vrací IG na Node fetch HTTP 400.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchIgProfile(handle: string): Promise<{ status: number; json: any }> {
-    const target = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`;
-    const beeKey = process.env.SCRAPINGBEE_API_KEY;
-
-    if (beeKey) {
-        // ScrapingBee přeposílá naše hlavičky s prefixem Spb-; transparent_status_code
-        // vrátí původní 404/200 místo vlastního stavu.
-        const params = new URLSearchParams({
-            api_key: beeKey,
-            url: target,
-            render_js: 'false',
-            premium_proxy: 'true',
-            transparent_status_code: 'true',
-            forward_headers: 'true',
-        });
-        const spbHeaders: Record<string, string> = {};
-        for (const [k, v] of Object.entries(IG_HEADERS(handle))) spbHeaders[`Spb-${k}`] = v;
-
-        const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params.toString()}`, {
-            headers: spbHeaders,
-            signal: AbortSignal.timeout(15000),
-        });
-        const json = await res.json().catch(() => null);
-        return { status: res.status, json };
-    }
-
-    // Fallback: přímý dotaz
-    const res = await fetch(target, { headers: IG_HEADERS(handle), signal: AbortSignal.timeout(5000) });
-    const json = await res.json().catch(() => null);
-    return { status: res.status, json };
-}
-
 export async function validateInstagram(raw: string): Promise<IgDetails> {
     const handle = normalizeIg(raw);
 
@@ -252,38 +185,45 @@ export async function validateInstagram(raw: string): Promise<IgDetails> {
         return { ...base, ok: false, placeholder: true, status: 'not_found', reason: 'Zadej prosím svůj reálný Instagram.' };
     }
 
-    // Cache: stejný handle neověřuj opakovaně (šetří proxy kredity i 429)
-    const cached = igCacheGet(handle);
-    if (cached) {
-        return { ...base, ...cached };
-    }
-
     try {
-        const { status, json } = await fetchIgProfile(handle);
-        base.httpStatus = status;
+        // Pozn.: bez plné sady browser-XHR hlaviček vrací Instagram na Node
+        // fetch (undici) HTTP 400. S nimi vrací korektně 200 / 404.
+        const res = await fetch(
+            `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+            {
+                headers: {
+                    'x-ig-app-id': '936619743392459',
+                    'x-asbd-id': '129477',
+                    'x-ig-www-claim': '0',
+                    'x-requested-with': 'XMLHttpRequest',
+                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    accept: '*/*',
+                    'accept-language': 'en-US,en;q=0.9',
+                    referer: `https://www.instagram.com/${encodeURIComponent(handle)}/`,
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-origin',
+                },
+                signal: AbortSignal.timeout(5000),
+            }
+        );
+        base.httpStatus = res.status;
 
-        if (status === 404) {
-            const res = { ok: false, status: 'not_found' as const, reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
-            igCacheSet(handle, res);
-            return { ...base, ...res };
+        if (res.status === 404) {
+            return { ...base, ok: false, status: 'not_found', reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
         }
 
-        if (status >= 200 && status < 300) {
-            const user = json?.data?.user;
+        if (res.ok) {
+            const data = await res.json().catch(() => null);
+            const user = data?.data?.user;
             if (user === null) {
-                const res = { ok: false, status: 'not_found' as const, reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
-                igCacheSet(handle, res);
-                return { ...base, ...res };
+                return { ...base, ok: false, status: 'not_found', reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
             }
-            if (user) {
-                const res = { ok: true, status: 'exists' as const };
-                igCacheSet(handle, res);
-                return { ...base, ...res };
-            }
+            if (user) return { ...base, ok: true, status: 'exists' };
             return { ...base, ok: true, status: 'uncertain' };
         }
 
-        // 401/403/429/5xx → nejisté → fail-open (necachujeme)
+        // 401/429/403/5xx → nejisté → fail-open
         return { ...base, ok: true, status: 'uncertain' };
     } catch {
         return { ...base, ok: true, status: 'uncertain' };
