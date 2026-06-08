@@ -80,6 +80,8 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [budgetConfirmed, setBudgetConfirmed] = useState<boolean | null>(null);
     const [leadId, setLeadId] = useState<string | null>(null);
+    const [isValidating, setIsValidating] = useState(false);
+    const [errors, setErrors] = useState<{ email?: string; igHandle?: string }>({});
     const [formData, setFormData] = useState<FormData>({
         email: '',
         igHandle: '',
@@ -102,8 +104,30 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleNext = () => {
-        if (currentStep < 6) setCurrentStep(prev => prev + 1);
+    // 1. krok: instantní validace e-mailu a Instagramu před postupem dál.
+    // Fail-open — když validační endpoint selže, leada nezablokujeme.
+    const handleStep1Next = async () => {
+        if (!isStepValid() || isValidating) return;
+        setIsValidating(true);
+        setErrors({});
+        try {
+            const res = await fetch('/api/validate-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email, igHandle: formData.igHandle }),
+            });
+            const data = await res.json().catch(() => ({ ok: true }));
+            if (data && data.ok === false && data.errors && (data.errors.email || data.errors.igHandle)) {
+                setErrors(data.errors);
+                return;
+            }
+            setCurrentStep(2);
+        } catch {
+            // síťová chyba → pusť dál
+            setCurrentStep(2);
+        } finally {
+            setIsValidating(false);
+        }
     };
 
     const handleBack = () => {
@@ -258,10 +282,11 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                 required
                                 type="email"
                                 value={formData.email}
-                                onChange={e => handleSelect('email', e.target.value)}
-                                className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-brand-red focus:bg-[#252525] transition-colors placeholder:text-gray-600"
+                                onChange={e => { handleSelect('email', e.target.value); if (errors.email) setErrors(prev => ({ ...prev, email: undefined })); }}
+                                className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.email ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
                                 placeholder="email@gmail.com"
                             />
+                            {errors.email && <p className="text-brand-red text-sm mt-2">{errors.email}</p>}
                         </div>
                         <div>
                             <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Tvůj Instagram Handle</label>
@@ -269,10 +294,11 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                 required
                                 type="text"
                                 value={formData.igHandle}
-                                onChange={e => handleSelect('igHandle', e.target.value)}
-                                className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-brand-red focus:bg-[#252525] transition-colors placeholder:text-gray-600"
+                                onChange={e => { handleSelect('igHandle', e.target.value); if (errors.igHandle) setErrors(prev => ({ ...prev, igHandle: undefined })); }}
+                                className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.igHandle ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
                                 placeholder="@creationwithtim"
                             />
+                            {errors.igHandle && <p className="text-brand-red text-sm mt-2">{errors.igHandle}</p>}
                         </div>
                     </div>
                 );
@@ -404,11 +430,15 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                             {currentStep === 1 && (
                                 <button
                                     type="button"
-                                    onClick={handleNext}
-                                    disabled={!isStepValid()}
-                                    className="px-10 ml-auto bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold transition-colors"
+                                    onClick={handleStep1Next}
+                                    disabled={!isStepValid() || isValidating}
+                                    className="px-10 ml-auto bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold transition-colors flex items-center justify-center gap-2 min-w-[150px]"
                                 >
-                                    Pokračovat
+                                    {isValidating ? (
+                                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        "Pokračovat"
+                                    )}
                                 </button>
                             )}
 
