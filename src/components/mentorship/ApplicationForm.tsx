@@ -82,6 +82,15 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
     const [leadId, setLeadId] = useState<string | null>(null);
     const [isValidating, setIsValidating] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; igHandle?: string }>({});
+    const [debug, setDebug] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [valLog, setValLog] = useState<any>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug')) {
+            setDebug(true);
+        }
+    }, []);
     const [formData, setFormData] = useState<FormData>({
         email: '',
         igHandle: '',
@@ -117,10 +126,13 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                 body: JSON.stringify({ email: formData.email, igHandle: formData.igHandle }),
             });
             const data = await res.json().catch(() => ({ ok: true }));
+            if (data?.details) setValLog(data.details);
             if (data && data.ok === false && data.errors && (data.errors.email || data.errors.igHandle)) {
                 setErrors(data.errors);
                 return;
             }
+            // V debug módu nepostupuj automaticky, ať je vidět výsledek
+            if (debug) return;
             setCurrentStep(2);
         } catch {
             // síťová chyba → pusť dál
@@ -415,6 +427,35 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                         <div className="flex-1">
                             {renderStepContent()}
                         </div>
+
+                        {debug && valLog && (
+                            <div className="mt-4 rounded-lg border border-white/15 bg-black/50 p-4 text-xs font-mono text-left space-y-3">
+                                <div className="text-white/50 uppercase tracking-wider">Debug · validace (jen s ?debug=1)</div>
+
+                                <div className="space-y-1">
+                                    <div className={valLog.email.ok ? 'text-green-400 font-bold' : 'text-brand-red font-bold'}>
+                                        E-MAIL: {valLog.email.ok ? 'OK' : 'BLOK'}
+                                    </div>
+                                    <div className="text-white/70 break-all">
+                                        {valLog.email.email || '—'} · formát: {String(valLog.email.formatValid)} · test/placeholder: {String(valLog.email.placeholder)} · disposable: {String(valLog.email.disposable)} · doména přijímá poštu: {String(valLog.email.domainAcceptsMail)}
+                                        {valLog.email.provider?.name && ` · service(${valLog.email.provider.name}): ${valLog.email.provider.used ? valLog.email.provider.status : 'nepoužito'}`}
+                                    </div>
+                                    {valLog.email.reason && <div className="text-brand-red">↳ {valLog.email.reason}</div>}
+                                </div>
+
+                                <div className="space-y-1">
+                                    <div className={valLog.instagram.ok ? 'text-green-400 font-bold' : 'text-brand-red font-bold'}>
+                                        INSTAGRAM: {valLog.instagram.status === 'exists' ? 'NALEZEN' : valLog.instagram.status === 'not_found' ? 'NENALEZEN' : 'NEOVĚŘENO (puštěno dál)'}
+                                    </div>
+                                    <div className="text-white/70 break-all">
+                                        @{valLog.instagram.handle || '—'} · formát: {String(valLog.instagram.formatValid)} · test/placeholder: {String(valLog.instagram.placeholder)} · http: {valLog.instagram.httpStatus ?? '—'}
+                                    </div>
+                                    {valLog.instagram.reason && <div className="text-brand-red">↳ {valLog.instagram.reason}</div>}
+                                </div>
+
+                                <div className="text-white/40">V debug módu se po validaci nepostupuje na další krok.</div>
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-4 pt-6 mt-8 border-t border-white/5">
                             {currentStep > 1 && (

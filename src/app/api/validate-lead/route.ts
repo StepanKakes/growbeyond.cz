@@ -19,5 +19,10 @@ export async function POST(request: NextRequest) {
     if (!igRes.ok) errors.igHandle = igRes.reason;
 
     const ok = Object.keys(errors).length === 0;
-    return NextResponse.json({ ok, errors });
+
+    return NextResponse.json({
+        ok,
+        errors,
+        details: { email: emailRes, instagram: igRes },
+    });
 }
