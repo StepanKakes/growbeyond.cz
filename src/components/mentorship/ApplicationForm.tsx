@@ -352,10 +352,9 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                 <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-[#1A1A1A] border border-green-500/40 animate-[fadeIn_0.3s_ease-out]">
                                     {igPreview.profile.profilePicUrl && (
                                         <img
-                                            src={igPreview.profile.profilePicUrl}
+                                            src={`/api/ig-avatar?username=${encodeURIComponent(igPreview.profile.username)}&url=${encodeURIComponent(igPreview.profile.profilePicUrl)}`}
                                             alt=""
-                                            referrerPolicy="no-referrer"
-                                            className="w-11 h-11 rounded-full object-cover border border-white/10 shrink-0"
+                                            className="w-11 h-11 rounded-full object-cover border border-white/10 shrink-0 bg-[#262626]"
                                         />
                                     )}
                                     <span className="text-white font-bold truncate flex-1 min-w-0">@{igPreview.profile.username}</span>
