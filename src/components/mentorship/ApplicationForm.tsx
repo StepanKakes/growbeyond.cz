@@ -198,6 +198,18 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
         if (currentStep !== 6 || !isStepValid()) return;
         setIsSubmitting(true);
 
+        // Clarity: označ session leadem → v dashboardu dohledatelná nahrávka
+        try {
+            const ig = '@' + formData.igHandle.trim().replace(/^@+/, '');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const clarity = (window as any).clarity;
+            if (typeof clarity === 'function') {
+                clarity('identify', formData.email, undefined, undefined, ig);
+                clarity('set', 'lead_email', formData.email);
+                clarity('set', 'lead_ig', ig);
+            }
+        } catch { /* clarity nemusí být načtený (bez souhlasu) */ }
+
         try {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',

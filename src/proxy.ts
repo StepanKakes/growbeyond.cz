@@ -6,8 +6,9 @@ export function proxy(request: NextRequest) {
 
   const isProtectedSop = pathname.startsWith('/sop') && !pathname.startsWith('/sop/login');
   const isProtectedLinks = pathname.startsWith('/links');
+  const isProtectedLeads = pathname.startsWith('/leads');
 
-  if (isProtectedSop || isProtectedLinks) {
+  if (isProtectedSop || isProtectedLinks || isProtectedLeads) {
     const isAuthorized = request.cookies.get('sop_authorized')?.value === 'true';
 
     if (!isAuthorized) {
@@ -25,5 +26,6 @@ export const config = {
   matcher: [
     '/sop/:path*',
     '/links/:path*',
+    '/leads/:path*',
   ],
 };

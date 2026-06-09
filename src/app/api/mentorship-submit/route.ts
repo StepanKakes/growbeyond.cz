@@ -38,14 +38,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
-    // IG enrichment — followers + verified (cache hit z náhledu/validace)
+    // IG enrichment — profil (cache hit z náhledu/validace)
     let igFollowers: number | null = null;
     let igVerified = false;
+    let igProfilePic = '';
+    let igName = '';
     try {
         const p = await getInstagramProfile(igHandle || '');
         if (p.profile) {
             igFollowers = p.profile.followers;
             igVerified = p.profile.isVerified;
+            igProfilePic = p.profile.profilePicUrl || '';
+            igName = p.profile.fullName || '';
         }
     } catch { /* enrichment je best-effort, nesmí shodit uložení leada */ }
 
@@ -65,6 +69,8 @@ export async function POST(request: NextRequest) {
     const enrichProperties: Record<string, unknown> = {
         'Verified': { checkbox: igVerified },
         ...(igFollowers != null ? { 'Sledující': { number: igFollowers } } : {}),
+        ...(igProfilePic ? { 'Profilovka': { url: igProfilePic } } : {}),
+        ...(igName ? { 'Jméno': { rich_text: [{ text: { content: igName } }] } } : {}),
     };
 
     const createPage = (properties: Record<string, unknown>) =>
