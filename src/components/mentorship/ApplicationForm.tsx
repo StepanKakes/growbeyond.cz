@@ -358,22 +358,8 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                             className="w-11 h-11 rounded-full object-cover border border-white/10 shrink-0"
                                         />
                                     )}
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-white font-bold truncate">@{igPreview.profile.username}</span>
-                                            {igPreview.profile.isVerified && (
-                                                <svg className="w-4 h-4 text-[#3897f0] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.4-.6 2.9 1.6 2.5-2 2.2.2 3-2.8.9-1.4 2.6-2.9-.7-2.6 1.5-2.3-1.9-2.3 1.9-2.6-1.5-2.9.7L4.8 16l-2.8-.9.2-3-2-2.2L1.8 7.4 1.2 4.5l2.6-1.4 1-2.8 3 .2L10 .2" /><path d="M10.6 14.6l-2.7-2.7 1.1-1.1 1.6 1.6 3.8-3.8 1.1 1.1z" fill="#fff" /></svg>
-                                            )}
-                                        </div>
-                                        <div className="text-gray-400 text-xs truncate">
-                                            {igPreview.profile.fullName}
-                                            {igPreview.profile.followers != null && ` · ${igPreview.profile.followers.toLocaleString('cs-CZ')} sledujících`}
-                                        </div>
-                                    </div>
-                                    <span className="flex items-center gap-1 text-green-400 text-xs font-bold shrink-0">
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                                        Nalezeno
-                                    </span>
+                                    <span className="text-white font-bold truncate flex-1 min-w-0">@{igPreview.profile.username}</span>
+                                    <svg className="w-5 h-5 text-green-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
                                 </div>
                             )}
                             {igPreview.state === 'not_found' && !errors.igHandle && (

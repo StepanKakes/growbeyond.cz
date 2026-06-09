@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getInstagramProfile } from '@/lib/validate-contact';
+
+export const runtime = 'nodejs';
 
 type UtmPayload = {
     utm_source?: string;
@@ -35,81 +38,60 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
+    // IG enrichment — followers + verified (cache hit z náhledu/validace)
+    let igFollowers: number | null = null;
+    let igVerified = false;
     try {
-        const response = await fetch('https://api.notion.com/v1/pages', {
+        const p = await getInstagramProfile(igHandle || '');
+        if (p.profile) {
+            igFollowers = p.profile.followers;
+            igVerified = p.profile.isVerified;
+        }
+    } catch { /* enrichment je best-effort, nesmí shodit uložení leada */ }
+
+    const baseProperties: Record<string, unknown> = {
+        'Email': { title: [{ text: { content: email || '' } }] },
+        'IG': { rich_text: [{ text: { content: igHandle || '' } }] },
+        'Problém': { select: { name: q3Short || '' } },
+        'Současný příjem': { select: { name: q4 || '' } },
+        'Způsob monetizace': { select: { name: q5 || '' } },
+        'Investice do růstu': { select: { name: q6 || '' } },
+        'Detailní odpověď': { rich_text: [{ text: { content: q7 || '' } }] },
+        'Zdroj': { rich_text: [{ text: { content: zdroj } }] },
+        'Kampaň': { rich_text: [{ text: { content: kampan } }] },
+        'Video': { rich_text: [{ text: { content: video } }] },
+    };
+
+    const enrichProperties: Record<string, unknown> = {
+        'Verified': { checkbox: igVerified },
+        ...(igFollowers != null ? { 'Sledující': { number: igFollowers } } : {}),
+    };
+
+    const createPage = (properties: Record<string, unknown>) =>
+        fetch('https://api.notion.com/v1/pages', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${NOTION_TOKEN}`,
                 'Content-Type': 'application/json',
                 'Notion-Version': '2022-06-28',
             },
-            body: JSON.stringify({
-                parent: { database_id: DATABASE_ID },
-                properties: {
-                    'Email': {
-                        title: [
-                            {
-                                text: {
-                                    content: email || '',
-                                },
-                            },
-                        ],
-                    },
-                    'IG': {
-                        rich_text: [
-                            {
-                                text: {
-                                    content: igHandle || '',
-                                },
-                            },
-                        ],
-                    },
-                    'Problém': {
-                        select: {
-                            name: q3Short || '',
-                        },
-                    },
-                    'Současný příjem': {
-                        select: {
-                            name: q4 || '',
-                        },
-                    },
-                    'Způsob monetizace': {
-                        select: {
-                            name: q5 || '',
-                        },
-                    },
-                    'Investice do růstu': {
-                        select: {
-                            name: q6 || '',
-                        },
-                    },
-                    'Detailní odpověď': {
-                        rich_text: [
-                            {
-                                text: {
-                                    content: q7 || '',
-                                },
-                            },
-                        ],
-                    },
-                    'Zdroj': {
-                        rich_text: [{ text: { content: zdroj } }],
-                    },
-                    'Kampaň': {
-                        rich_text: [{ text: { content: kampan } }],
-                    },
-                    'Video': {
-                        rich_text: [{ text: { content: video } }],
-                    },
-                },
-            }),
+            body: JSON.stringify({ parent: { database_id: DATABASE_ID }, properties }),
         });
 
+    try {
+        let response = await createPage({ ...baseProperties, ...enrichProperties });
+
+        // Když enrichment property v DB ještě neexistuje, Notion vrátí 400.
+        // Lead nesmí propadnout → ulož aspoň základní data.
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Notion API error:', errorData);
-            return NextResponse.json({ error: 'Failed to submit to Notion' }, { status: response.status });
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Notion API error (s enrichmentem):', errorData);
+            response = await createPage(baseProperties);
+            if (!response.ok) {
+                const e2 = await response.json().catch(() => ({}));
+                console.error('Notion API error (base):', e2);
+                return NextResponse.json({ error: 'Failed to submit to Notion' }, { status: response.status });
+            }
         }
 
         const created = await response.json();
