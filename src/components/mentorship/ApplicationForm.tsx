@@ -207,6 +207,8 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                 clarity('identify', formData.email, undefined, undefined, ig);
                 clarity('set', 'lead_email', formData.email);
                 clarity('set', 'lead_ig', ig);
+                // Garantuj uložení nahrávky tohoto leada (ať se neodsampluje)
+                clarity('upgrade', 'lead-submit');
             }
         } catch { /* clarity nemusí být načtený (bez souhlasu) */ }
 
