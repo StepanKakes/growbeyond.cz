@@ -82,6 +82,10 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
     const [leadId, setLeadId] = useState<string | null>(null);
     const [isValidating, setIsValidating] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; igHandle?: string }>({});
+    const [igPreview, setIgPreview] = useState<{
+        state: 'idle' | 'loading' | 'found' | 'not_found';
+        profile?: { username: string; fullName: string; profilePicUrl: string; isVerified: boolean; followers: number | null };
+    }>({ state: 'idle' });
     const [debug, setDebug] = useState(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [valLog, setValLog] = useState<any>(null);
@@ -111,6 +115,30 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
 
     const handleSelect = (field: keyof FormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    // Live náhled IG profilu po opuštění pole — ukáže, že jsme našli správný účet
+    const lookupIgPreview = async () => {
+        const h = formData.igHandle
+            .trim()
+            .replace(/^@+/, '')
+            .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+            .replace(/\/+$/, '')
+            .split(/[/?#]/)[0];
+        if (!h || h.length < 2) {
+            setIgPreview({ state: 'idle' });
+            return;
+        }
+        setIgPreview({ state: 'loading' });
+        try {
+            const res = await fetch(`/api/ig-lookup?username=${encodeURIComponent(h)}`);
+            const data = await res.json();
+            if (data?.found && data.profile) setIgPreview({ state: 'found', profile: data.profile });
+            else if (data?.uncertain) setIgPreview({ state: 'idle' }); // nejisté → nech být
+            else setIgPreview({ state: 'not_found' });
+        } catch {
+            setIgPreview({ state: 'idle' });
+        }
     };
 
     // 1. krok: instantní validace e-mailu a Instagramu před postupem dál.
@@ -306,11 +334,51 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                 required
                                 type="text"
                                 value={formData.igHandle}
-                                onChange={e => { handleSelect('igHandle', e.target.value); if (errors.igHandle) setErrors(prev => ({ ...prev, igHandle: undefined })); }}
+                                onChange={e => { handleSelect('igHandle', e.target.value); if (errors.igHandle) setErrors(prev => ({ ...prev, igHandle: undefined })); if (igPreview.state !== 'idle') setIgPreview({ state: 'idle' }); }}
+                                onBlur={lookupIgPreview}
                                 className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.igHandle ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
                                 placeholder="@creationwithtim"
                             />
                             {errors.igHandle && <p className="text-brand-red text-sm mt-2">{errors.igHandle}</p>}
+
+                            {/* Live náhled profilu */}
+                            {igPreview.state === 'loading' && (
+                                <div className="flex items-center gap-2 mt-3 text-gray-400 text-sm">
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    Hledám profil…
+                                </div>
+                            )}
+                            {igPreview.state === 'found' && igPreview.profile && (
+                                <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-[#1A1A1A] border border-green-500/40 animate-[fadeIn_0.3s_ease-out]">
+                                    {igPreview.profile.profilePicUrl && (
+                                        <img
+                                            src={igPreview.profile.profilePicUrl}
+                                            alt=""
+                                            referrerPolicy="no-referrer"
+                                            className="w-11 h-11 rounded-full object-cover border border-white/10 shrink-0"
+                                        />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-white font-bold truncate">@{igPreview.profile.username}</span>
+                                            {igPreview.profile.isVerified && (
+                                                <svg className="w-4 h-4 text-[#3897f0] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.4-.6 2.9 1.6 2.5-2 2.2.2 3-2.8.9-1.4 2.6-2.9-.7-2.6 1.5-2.3-1.9-2.3 1.9-2.6-1.5-2.9.7L4.8 16l-2.8-.9.2-3-2-2.2L1.8 7.4 1.2 4.5l2.6-1.4 1-2.8 3 .2L10 .2" /><path d="M10.6 14.6l-2.7-2.7 1.1-1.1 1.6 1.6 3.8-3.8 1.1 1.1z" fill="#fff" /></svg>
+                                            )}
+                                        </div>
+                                        <div className="text-gray-400 text-xs truncate">
+                                            {igPreview.profile.fullName}
+                                            {igPreview.profile.followers != null && ` · ${igPreview.profile.followers.toLocaleString('cs-CZ')} sledujících`}
+                                        </div>
+                                    </div>
+                                    <span className="flex items-center gap-1 text-green-400 text-xs font-bold shrink-0">
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                                        Nalezeno
+                                    </span>
+                                </div>
+                            )}
+                            {igPreview.state === 'not_found' && !errors.igHandle && (
+                                <p className="text-brand-red text-sm mt-2">Tenhle účet jsme nenašli. Zkontroluj username.</p>
+                            )}
                         </div>
                     </div>
                 );

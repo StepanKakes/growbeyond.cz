@@ -167,18 +167,34 @@ export function normalizeIg(raw: string): string {
         .trim();
 }
 
-// ── IG existence: cache + volitelný rezidenční proxy ────────────────────────
-type IgCached = { ok: boolean; status: 'exists' | 'not_found'; reason?: string };
-const IG_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
-const igCache = new Map<string, { res: IgCached; exp: number }>();
+// ── IG existence + náhled profilu: cache + volitelný rezidenční proxy ────────
+export type IgProfile = {
+    username: string;
+    fullName: string;
+    profilePicUrl: string;
+    isVerified: boolean;
+    isPrivate: boolean;
+    followers: number | null;
+    posts: number | null;
+    category: string | null;
+};
 
-function igCacheGet(handle: string): IgCached | null {
+type IgResolved = {
+    exists: 'exists' | 'not_found' | 'uncertain';
+    httpStatus: number;
+    profile: IgProfile | null;
+};
+
+const IG_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 h
+const igCache = new Map<string, { res: IgResolved; exp: number }>();
+
+function igCacheGet(handle: string): IgResolved | null {
     const hit = igCache.get(handle.toLowerCase());
     if (hit && hit.exp > Date.now()) return hit.res;
     if (hit) igCache.delete(handle.toLowerCase());
     return null;
 }
-function igCacheSet(handle: string, res: IgCached) {
+function igCacheSet(handle: string, res: IgResolved) {
     if (igCache.size > 5000) igCache.clear(); // pojistka proti růstu
     igCache.set(handle.toLowerCase(), { res, exp: Date.now() + IG_CACHE_TTL_MS });
 }
@@ -227,6 +243,68 @@ async function fetchIgProfile(handle: string): Promise<{ status: number; json: a
     return { status: res.status, json };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function trimProfile(user: any): IgProfile {
+    return {
+        username: user.username || '',
+        fullName: user.full_name || '',
+        profilePicUrl: user.profile_pic_url || user.profile_pic_url_hd || '',
+        isVerified: !!user.is_verified,
+        isPrivate: !!user.is_private,
+        followers: user.edge_followed_by?.count ?? null,
+        posts: user.edge_owner_to_timeline_media?.count ?? null,
+        category: user.category_name || user.business_category_name || null,
+    };
+}
+
+// Jednou dohledá profil (s cache). Sdílené pro validaci i náhled v formuláři.
+async function igResolve(handle: string): Promise<IgResolved> {
+    const cached = igCacheGet(handle);
+    if (cached) return cached;
+
+    try {
+        const { status, json } = await fetchIgProfile(handle);
+
+        if (status === 404) {
+            const res: IgResolved = { exists: 'not_found', httpStatus: status, profile: null };
+            igCacheSet(handle, res);
+            return res;
+        }
+
+        if (status >= 200 && status < 300) {
+            const user = json?.data?.user;
+            if (user) {
+                const res: IgResolved = { exists: 'exists', httpStatus: status, profile: trimProfile(user) };
+                igCacheSet(handle, res);
+                return res;
+            }
+            if (user === null) {
+                const res: IgResolved = { exists: 'not_found', httpStatus: status, profile: null };
+                igCacheSet(handle, res);
+                return res;
+            }
+        }
+
+        // 401/403/429/5xx → nejisté → fail-open (necachujeme)
+        return { exists: 'uncertain', httpStatus: status, profile: null };
+    } catch {
+        return { exists: 'uncertain', httpStatus: 0, profile: null };
+    }
+}
+
+// Náhled profilu pro formulář (live, na blur). uncertain = nech být.
+export async function getInstagramProfile(
+    raw: string
+): Promise<{ found: boolean; uncertain: boolean; handle: string; profile: IgProfile | null }> {
+    const handle = normalizeIg(raw);
+    const formatValid = IG_RE.test(handle) && !handle.includes('..');
+    if (!formatValid || looksLikeTest(handle)) {
+        return { found: false, uncertain: false, handle, profile: null };
+    }
+    const r = await igResolve(handle);
+    return { found: r.exists === 'exists', uncertain: r.exists === 'uncertain', handle, profile: r.profile };
+}
+
 export async function validateInstagram(raw: string): Promise<IgDetails> {
     const handle = normalizeIg(raw);
 
@@ -246,38 +324,15 @@ export async function validateInstagram(raw: string): Promise<IgDetails> {
         return { ...base, ok: false, placeholder: true, status: 'not_found', reason: 'Zadej prosím svůj reálný Instagram.' };
     }
 
-    // Cache: stejný handle neověřuj opakovaně (šetří proxy data i rate-limit)
-    const cached = igCacheGet(handle);
-    if (cached) return { ...base, ...cached };
+    const r = await igResolve(handle);
+    base.httpStatus = r.httpStatus;
 
-    try {
-        const { status, json } = await fetchIgProfile(handle);
-        base.httpStatus = status;
-
-        if (status === 404) {
-            const res = { ok: false, status: 'not_found' as const, reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
-            igCacheSet(handle, res);
-            return { ...base, ...res };
-        }
-
-        if (status >= 200 && status < 300) {
-            const user = json?.data?.user;
-            if (user === null) {
-                const res = { ok: false, status: 'not_found' as const, reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
-                igCacheSet(handle, res);
-                return { ...base, ...res };
-            }
-            if (user) {
-                const res = { ok: true, status: 'exists' as const };
-                igCacheSet(handle, res);
-                return { ...base, ...res };
-            }
-            return { ...base, ok: true, status: 'uncertain' };
-        }
-
-        // 401/403/429/5xx → nejisté → fail-open (necachujeme)
-        return { ...base, ok: true, status: 'uncertain' };
-    } catch {
-        return { ...base, ok: true, status: 'uncertain' };
+    if (r.exists === 'not_found') {
+        return { ...base, ok: false, status: 'not_found', reason: 'Tenhle Instagram účet jsme nenašli. Zkontroluj username.' };
     }
+    if (r.exists === 'exists') {
+        return { ...base, ok: true, status: 'exists' };
+    }
+    // uncertain → fail-open
+    return { ...base, ok: true, status: 'uncertain' };
 }
