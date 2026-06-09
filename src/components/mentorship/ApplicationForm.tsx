@@ -198,17 +198,22 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
         if (currentStep !== 6 || !isStepValid()) return;
         setIsSubmitting(true);
 
-        // Clarity: označ session leadem → v dashboardu dohledatelná nahrávka
+        // Clarity: označ session leadem → hashnuté user id použijeme pro
+        // automatický odkaz na nahrávku v dashboardu.
+        let clarityUserId = '';
         try {
             const ig = '@' + formData.igHandle.trim().replace(/^@+/, '');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const clarity = (window as any).clarity;
             if (typeof clarity === 'function') {
-                clarity('identify', formData.email, undefined, undefined, ig);
+                const p = clarity('identify', formData.email, undefined, undefined, ig);
                 clarity('set', 'lead_email', formData.email);
                 clarity('set', 'lead_ig', ig);
-                // Garantuj uložení nahrávky tohoto leada (ať se neodsampluje)
-                clarity('upgrade', 'lead-submit');
+                clarity('upgrade', 'lead-submit'); // garantuj uložení nahrávky
+                if (p && typeof p.then === 'function') {
+                    const r = await p;
+                    clarityUserId = r?.id || '';
+                }
             }
         } catch { /* clarity nemusí být načtený (bez souhlasu) */ }
 
@@ -216,7 +221,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, utm: getStoredUtm() })
+                body: JSON.stringify({ ...formData, clarityUserId, utm: getStoredUtm() })
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) setLeadId(data.id);
