@@ -29,6 +29,7 @@
     "recharts": "^3.8.1",
     "stripe": "^20.4.1",
     "ua-parser-js": "^2.0.9",
+    "undici": "^8.4.1",
     "vokativ": "^1.0.1"
   },
   "devDependencies": {
