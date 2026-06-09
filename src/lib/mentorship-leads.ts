@@ -18,6 +18,7 @@ export type Lead = {
     source: string;
     campaign: string;
     video: string;
+    clarity: string;
     createdTime: string;
     notionUrl: string;
     score: number;
@@ -114,6 +115,7 @@ export async function listMentorshipLeads(): Promise<Lead[]> {
                     source: text(p['Zdroj']),
                     campaign: text(p['Kampaň']),
                     video: text(p['Video']),
+                    clarity: urlp(p['Clarity']),
                     createdTime: page.created_time || '',
                     notionUrl: page.url || '',
                     score,
