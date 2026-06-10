@@ -1,18 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Plyr } from 'plyr-react';
 import "plyr-react/plyr.css";
 
-const plyrSource = {
-    type: 'video' as const,
-    sources: [
-        {
-            src: '1181936415',
-            provider: 'vimeo' as const,
-        },
-    ],
-};
+const DEFAULT_VIMEO_ID = '1181936415';
 
 const plyrOptions = {
     muted: true,
@@ -36,7 +28,12 @@ const plyrOptions = {
     ]
 };
 
-export const MentorshipVideoSection = () => {
+export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId?: string }) => {
+    const plyrSource = useMemo(() => ({
+        type: 'video' as const,
+        sources: [{ src: vimeoId, provider: 'vimeo' as const }],
+    }), [vimeoId]);
+
     const [showContent, setShowContent] = useState(false);
     const sectionRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);

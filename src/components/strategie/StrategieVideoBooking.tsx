@@ -31,7 +31,7 @@ export const StrategieVideoBooking = ({
             <div className="pt-8 pb-8 relative overflow-visible">
                 <div className="w-full max-w-[95vw] md:max-w-[60vw] lg:max-w-[1100px] mx-auto px-4">
                     <FadeUp>
-                        <MentorshipVideoSection />
+                        <MentorshipVideoSection vimeoId="1200135011" />
                     </FadeUp>
                 </div>
             </div>
