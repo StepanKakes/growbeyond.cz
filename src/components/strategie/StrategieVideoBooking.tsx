@@ -9,18 +9,12 @@ const MentorshipVideoSection = dynamic(
     () => import('@/components/mentorship/MentorshipVideoSection').then(m => m.MentorshipVideoSection),
     { ssr: false }
 );
-const CalendlySection = dynamic(
-    () => import('@/components/mentorship/CalendlySection').then(m => m.CalendlySection),
+const StrategieQualify = dynamic(
+    () => import('@/components/strategie/StrategieQualify').then(m => m.StrategieQualify),
     { ssr: false }
 );
 
-export const StrategieVideoBooking = ({
-    email,
-    followupEligible = true,
-}: {
-    email?: string;
-    followupEligible?: boolean;
-}) => {
+export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email?: string }) => {
     useEffect(() => {
         initUtmTracking();
     }, []);
@@ -36,19 +30,21 @@ export const StrategieVideoBooking = ({
                 </div>
             </div>
 
-            {/* Rezervace */}
+            {/* Kvalifikace + rezervace */}
             <section className="pt-8 pb-2 px-4 relative z-20 text-center">
                 <FadeUp>
                     <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.1] max-w-3xl mx-auto">
-                        Rezervuj si svůj strategický hovor
+                        Odpověz na pár otázek a&nbsp;rezervuj si hovor
                     </h2>
                     <p className="text-gray-300 text-base md:text-lg mt-4 max-w-xl mx-auto">
-                        Vyber si termín, který ti vyhovuje. Hovor je zdarma a&nbsp;nezávazný — projdeme spolu tvou situaci a&nbsp;ukážeme ti další kroky.
+                        Ať na hovor přijdeme připravení a&nbsp;rovnou půjdeme k&nbsp;věci.
                     </p>
                 </FadeUp>
             </section>
 
-            <CalendlySection prefillEmail={email} followupEligible={followupEligible} />
+            <div className="pt-6 relative z-20">
+                <StrategieQualify leadId={leadId} email={email} />
+            </div>
         </>
     );
 };

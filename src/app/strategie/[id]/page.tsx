@@ -57,7 +57,7 @@ export default async function StrategieVideoPage({ params }: { params: Promise<{
                 </div>
             </section>
 
-            <StrategieVideoBooking email={lead?.email} followupEligible={lead?.followupEligible ?? true} />
+            <StrategieVideoBooking leadId={id} email={lead?.email} />
         </main>
     );
 }

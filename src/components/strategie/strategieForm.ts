@@ -1,9 +1,6 @@
-// Jednoduchá event-based brána pro otevření formulářového popupu z libovolného
-// CTA na stránce /strategie, bez prop-drillingu nebo kontextu.
-export const STRATEGIE_FORM_EVENT = 'open-strategie-form';
-
+// Všechna CTA na /strategie scrollují k opt-in formuláři (e-mail + IG).
 export function openStrategieForm() {
     if (typeof window !== 'undefined') {
-        window.dispatchEvent(new Event(STRATEGIE_FORM_EVENT));
+        document.getElementById('optin')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }

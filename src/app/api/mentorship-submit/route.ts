@@ -64,14 +64,15 @@ export async function POST(request: NextRequest) {
     const baseProperties: Record<string, unknown> = {
         'Email': { title: [{ text: { content: email || '' } }] },
         'IG': { rich_text: [{ text: { content: igHandle || '' } }] },
-        'Problém': { select: { name: q3Short || '' } },
-        'Současný příjem': { select: { name: q4 || '' } },
-        'Způsob monetizace': { select: { name: q5 || '' } },
-        'Investice do růstu': { select: { name: q6 || '' } },
-        'Detailní odpověď': { rich_text: [{ text: { content: q7 || '' } }] },
         'Zdroj': { rich_text: [{ text: { content: zdroj } }] },
         'Kampaň': { rich_text: [{ text: { content: kampan } }] },
         'Video': { rich_text: [{ text: { content: video } }] },
+        // Kvalifikace je nepovinná — strategie funnel ji doplní později (PATCH)
+        ...(q3Short ? { 'Problém': { select: { name: q3Short } } } : {}),
+        ...(q4 ? { 'Současný příjem': { select: { name: q4 } } } : {}),
+        ...(q5 ? { 'Způsob monetizace': { select: { name: q5 } } } : {}),
+        ...(q6 ? { 'Investice do růstu': { select: { name: q6 } } } : {}),
+        ...(q7 ? { 'Detailní odpověď': { rich_text: [{ text: { content: q7 } }] } } : {}),
     };
 
     const enrichProperties: Record<string, unknown> = {
