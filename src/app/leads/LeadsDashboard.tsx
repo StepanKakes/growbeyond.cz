@@ -42,7 +42,7 @@ export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: st
     const [q, setQ] = useState('');
     const [tier, setTier] = useState<'all' | LeadTier>('all');
     const [verifiedOnly, setVerifiedOnly] = useState(false);
-    const [sort, setSort] = useState<SortKey>('score');
+    const [sort, setSort] = useState<SortKey>('date');
     const [openId, setOpenId] = useState<string | null>(null);
     const [showScoreInfo, setShowScoreInfo] = useState(false);
     const [enriching, setEnriching] = useState(false);
@@ -147,9 +147,9 @@ export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: st
                         </button>
                         <select value={sort} onChange={e => setSort(e.target.value as SortKey)}
                             className="bg-[#181818] border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-red">
+                            <option value="date">Nejnovější</option>
                             <option value="score">Skóre</option>
                             <option value="followers">Sledující</option>
-                            <option value="date">Nejnovější</option>
                         </select>
                     </div>
                 </div>
