@@ -199,19 +199,19 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId
                             onClick={handleOverlayClick}
                             className="absolute inset-0 z-[10] flex items-center justify-center cursor-pointer"
                         >
-                        <div className="relative flex flex-col items-center gap-4 px-12 py-8 rounded-2xl border-2 border-white/40 animate-box-shadow-pulse"
+                        <div className="relative flex flex-col items-center gap-2 md:gap-4 px-5 py-3.5 md:px-12 md:py-8 rounded-xl md:rounded-2xl border md:border-2 border-white/40 animate-box-shadow-pulse"
                             style={{ background: 'rgba(255, 14, 0, 0.88)' }}
                         >
-                                <svg className="w-14 h-14 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-8 h-8 md:w-14 md:h-14 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18.25l-4-4H5a1 1 0 01-1-1v-4a1 1 0 011-1h3l4-4v14z" />
                                     <path className="animate-wave-1" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.536 8.464a5 5 0 010 7.072" />
                                     <path className="animate-wave-2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M18.364 5.636a9 9 0 010 12.728" />
                                 </svg>
                                 <div className="text-center">
-                                    <p className="text-white font-bold text-base md:text-lg tracking-wide uppercase leading-tight">
+                                    <p className="text-white font-bold text-xs md:text-lg tracking-wide uppercase leading-tight">
                                         VIDEO SE PŘEHRÁVÁ
                                     </p>
-                                    <p className="text-white/80 font-medium text-sm md:text-base mt-1">
+                                    <p className="text-white/80 font-medium text-[11px] md:text-base mt-0.5 md:mt-1">
                                         Klikni pro zapnutí zvuku
                                     </p>
                                 </div>
