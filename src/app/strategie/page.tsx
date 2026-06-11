@@ -27,8 +27,8 @@ export default function StrategiePage() {
 
                 {/* Disqualifier */}
                 <section className="px-4 pt-2 pb-20 text-center">
-                    <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto uppercase tracking-wider font-bold leading-relaxed">
-                        Pokud neprovozuješ koučink, mentoring nebo konzultace, které to s&nbsp;růstem myslí vážně, tahle stránka pro tebe není. V&nbsp;klidu ji zavři.
+                    <p className="text-white text-base md:text-lg max-w-2xl mx-auto font-semibold leading-relaxed">
+                        Pokud neprovozuješ coaching, konzultace nebo mentoring, opusť prosím tuto stránku
                     </p>
                 </section>
 

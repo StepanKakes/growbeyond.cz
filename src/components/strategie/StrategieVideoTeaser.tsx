@@ -30,10 +30,10 @@ export const StrategieVideoTeaser = () => {
                             <img
                                 src="/images/vsl-nahled.png"
                                 alt="Náhled strategického videa"
-                                className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-[1.03]"
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                             />
-                            {/* Tmavý gradient + jemný blur, ať je jasné, že je zamčené */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/30 backdrop-blur-[2px]" />
+                            {/* Jemné ztmavení jen kvůli kontrastu play tlačítka */}
+                            <div className="absolute inset-0 bg-black/25" />
 
                             {/* Play tlačítko */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-center px-6">
