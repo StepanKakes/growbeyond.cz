@@ -42,10 +42,8 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
                         alt="Krok 1: Podívej se na video"
                         className="vsl-fs-hide absolute -top-8 sm:-top-12 md:-top-16 left-[-10px] sm:left-[2%] md:left-[5%] w-[220px] sm:w-[280px] md:w-[380px] z-30 pointer-events-none"
                     />
-                    <div className="relative z-20">
-                        <FadeUp>
-                            <MentorshipVideoSection vimeoId="1200135011" trackCid={leadId} trackEmail={email} />
-                        </FadeUp>
+                    <div className="relative">
+                        <MentorshipVideoSection vimeoId="1200135011" trackCid={leadId} trackEmail={email} />
                     </div>
                 </div>
             </div>

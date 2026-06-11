@@ -33,7 +33,7 @@ export const StrategieFormModal = () => {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex justify-center px-0 md:px-6 py-0 md:py-8 animate-[fadeIn_0.2s_ease-out]">
+        <div data-lenis-prevent className="fixed inset-0 z-[100] flex justify-center px-0 md:px-6 py-0 md:py-8 animate-[fadeIn_0.2s_ease-out] overscroll-contain">
             <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" onClick={() => setOpen(false)} />
             <div className="relative z-10 w-full md:max-w-lg flex flex-col max-h-[100dvh] md:max-h-[94vh]">
                 <div className="flex justify-end p-3 shrink-0">
