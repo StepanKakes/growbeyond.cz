@@ -13,12 +13,11 @@ const problemOptions = [
     "Málo klientů: Nechodí dost poptávek.",
     "Začínám: Zatím (skoro) nevydělávám a chci to rozjet.",
 ];
-const incomeOptions = ["Nic", "Do 50 tisíc Kč", "50 - 80 tisíc Kč", "80 - 120 tisíc Kč", "Více než 120 tisíc Kč"];
 const monetizationOptions = ["1:1 koučink nebo konzultace", "Skupinový program nebo mastermind", "Online kurz nebo digitální produkt", "Zatím neprodávám / teprve začínám"];
 const budgetOptions = ["0 - 25 tisíc Kč", "25 - 50 tisíc Kč", "50 - 90 tisíc Kč", "90 - 150 tisíc Kč"];
 const LOWEST_BUDGET = "0 - 25 tisíc Kč";
 
-const STEPS = 4;
+const STEPS = 3;
 
 export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: string }) => {
     const [step, setStep] = useState(1);
@@ -108,7 +107,6 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
 
     const stepData: { title: string; field: keyof typeof data; options: string[]; split: boolean }[] = [
         { title: 'Co tě teď nejvíc brzdí?', field: 'q3', options: problemOptions, split: true },
-        { title: 'Kolik ti teď měsíčně vydělává tvoje podnikání?', field: 'q4', options: incomeOptions, split: false },
         { title: 'Jak aktuálně prodáváš?', field: 'q5', options: monetizationOptions, split: false },
         { title: 'Kolik jsi teď schopný/á investovat do růstu?', field: 'q6', options: budgetOptions, split: false },
     ];

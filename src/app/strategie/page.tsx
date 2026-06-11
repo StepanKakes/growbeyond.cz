@@ -9,7 +9,7 @@ import { StrategieHero } from '@/components/strategie/StrategieHero';
 import { LegalFooter } from '@/components/LegalFooter';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
-const StrategieOptin = dynamic(() => import('@/components/strategie/StrategieOptin').then(mod => mod.StrategieOptin), { ssr: false });
+const StrategieFormModal = dynamic(() => import('@/components/strategie/StrategieFormModal').then(mod => mod.StrategieFormModal), { ssr: false });
 
 export default function StrategiePage() {
     useEffect(() => {
@@ -22,12 +22,21 @@ export default function StrategiePage() {
                 <Navbar minimal />
                 <TextureOverlay />
 
-                {/* Minimalistický opt-in — hero + formulář */}
-                <StrategieHero />
-                <StrategieOptin />
+                {/* Hero s náhledem videa; formulář je v popupu */}
+                <StrategieHero showVideoPreview />
+
+                {/* Disqualifier */}
+                <section className="px-4 pt-2 pb-20 text-center">
+                    <p className="text-gray-500 text-sm md:text-base max-w-2xl mx-auto uppercase tracking-wider font-bold leading-relaxed">
+                        Pokud neprovozuješ koučink, mentoring nebo konzultace, které to s&nbsp;růstem myslí vážně, tahle stránka pro tebe není. V&nbsp;klidu ji zavři.
+                    </p>
+                </section>
 
                 <LegalFooter />
             </main>
+
+            {/* Opt-in popup */}
+            <StrategieFormModal />
         </SmoothScroll>
     );
 }

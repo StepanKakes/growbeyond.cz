@@ -1,6 +1,8 @@
-// Všechna CTA na /strategie scrollují k opt-in formuláři (e-mail + IG).
+// Event-based otevření opt-in popupu z libovolného CTA na /strategie.
+export const STRATEGIE_FORM_EVENT = 'open-strategie-form';
+
 export function openStrategieForm() {
     if (typeof window !== 'undefined') {
-        document.getElementById('optin')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.dispatchEvent(new Event(STRATEGIE_FORM_EVENT));
     }
 }

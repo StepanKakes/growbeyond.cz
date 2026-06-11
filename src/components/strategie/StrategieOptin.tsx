@@ -10,10 +10,13 @@ type IgPreview = {
     profile?: { username: string; profilePicUrl: string };
 };
 
+const incomeOptions = ['Nic', 'Do 50 tisíc Kč', '50 - 80 tisíc Kč', '80 - 120 tisíc Kč', 'Více než 120 tisíc Kč'];
+
 export const StrategieOptin = () => {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [ig, setIg] = useState('');
+    const [income, setIncome] = useState('');
     const [errors, setErrors] = useState<{ email?: string; ig?: string }>({});
     const [submitting, setSubmitting] = useState(false);
     const [igPreview, setIgPreview] = useState<IgPreview>({ state: 'idle' });
@@ -34,7 +37,7 @@ export const StrategieOptin = () => {
         } catch { setIgPreview({ state: 'idle' }); }
     };
 
-    const isValid = email.includes('@') && ig.trim() !== '';
+    const isValid = email.includes('@') && ig.trim() !== '' && income !== '';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,7 +80,7 @@ export const StrategieOptin = () => {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, igHandle: ig, clarityUserId, utm: getStoredUtm() }),
+                body: JSON.stringify({ email, igHandle: ig, q4: income, clarityUserId, utm: getStoredUtm() }),
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) {
@@ -137,6 +140,23 @@ export const StrategieOptin = () => {
                             {igPreview.state === 'not_found' && !errors.ig && (
                                 <p className="text-brand-red text-sm mt-2">Tenhle účet jsme nenašli. Zkontroluj username.</p>
                             )}
+                        </div>
+
+                        {/* Příjem */}
+                        <div>
+                            <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Kolik ti teď měsíčně vydělává tvoje podnikání?</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {incomeOptions.map(opt => (
+                                    <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={() => setIncome(opt)}
+                                        className={`px-3 py-3 rounded-xl border text-sm font-bold transition-colors ${income === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
