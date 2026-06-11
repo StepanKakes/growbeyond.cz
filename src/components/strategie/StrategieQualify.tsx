@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FadeUp } from '../FadeUp';
 import { CalendlySection } from '../mentorship/CalendlySection';
+import { trackVslEvent } from '@/lib/vslTrack';
 
 // Přepracovaná otázka na problém + zbytek kvalifikace (bez otevřené otázky).
 const problemOptions = [
@@ -25,6 +26,22 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [budgetConfirmed, setBudgetConfirmed] = useState<boolean | null>(null);
+    const formRef = useRef<HTMLElement>(null);
+    const startedRef = useRef(false);
+
+    // form_viewed — formulář se dostal do viewportu
+    useEffect(() => {
+        const el = formRef.current;
+        if (!el || !leadId) return;
+        const obs = new IntersectionObserver((entries) => {
+            if (entries.some(e => e.isIntersecting)) {
+                trackVslEvent(leadId, 'form_viewed', email);
+                obs.disconnect();
+            }
+        }, { threshold: 0.3 });
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, [leadId, email]);
 
     const submit = async (finalData: typeof data) => {
         setSubmitting(true);
@@ -41,6 +58,10 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     };
 
     const choose = (field: keyof typeof data, value: string, options: number) => {
+        if (!startedRef.current) {
+            startedRef.current = true;
+            trackVslEvent(leadId, 'form_started', email);
+        }
         const next = { ...data, [field]: value };
         setData(next);
         setTimeout(() => {
@@ -94,7 +115,7 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     const cur = stepData[step - 1];
 
     return (
-        <section className="pt-4 pb-12 px-4 relative z-20 w-full">
+        <section ref={formRef} className="pt-4 pb-12 px-4 relative z-20 w-full">
             <FadeUp>
                 <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-6 md:p-10 min-h-[420px] flex flex-col relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-white/5">

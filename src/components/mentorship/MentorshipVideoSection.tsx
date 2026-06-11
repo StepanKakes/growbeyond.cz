@@ -3,36 +3,38 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Plyr } from 'plyr-react';
 import "plyr-react/plyr.css";
+import { VSL_MILESTONES, trackVslEvent } from '@/lib/vslTrack';
 
 const DEFAULT_VIMEO_ID = '1181936415';
 
-const plyrOptions = {
-    muted: true,
-    loop: { active: true },
-    ratio: '16:9',
-    vimeo: {
-        autoplay: true,
-        muted: true,
-        responsive: true,
-        byline: false,
-        portrait: false,
-        title: false,
-        transparent: false
-    },
-    controls: [
-        'play-large',
-        'play',
-        'mute',
-        'volume',
-        'fullscreen'
-    ]
-};
+export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, trackCid, trackEmail }: { vimeoId?: string; trackCid?: string; trackEmail?: string }) => {
+    // VSL mód (s trackingem): bez loopu, ať se watchtime počítá čistě.
+    const vslMode = !!trackCid;
 
-export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId?: string }) => {
     const plyrSource = useMemo(() => ({
         type: 'video' as const,
         sources: [{ src: vimeoId, provider: 'vimeo' as const }],
     }), [vimeoId]);
+
+    const plyrOptions = useMemo(() => ({
+        muted: true,
+        loop: { active: !vslMode },
+        ratio: '16:9',
+        vimeo: {
+            autoplay: true,
+            muted: true,
+            responsive: true,
+            byline: false,
+            portrait: false,
+            title: false,
+            transparent: false
+        },
+        controls: ['play-large', 'play', 'mute', 'volume', 'fullscreen'],
+    }), [vslMode]);
+
+    // Tracking se aktivuje až po zapnutí zvuku (reálná pozornost), milníky dedup
+    const trackingActiveRef = useRef(false);
+    const sentMilestonesRef = useRef<Set<string>>(new Set());
 
     const [showContent, setShowContent] = useState(false);
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,17 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId
                         setIsPaused(!isPlaying);
                     }
 
+                    // VSL watchtime milníky — reálné přehrávání (po zapnutí zvuku), dedup
+                    if (vslMode && trackingActiveRef.current && duration > 1) {
+                        const percent = playerTime / duration;
+                        for (const m of VSL_MILESTONES) {
+                            if (percent >= m.p && !sentMilestonesRef.current.has(m.name)) {
+                                sentMilestonesRef.current.add(m.name);
+                                trackVslEvent(trackCid as string, m.name, trackEmail);
+                            }
+                        }
+                    }
+
                     if (playerTime !== lastKnownTime) {
                         lastKnownTime = playerTime;
                         lastSyncTimestamp = performance.now();
@@ -97,7 +110,8 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId
                     const time = Math.min(interpolatedTime * 1.5, duration);
 
                     // Detect end of video to reset and loop (preventing recommended videos)
-                    if (playerTime >= duration - 0.5 && duration > 5) {
+                    // V VSL módu necháme video skončit (kvůli čistému watchtime).
+                    if (!vslMode && playerTime >= duration - 0.5 && duration > 5) {
                         try {
                             player.currentTime = 0;
                             player.play().catch(() => { });
@@ -142,6 +156,8 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID }: { vimeoId
                 console.error("Plyr interaction error:", e);
             }
         }
+        // Od teď je divák reálně zapojený → spusť watchtime tracking
+        trackingActiveRef.current = true;
         setShowOverlay(false);
     };
 

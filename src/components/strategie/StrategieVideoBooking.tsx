@@ -17,7 +17,9 @@ const StrategieQualify = dynamic(
 export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email?: string }) => {
     useEffect(() => {
         initUtmTracking();
-    }, []);
+        // ulož cid (= lead id) pro případné návraty bez parametru
+        try { localStorage.setItem('cid', leadId); } catch { /* ignore */ }
+    }, [leadId]);
 
     return (
         <>
@@ -25,7 +27,7 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
             <div className="pt-8 pb-8 relative overflow-visible">
                 <div className="w-full max-w-[95vw] md:max-w-[60vw] lg:max-w-[1100px] mx-auto px-4">
                     <FadeUp>
-                        <MentorshipVideoSection vimeoId="1200135011" />
+                        <MentorshipVideoSection vimeoId="1200135011" trackCid={leadId} trackEmail={email} />
                     </FadeUp>
                 </div>
             </div>
