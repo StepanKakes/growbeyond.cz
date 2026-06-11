@@ -28,7 +28,7 @@ export const StrategieVideoTeaser = () => {
                         {/* Poster 16:9 */}
                         <div className="w-full relative pb-[56.25%]">
                             <img
-                                src="/images/vsl-nahled.png"
+                                src="/images/vsl-nahled.jpg"
                                 alt="Náhled strategického videa"
                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                             />

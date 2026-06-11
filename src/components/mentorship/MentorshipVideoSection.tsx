@@ -7,16 +7,16 @@ import { VSL_MILESTONES, trackVslEvent } from '@/lib/vslTrack';
 
 const DEFAULT_VIMEO_ID = '1181936415';
 
-export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, trackCid, trackEmail }: { vimeoId?: string; videoUrl?: string; trackCid?: string; trackEmail?: string }) => {
+export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, posterUrl, trackCid, trackEmail }: { vimeoId?: string; videoUrl?: string; posterUrl?: string; trackCid?: string; trackEmail?: string }) => {
     // VSL mód (s trackingem): bez loopu, ať se watchtime počítá čistě.
     const vslMode = !!trackCid;
 
     // videoUrl = self-hosted MP4 (<video> → nativní iOS fullscreen); jinak Vimeo
     const plyrSource = useMemo(() => (
         videoUrl
-            ? { type: 'video' as const, sources: [{ src: videoUrl, type: 'video/mp4' }] }
+            ? { type: 'video' as const, sources: [{ src: videoUrl, type: 'video/mp4' }], ...(posterUrl ? { poster: posterUrl } : {}) }
             : { type: 'video' as const, sources: [{ src: vimeoId, provider: 'vimeo' as const }] }
-    ), [videoUrl, vimeoId]);
+    ), [videoUrl, vimeoId, posterUrl]);
 
     const plyrOptions = useMemo(() => ({
         muted: true,

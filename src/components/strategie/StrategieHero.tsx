@@ -79,7 +79,7 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                             <div className="relative rounded-xl overflow-hidden border border-white/15 aspect-video bg-[#151515] shadow-xl">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                    src="/images/vsl-nahled.png"
+                                    src="/images/vsl-nahled.jpg"
                                     alt="Náhled strategického videa"
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                                 />

@@ -43,7 +43,7 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
                         className="vsl-fs-hide absolute -top-8 sm:-top-12 md:-top-16 left-[-10px] sm:left-[2%] md:left-[5%] w-[220px] sm:w-[280px] md:w-[380px] z-30 pointer-events-none"
                     />
                     <div className="relative">
-                        <MentorshipVideoSection videoUrl="https://video.growbeyond.cz/vsl.mp4" trackCid={leadId} trackEmail={email} />
+                        <MentorshipVideoSection videoUrl="https://video.growbeyond.cz/main-vsl.mp4" posterUrl="/images/vsl-nahled.jpg" trackCid={leadId} trackEmail={email} />
                     </div>
                 </div>
             </div>
