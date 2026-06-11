@@ -6,7 +6,14 @@ import { FadeUp } from '../FadeUp';
 import { SocialProof } from '../SocialProof';
 import { openStrategieForm } from './strategieForm';
 
-export const StrategieHero = () => {
+export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Chci video zdarma' }: { ctaScrollTo?: string; ctaLabel?: string }) => {
+    const handleCta = () => {
+        if (ctaScrollTo) {
+            document.getElementById(ctaScrollTo)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            openStrategieForm();
+        }
+    };
     return (
         <section className="relative pt-24 pb-8 px-4 z-10 flex flex-col items-center overflow-hidden">
             <div
@@ -62,14 +69,16 @@ export const StrategieHero = () => {
                 <FadeUp delay={0.3}>
                     <button
                         type="button"
-                        onClick={openStrategieForm}
+                        onClick={handleCta}
                         className="bg-brand-red hover:bg-[#cc0b00] text-white px-9 py-4 rounded-full text-sm md:text-lg font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
                     >
-                        Chci video zdarma
+                        {ctaLabel}
                     </button>
-                    <p className="text-gray-400 text-xs md:text-sm mt-4">
-                        Zabere ti to 2&nbsp;minuty · video se odemkne okamžitě
-                    </p>
+                    {!ctaScrollTo && (
+                        <p className="text-gray-400 text-xs md:text-sm mt-4">
+                            Zabere ti to 2&nbsp;minuty · video se odemkne okamžitě
+                        </p>
+                    )}
                 </FadeUp>
 
                 <FadeUp delay={0.45}>
