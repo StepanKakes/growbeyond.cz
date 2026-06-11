@@ -38,7 +38,7 @@ const Verified = () => (
     <svg className="w-4 h-4 text-[#3897f0] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.4-.6 2.9 1.6 2.5-2 2.2.2 3-2.8.9-1.4 2.6-2.9-.7-2.6 1.5-2.3-1.9-2.3 1.9-2.6-1.5-2.9.7L4.8 16l-2.8-.9.2-3-2-2.2L1.8 7.4 1.2 4.5l2.6-1.4 1-2.8 3 .2L10 .2" /><path d="M10.6 14.6l-2.7-2.7 1.1-1.1 1.6 1.6 3.8-3.8 1.1 1.1z" fill="#fff" /></svg>
 );
 
-export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: string }) => {
+export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { leads: Lead[]; clarityProjectId?: string }) => {
     const [q, setQ] = useState('');
     const [tier, setTier] = useState<'all' | LeadTier>('all');
     const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -59,6 +59,16 @@ export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: st
             router.refresh();
         } catch { setEnrichMsg('Chyba'); }
         finally { setEnriching(false); }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Opravdu smazat tento lead? (přesune se do koše v Notionu)')) return;
+        try {
+            const res = await fetch('/api/leads/delete', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+            });
+            if (res.ok) router.refresh();
+        } catch { /* ignore */ }
     };
 
     const filtered = useMemo(() => {
@@ -162,7 +172,7 @@ export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: st
                 ) : (
                     <div className="flex flex-col gap-2">
                         {filtered.map(lead => (
-                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} />
+                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} onDelete={handleDelete} clarityProjectId={clarityProjectId} />
                         ))}
                     </div>
                 )}
@@ -171,8 +181,9 @@ export const LeadsDashboard = ({ leads }: { leads: Lead[]; clarityProjectId?: st
     );
 };
 
-function LeadRow({ lead, open, onToggle }: { lead: Lead; open: boolean; onToggle: () => void }) {
+function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId }: { lead: Lead; open: boolean; onToggle: () => void; onDelete: (id: string) => void; clarityProjectId: string }) {
     const ts = tierStyle[lead.tier];
+    const claritySearch = `https://clarity.microsoft.com/projects/view/${clarityProjectId}/impressions?` + encodeURI('date=Last 30 days&smartEvents=SubmitForm');
 
     return (
         <div className={`rounded-xl border overflow-hidden transition-colors ${open ? 'border-white/20 bg-[#161616]' : 'border-white/10 bg-[#131313] hover:bg-[#161616]'}`}>
@@ -243,14 +254,17 @@ function LeadRow({ lead, open, onToggle }: { lead: Lead; open: boolean; onToggle
                     )}
 
                     {/* Akce */}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {lead.clarity && (
+                    <div className="flex flex-wrap items-center gap-2 mt-4">
+                        {lead.clarity ? (
                             <a href={lead.clarity} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-red text-white text-xs font-bold hover:bg-[#cc0b00] transition-colors">▶ Clarity nahrávka</a>
+                        ) : (
+                            <a href={claritySearch} target="_blank" rel="noopener noreferrer" title="Lead nemá přímý odkaz (nepřijal cookies nebo přišel jinudy). Otevře hledání v Clarity." className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-400 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">🔎 Hledat v Clarity</a>
                         )}
                         <a href={`mailto:${lead.email}`} className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">✉ {lead.email}</a>
                         <a href={`https://instagram.com/${lead.ig}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">Instagram ↗</a>
                         {lead.notionUrl && <a href={lead.notionUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">Notion ↗</a>}
                         <a href={`/strategie/${lead.id}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">VSL stránka ↗</a>
+                        <button onClick={() => onDelete(lead.id)} className="ml-auto px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-medium hover:bg-red-500/20 transition-colors">🗑 Smazat</button>
                     </div>
                 </div>
             )}
