@@ -84,7 +84,7 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                                 />
                                 <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                                    <span className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/15 backdrop-blur-[2px] border border-white/50 flex items-center justify-center transition-all group-hover:bg-white/25 group-hover:scale-110">
+                                    <span className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/15 border border-white/50 flex items-center justify-center transition-all group-hover:bg-white/25 group-hover:scale-110">
                                         <svg className="w-6 h-6 md:w-7 md:h-7 text-white relative left-0.5 drop-shadow" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                     </span>
                                 </div>
