@@ -93,22 +93,18 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                     </FadeUp>
                 )}
 
-                <FadeUp delay={0.3}>
-                    <button
-                        type="button"
-                        onClick={handleCta}
-                        className="bg-brand-red hover:bg-[#cc0b00] text-white px-9 py-4 rounded-full text-sm md:text-lg font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
-                    >
-                        {ctaLabel}
-                    </button>
-                </FadeUp>
+                <button
+                    type="button"
+                    onClick={handleCta}
+                    className="bg-brand-red hover:bg-[#cc0b00] text-white px-9 py-4 rounded-full text-sm md:text-lg font-bold tracking-tight-custom transition-colors inline-block uppercase"
+                >
+                    {ctaLabel}
+                </button>
 
                 {showSocialProof && (
-                    <FadeUp delay={0.45}>
-                        <div className="mt-6 flex justify-center">
-                            <SocialProof />
-                        </div>
-                    </FadeUp>
+                    <div className="mt-6 flex justify-center">
+                        <SocialProof />
+                    </div>
                 )}
             </div>
         </section>
