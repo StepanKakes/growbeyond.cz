@@ -106,6 +106,7 @@ export const StrategieOptin = () => {
 
                     <div className="space-y-4">
                         <div>
+                            <label className="block text-white font-medium mb-2 text-sm">Tvůj e-mail</label>
                             <input
                                 required type="email" value={email}
                                 onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: undefined })); }}
@@ -115,6 +116,7 @@ export const StrategieOptin = () => {
                             {errors.email && <p className="text-brand-red text-sm mt-2">{errors.email}</p>}
                         </div>
                         <div>
+                            <label className="block text-white font-medium mb-2 text-sm">Tvůj Instagram</label>
                             <input
                                 required type="text" value={ig}
                                 onChange={e => { setIg(e.target.value); if (errors.ig) setErrors(p => ({ ...p, ig: undefined })); if (igPreview.state !== 'idle') setIgPreview({ state: 'idle' }); }}
@@ -143,7 +145,7 @@ export const StrategieOptin = () => {
 
                         {/* Příjem — seznam pod sebou (radio styl) */}
                         <div>
-                            <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Kolik ti teď měsíčně vydělává tvoje podnikání?</label>
+                            <label className="block text-white font-medium mb-2 text-sm">Kolik ti teď měsíčně vydělává tvoje podnikání?</label>
                             <div className="flex flex-col gap-2">
                                 {incomeOptions.map(opt => {
                                     const selected = income === opt;
@@ -154,8 +156,10 @@ export const StrategieOptin = () => {
                                             onClick={() => setIncome(opt)}
                                             className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left transition-colors ${selected ? 'border-brand-red bg-brand-red/10' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525]'}`}
                                         >
-                                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-brand-red' : 'border-white/30'}`}>
-                                                {selected && <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />}
+                                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-brand-red bg-brand-red' : 'border-white/30'}`}>
+                                                {selected && (
+                                                    <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                                                )}
                                             </span>
                                             <span className={`text-sm md:text-base font-bold ${selected ? 'text-white' : 'text-white/80'}`}>{opt}</span>
                                         </button>
