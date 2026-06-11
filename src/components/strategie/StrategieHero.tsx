@@ -17,7 +17,7 @@ const wavyUnderline = {
     paddingBottom: '8px',
 };
 
-export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showVideoPreview = false }: { ctaScrollTo?: string; ctaLabel?: string; showVideoPreview?: boolean }) => {
+export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showVideoPreview = false, showSocialProof = true }: { ctaScrollTo?: string; ctaLabel?: string; showVideoPreview?: boolean; showSocialProof?: boolean }) => {
     const handleCta = () => {
         if (ctaScrollTo) {
             document.getElementById(ctaScrollTo)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -87,11 +87,13 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                     </button>
                 </FadeUp>
 
-                <FadeUp delay={0.45}>
-                    <div className="mt-6 flex justify-center">
-                        <SocialProof />
-                    </div>
-                </FadeUp>
+                {showSocialProof && (
+                    <FadeUp delay={0.45}>
+                        <div className="mt-6 flex justify-center">
+                            <SocialProof />
+                        </div>
+                    </FadeUp>
+                )}
             </div>
         </section>
     );

@@ -29,7 +29,7 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
     return (
         <>
             {/* Hero — 3 headlines ze strategy page, CTA scrolluje na formulář */}
-            <StrategieHero ctaScrollTo="qualify" ctaLabel="Rezervovat hovor" />
+            <StrategieHero ctaScrollTo="qualify" ctaLabel="Rezervovat hovor" showSocialProof={false} />
 
             {/* VSL video + popisek Krok 1 */}
             <div className="pt-12 sm:pt-16 pb-8 relative overflow-visible">
@@ -54,9 +54,6 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
                     <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight-custom leading-[1.1] max-w-3xl mx-auto">
                         Odpověz na pár otázek a&nbsp;rezervuj si hovor
                     </h2>
-                    <p className="text-gray-300 text-base md:text-lg mt-4 max-w-xl mx-auto">
-                        Ať na hovor přijdeme připravení a&nbsp;rovnou půjdeme k&nbsp;věci.
-                    </p>
                 </FadeUp>
             </section>
 
