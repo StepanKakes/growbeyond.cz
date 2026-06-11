@@ -31,12 +31,20 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
             {/* Hero — 3 headlines ze strategy page, CTA scrolluje na formulář */}
             <StrategieHero ctaScrollTo="qualify" ctaLabel="Rezervovat hovor" />
 
-            {/* VSL video */}
-            <div className="pt-8 pb-8 relative overflow-visible">
-                <div className="w-full max-w-[95vw] md:max-w-[60vw] lg:max-w-[1100px] mx-auto px-4">
-                    <FadeUp>
-                        <MentorshipVideoSection vimeoId="1200135011" trackCid={leadId} trackEmail={email} />
-                    </FadeUp>
+            {/* VSL video + popisek Krok 1 */}
+            <div className="pt-12 sm:pt-16 pb-8 relative overflow-visible">
+                <div className="w-full max-w-[95vw] md:max-w-[60vw] lg:max-w-[1100px] mx-auto relative px-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="/images/krok1.svg"
+                        alt="Krok 1: Podívej se na video"
+                        className="absolute -top-8 sm:-top-12 md:-top-16 left-[-10px] sm:left-[2%] md:left-[5%] w-[220px] sm:w-[280px] md:w-[380px] z-30 pointer-events-none"
+                    />
+                    <div className="relative z-20">
+                        <FadeUp>
+                            <MentorshipVideoSection vimeoId="1200135011" trackCid={leadId} trackEmail={email} />
+                        </FadeUp>
+                    </div>
                 </div>
             </div>
 
@@ -52,8 +60,17 @@ export const StrategieVideoBooking = ({ leadId, email }: { leadId: string; email
                 </FadeUp>
             </section>
 
-            <div className="pt-6 relative z-20">
-                <StrategieQualify leadId={leadId} email={email} />
+            {/* Kvalifikační formulář + popisek Krok 2 */}
+            <div className="pt-6 relative z-20 overflow-visible">
+                <div className="w-full max-w-[95vw] md:max-w-[70vw] lg:max-w-[1000px] mx-auto relative px-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="/images/krok2.svg"
+                        alt="Krok 2"
+                        className="absolute -top-4 sm:-top-6 md:-top-10 right-[-10px] sm:right-0 md:right-8 w-[300px] sm:w-[380px] md:w-[530px] z-30 pointer-events-none"
+                    />
+                    <StrategieQualify leadId={leadId} email={email} />
+                </div>
             </div>
 
             {/* Proof — 1:1 jako homepage */}
