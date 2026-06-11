@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { FadeUp } from '../FadeUp';
 import { SocialProof } from '../SocialProof';
-import { StrategieVideoTeaser } from './StrategieVideoTeaser';
 import { openStrategieForm } from './strategieForm';
 
 const wavyUnderline = {
@@ -68,11 +67,28 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                     </div>
                 </motion.div>
 
-                {/* Náhled videa (nad CTA) */}
+                {/* Náhled videa (nad CTA) — klik otevře opt-in popup */}
                 {showVideoPreview && (
                     <FadeUp delay={0.25}>
-                        <div className="w-full">
-                            <StrategieVideoTeaser />
+                        <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={handleCta}
+                            className="group w-[92vw] max-w-[560px] mx-auto mb-6 cursor-pointer"
+                        >
+                            <div className="relative rounded-xl overflow-hidden border border-white/15 aspect-video bg-[#151515] shadow-xl">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src="/images/vsl-nahled.png"
+                                    alt="Náhled strategického videa"
+                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                />
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <span className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-brand-red flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                                        <svg className="w-7 h-7 md:w-9 md:h-9 text-white relative left-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </FadeUp>
                 )}
