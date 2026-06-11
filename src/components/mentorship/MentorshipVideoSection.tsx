@@ -42,9 +42,17 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, trackCid, t
     const progressBarRef = useRef<HTMLDivElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const hasAutoPlayed = useRef(false);
+    const fsAttached = useRef(false);
 
     const [showOverlay, setShowOverlay] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
+
+    // Na iOS jde Plyr u Vimeo do CSS-fallback fullscreenu → okolní prvky (SVG
+    // popisky, headline) prosvítají. Při fullscreenu přidáme html.vsl-fs a
+    // CSS schová prvky s .vsl-fs-hide. Cleanup při odchodu ze stránky.
+    useEffect(() => {
+        return () => { document.documentElement.classList.remove('vsl-fs'); };
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -71,6 +79,12 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, trackCid, t
             const player = playerRef.current?.plyr;
             if (player && player.ready) {
                 try {
+                    if (!fsAttached.current) {
+                        fsAttached.current = true;
+                        player.on('enterfullscreen', () => document.documentElement.classList.add('vsl-fs'));
+                        player.on('exitfullscreen', () => document.documentElement.classList.remove('vsl-fs'));
+                    }
+
                     if (!hasAutoPlayed.current && showContent) {
                         hasAutoPlayed.current = true;
                         player.muted = true;
@@ -171,6 +185,10 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, trackCid, t
                         --plyr-menu-background: #151515;
                         --plyr-menu-color: #ffffff;
                     }
+                    /* iOS fullscreen fallback: schovat prvky prosvítající přes video */
+                    html.vsl-fs .vsl-fs-hide { visibility: hidden !important; }
+                    html.vsl-fs .plyr--fullscreen-fallback { z-index: 2147483647 !important; }`}</style>
+                <style>{`
                     .plyr .plyr__video-embed iframe {
                         pointer-events: none;
                     }
