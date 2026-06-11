@@ -10,7 +10,7 @@ type IgPreview = {
     profile?: { username: string; profilePicUrl: string };
 };
 
-const incomeOptions = ['Nic', 'Do 50 tisíc Kč', '50 - 80 tisíc Kč', '80 - 120 tisíc Kč', '120 - 200 tisíc Kč', '200 tis.+ Kč'];
+const incomeOptions = ['Nic', 'Do 50 tisíc Kč', '50 - 80 tisíc Kč', '80 - 120 tisíc Kč', '120 - 200 tisíc Kč', 'Více než 200 tisíc Kč'];
 
 export const StrategieOptin = () => {
     const router = useRouter();
