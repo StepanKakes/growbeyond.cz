@@ -85,11 +85,11 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
         );
     }
 
-    const stepData: { title: string; field: keyof typeof data; options: string[]; cols: number }[] = [
-        { title: 'Co tě teď nejvíc brzdí?', field: 'q3', options: problemOptions, cols: 2 },
-        { title: 'Kolik ti teď měsíčně vydělává tvoje podnikání?', field: 'q4', options: incomeOptions, cols: 2 },
-        { title: 'Jak aktuálně prodáváš?', field: 'q5', options: monetizationOptions, cols: 2 },
-        { title: 'Kolik jsi teď schopný/á investovat do růstu?', field: 'q6', options: budgetOptions, cols: 2 },
+    const stepData: { title: string; field: keyof typeof data; options: string[]; split: boolean }[] = [
+        { title: 'Co tě teď nejvíc brzdí?', field: 'q3', options: problemOptions, split: true },
+        { title: 'Kolik ti teď měsíčně vydělává tvoje podnikání?', field: 'q4', options: incomeOptions, split: false },
+        { title: 'Jak aktuálně prodáváš?', field: 'q5', options: monetizationOptions, split: false },
+        { title: 'Kolik jsi teď schopný/á investovat do růstu?', field: 'q6', options: budgetOptions, split: false },
     ];
     const cur = stepData[step - 1];
 
@@ -112,8 +112,9 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
                         <h3 className="text-xl md:text-2xl font-bold text-white mb-6">{step}. {cur.title}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {cur.options.map((opt, i) => {
-                                const [t, ...rest] = opt.split(':');
-                                const desc = rest.join(':').trim();
+                                const [t, desc] = cur.split
+                                    ? [opt.split(':')[0], opt.split(':').slice(1).join(':').trim()]
+                                    : [opt, ''];
                                 const selected = data[cur.field] === opt;
                                 return (
                                     <div key={i} onClick={() => choose(cur.field, opt, cur.options.length)}
