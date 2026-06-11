@@ -141,20 +141,26 @@ export const StrategieOptin = () => {
                             )}
                         </div>
 
-                        {/* Příjem */}
+                        {/* Příjem — seznam pod sebou (radio styl) */}
                         <div>
                             <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Kolik ti teď měsíčně vydělává tvoje podnikání?</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {incomeOptions.map(opt => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => setIncome(opt)}
-                                        className={`px-3 py-3 rounded-xl border text-sm font-bold transition-colors ${income === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
+                            <div className="flex flex-col gap-2">
+                                {incomeOptions.map(opt => {
+                                    const selected = income === opt;
+                                    return (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            onClick={() => setIncome(opt)}
+                                            className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left transition-colors ${selected ? 'border-brand-red bg-brand-red/10' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525]'}`}
+                                        >
+                                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-brand-red' : 'border-white/30'}`}>
+                                                {selected && <span className="w-2.5 h-2.5 rounded-full bg-brand-red" />}
+                                            </span>
+                                            <span className={`text-sm md:text-base font-bold ${selected ? 'text-white' : 'text-white/80'}`}>{opt}</span>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
