@@ -62,7 +62,7 @@ export const StrategieHero = ({ ctaScrollTo, ctaLabel = 'Trénink zdarma', showV
                     <div className="mb-5 max-w-2xl mx-auto px-2">
                         <p className="text-[19px] md:text-[26px] text-white font-medium leading-[1.6]">
                             <span style={wavyUnderline}>
-                                Abys svůj program, koučink nebo konzultace prodával/a kvalitnějším klientům a&nbsp;každý měsíc stabilně dosahoval/a šestimístných příjmů
+                                Abys svůj program prodával/a kvalitnějším klientům a&nbsp;každý měsíc stabilně dosahoval/a šestimístných příjmů
                             </span>
                         </p>
                     </div>

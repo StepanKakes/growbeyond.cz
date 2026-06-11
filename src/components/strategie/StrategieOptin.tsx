@@ -100,10 +100,9 @@ export const StrategieOptin = () => {
         <section id="optin" className="pt-4 pb-12 px-4 relative z-20 w-full">
             <FadeUp>
                 <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-[#131313] border border-white/10 rounded-2xl p-6 md:p-8">
-                    <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight-custom text-center mb-1">
-                        Odemkni si strategické video
+                    <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight-custom text-center mb-6">
+                        Získej okamžitý přístup k&nbsp;našemu bezplatnému tréninku
                     </h3>
-                    <p className="text-gray-400 text-sm text-center mb-6">Zadej e-mail a Instagram — video se ti hned odemkne.</p>
 
                     <div className="space-y-4">
                         <div>
@@ -164,7 +163,7 @@ export const StrategieOptin = () => {
                         type="submit" disabled={!isValid || submitting}
                         className="w-full mt-6 bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white py-4 rounded-full text-base font-bold uppercase tracking-tight-custom transition-colors flex items-center justify-center gap-2"
                     >
-                        {submitting ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : 'Odemknout video'}
+                        {submitting ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : 'Zhlédnout bezplatný trénink'}
                     </button>
                     <p className="text-gray-500 text-xs leading-relaxed mt-4 text-center">
                         Pokračováním souhlasíš se zpracováním osobních údajů dle{' '}
