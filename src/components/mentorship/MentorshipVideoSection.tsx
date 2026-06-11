@@ -47,6 +47,9 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, t
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const hasAutoPlayed = useRef(false);
     const fsAttached = useRef(false);
+    // No-skip: nejvyšší reálně přehraná pozice; přeskok dopředu se vrátí zpět
+    const maxAllowedRef = useRef(0);
+    const seekGuardAttached = useRef(false);
 
     const [showOverlay, setShowOverlay] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
@@ -89,6 +92,16 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, t
                         player.on('exitfullscreen', () => document.documentElement.classList.remove('vsl-fs'));
                     }
 
+                    // No-skip: zákaz přeskočení dopředu (i v nativním fullscreenu)
+                    if (vslMode && !seekGuardAttached.current) {
+                        seekGuardAttached.current = true;
+                        player.on('seeking', () => {
+                            if (trackingActiveRef.current && player.currentTime > maxAllowedRef.current + 1) {
+                                player.currentTime = maxAllowedRef.current;
+                            }
+                        });
+                    }
+
                     if (!hasAutoPlayed.current && showContent) {
                         hasAutoPlayed.current = true;
                         player.muted = true;
@@ -102,6 +115,11 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, t
                     // Track paused state for pause-overlay
                     if (!showOverlay) {
                         setIsPaused(!isPlaying);
+                    }
+
+                    // No-skip: posouvej max dosaženou pozici jen při reálném přehrávání
+                    if (vslMode && trackingActiveRef.current && isPlaying && playerTime <= maxAllowedRef.current + 1.5) {
+                        if (playerTime > maxAllowedRef.current) maxAllowedRef.current = playerTime;
                     }
 
                     // VSL watchtime milníky — reálné přehrávání (po zapnutí zvuku), dedup
@@ -174,7 +192,8 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, t
                 console.error("Plyr interaction error:", e);
             }
         }
-        // Od teď je divák reálně zapojený → spusť watchtime tracking
+        // Od teď je divák reálně zapojený → spusť watchtime tracking, no-skip od nuly
+        maxAllowedRef.current = 0;
         trackingActiveRef.current = true;
         setShowOverlay(false);
     };
