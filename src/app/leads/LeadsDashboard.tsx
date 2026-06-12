@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Lead, LeadTier } from '@/lib/mentorship-leads';
+import { RetentionChart, fmtTime } from './RetentionChart';
 
 const tierStyle: Record<LeadTier, { pill: string; bar: string }> = {
     A: { pill: 'bg-green-500/15 text-green-400 border-green-500/40', bar: 'bg-green-500' },
@@ -32,7 +33,15 @@ function relTime(iso: string): string {
 const avatarSrc = (lead: Lead) =>
     `/api/ig-avatar?username=${encodeURIComponent(lead.ig)}${lead.profilePic ? `&url=${encodeURIComponent(lead.profilePic)}` : ''}`;
 
-type SortKey = 'score' | 'followers' | 'date';
+type SortKey = 'score' | 'followers' | 'date' | 'watch';
+
+// % dokoukání leada vůči délce videa (0–100), nebo null když nemáme data.
+const watchPct = (lead: Lead, duration: number): number | null => {
+    if (lead.videoMaxS == null) return null;
+    const dur = lead.videoDurationS || duration;
+    if (!dur) return null;
+    return Math.min(100, Math.round((lead.videoMaxS / dur) * 100));
+};
 
 const Verified = () => (
     <svg className="w-4 h-4 text-[#3897f0] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.4-.6 2.9 1.6 2.5-2 2.2.2 3-2.8.9-1.4 2.6-2.9-.7-2.6 1.5-2.3-1.9-2.3 1.9-2.6-1.5-2.9.7L4.8 16l-2.8-.9.2-3-2-2.2L1.8 7.4 1.2 4.5l2.6-1.4 1-2.8 3 .2L10 .2" /><path d="M10.6 14.6l-2.7-2.7 1.1-1.1 1.6 1.6 3.8-3.8 1.1 1.1z" fill="#fff" /></svg>
@@ -85,6 +94,7 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
         return r.sort((a, b) => {
             if (sort === 'score') return b.score - a.score;
             if (sort === 'followers') return (b.followers || 0) - (a.followers || 0);
+            if (sort === 'watch') return (b.videoMaxS ?? -1) - (a.videoMaxS ?? -1);
             return new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime();
         });
     }, [leads, q, tier, verifiedOnly, sort]);
@@ -95,6 +105,12 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
         b: leads.filter(l => l.tier === 'B').length,
         verified: leads.filter(l => l.verified).length,
     }), [leads]);
+
+    // Společná délka videa pro % dokoukání (nejdelší známá hodnota napříč leady)
+    const videoDuration = useMemo(
+        () => Math.max(0, ...leads.map(l => l.videoDurationS || 0), ...leads.map(l => l.videoMaxS || 0)),
+        [leads],
+    );
 
     return (
         <main className="min-h-screen bg-[#0C0C0C] text-white font-sans">
@@ -160,9 +176,15 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
                             <option value="date">Nejnovější</option>
                             <option value="score">Skóre</option>
                             <option value="followers">Sledující</option>
+                            <option value="watch">Dokoukání</option>
                         </select>
                     </div>
                 </div>
+            </div>
+
+            {/* Retention videa */}
+            <div className="max-w-[1100px] mx-auto px-4 md:px-6 pt-5">
+                <RetentionChart leads={leads} duration={videoDuration} />
             </div>
 
             {/* Seznam */}
@@ -172,7 +194,7 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
                 ) : (
                     <div className="flex flex-col gap-2">
                         {filtered.map(lead => (
-                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} onDelete={handleDelete} clarityProjectId={clarityProjectId} />
+                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} onDelete={handleDelete} clarityProjectId={clarityProjectId} videoDuration={videoDuration} />
                         ))}
                     </div>
                 )}
@@ -181,9 +203,11 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
     );
 };
 
-function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId }: { lead: Lead; open: boolean; onToggle: () => void; onDelete: (id: string) => void; clarityProjectId: string }) {
+function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId, videoDuration }: { lead: Lead; open: boolean; onToggle: () => void; onDelete: (id: string) => void; clarityProjectId: string; videoDuration: number }) {
     const ts = tierStyle[lead.tier];
     const claritySearch = `https://clarity.microsoft.com/projects/view/${clarityProjectId}/impressions?` + encodeURI('date=Last 30 days&smartEvents=SubmitForm');
+    const pct = watchPct(lead, videoDuration);
+    const watchColor = pct == null ? '' : pct >= 75 ? 'text-green-400' : pct >= 40 ? 'text-amber-400' : 'text-gray-400';
 
     return (
         <div className={`rounded-xl border overflow-hidden transition-colors ${open ? 'border-white/20 bg-[#161616]' : 'border-white/10 bg-[#131313] hover:bg-[#161616]'}`}>
@@ -218,6 +242,18 @@ function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId }: { lead: L
                     <span className="text-white font-semibold">{lead.budget || '—'}</span>
                 </div>
 
+                {/* Dokoukání VSL */}
+                <div className="hidden md:flex items-center justify-end w-24 shrink-0" title={pct == null ? 'Zatím nespustil zvuk na VSL' : `Dokoukal do ${fmtTime(lead.videoMaxS as number)} (${pct} %)`}>
+                    {pct == null ? (
+                        <span className="text-gray-700 text-xs">▶ —</span>
+                    ) : (
+                        <span className={`flex items-center gap-1 text-xs font-bold ${watchColor}`}>
+                            <span className="text-gray-600">▶</span>{fmtTime(lead.videoMaxS as number)}
+                            <span className="text-gray-500 font-normal">{pct}%</span>
+                        </span>
+                    )}
+                </div>
+
                 <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right hidden sm:block">
                         <div className="text-sm font-bold leading-none">{lead.score}</div>
@@ -244,6 +280,21 @@ function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId }: { lead: L
                         <Field label="Zdroj" value={lead.source} />
                         <Field label="Kampaň" value={lead.campaign} />
                         <Field label="Přišel" value={relTime(lead.createdTime) + ' zpět'} />
+                    </div>
+
+                    {/* Dokoukání VSL — timeline s markerem kam došel */}
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-gray-500 mb-1">
+                            <span>Dokoukání VSL</span>
+                            {pct != null && <span className={watchColor}>{fmtTime(lead.videoMaxS as number)} z {fmtTime(lead.videoDurationS || videoDuration)} · {pct} %</span>}
+                        </div>
+                        {pct == null ? (
+                            <div className="text-xs text-gray-600">Zatím nespustil zvuk na VSL.</div>
+                        ) : (
+                            <div className="relative h-2.5 rounded-full bg-white/10 overflow-hidden">
+                                <div className={`absolute inset-y-0 left-0 rounded-full ${pct >= 75 ? 'bg-green-500' : pct >= 40 ? 'bg-amber-500' : 'bg-white/30'}`} style={{ width: `${pct}%` }} />
+                            </div>
+                        )}
                     </div>
 
                     {lead.detail && (

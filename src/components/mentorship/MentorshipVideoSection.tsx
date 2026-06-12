@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Plyr } from 'plyr-react';
 import "plyr-react/plyr.css";
-import { VSL_MILESTONES, trackVslEvent } from '@/lib/vslTrack';
+import { VSL_MILESTONES, trackVslEvent, sendVslProgress } from '@/lib/vslTrack';
 
 const DEFAULT_VIMEO_ID = '1181936415';
 
@@ -50,6 +50,17 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
     // No-skip: nejvyšší reálně přehraná pozice; přeskok dopředu se vrátí zpět
     const maxAllowedRef = useRef(0);
     const seekGuardAttached = useRef(false);
+    // Persistence max watched vteřiny k leadovi (Notion) — dedup, ať neposíláme stejné číslo
+    const lastProgressSentRef = useRef(-1);
+    const flushProgressRef = useRef<() => void>(() => { });
+    flushProgressRef.current = () => {
+        if (!vslMode || !trackCid || !trackingActiveRef.current) return;
+        const sec = Math.floor(maxAllowedRef.current);
+        if (sec <= lastProgressSentRef.current) return;
+        lastProgressSentRef.current = sec;
+        const dur = playerRef.current?.plyr?.duration;
+        sendVslProgress(trackCid, sec, dur, trackEmail);
+    };
 
     const [showOverlay, setShowOverlay] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
@@ -60,6 +71,21 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
     useEffect(() => {
         return () => { document.documentElement.classList.remove('vsl-fs'); };
     }, []);
+
+    // Odchod ze stránky / přepnutí tabu / unmount → pošli nejdál dosaženou vteřinu.
+    // sendBeacon přežije i zavření tabu, takže o dokoukání nepřijdeme.
+    useEffect(() => {
+        if (!vslMode) return;
+        const flush = () => flushProgressRef.current();
+        const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+        window.addEventListener('pagehide', flush);
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            window.removeEventListener('pagehide', flush);
+            document.removeEventListener('visibilitychange', onVisibility);
+            flush();
+        };
+    }, [vslMode]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -92,7 +118,8 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                         player.on('exitfullscreen', () => document.documentElement.classList.remove('vsl-fs'));
                     }
 
-                    // No-skip: zákaz přeskočení dopředu (i v nativním fullscreenu)
+                    // No-skip: zákaz přeskočení dopředu (i v nativním fullscreenu) +
+                    // persistence max watched vteřiny při pauze / konci videa
                     if (vslMode && !seekGuardAttached.current) {
                         seekGuardAttached.current = true;
                         player.on('seeking', () => {
@@ -100,6 +127,8 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                                 player.currentTime = maxAllowedRef.current;
                             }
                         });
+                        player.on('pause', () => flushProgressRef.current());
+                        player.on('ended', () => flushProgressRef.current());
                     }
 
                     if (!hasAutoPlayed.current && showContent) {

@@ -23,6 +23,8 @@ export type Lead = {
     notionUrl: string;
     score: number;
     tier: LeadTier;
+    videoMaxS: number | null;
+    videoDurationS: number | null;
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -120,6 +122,8 @@ export async function listMentorshipLeads(): Promise<Lead[]> {
                     notionUrl: page.url || '',
                     score,
                     tier,
+                    videoMaxS: num(p['Video max (s)']),
+                    videoDurationS: num(p['Video délka (s)']),
                 });
             }
 
