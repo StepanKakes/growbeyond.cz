@@ -107,6 +107,7 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
         let requestRef: number;
         let lastKnownTime = 0;
         let lastSyncTimestamp = performance.now();
+        let lastMaxTick = performance.now();
 
         const updateProgress = () => {
             const player = playerRef.current?.plyr;
@@ -146,10 +147,17 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                         setIsPaused(!isPlaying);
                     }
 
-                    // No-skip: posouvej max dosaženou pozici jen při reálném přehrávání
-                    if (vslMode && trackingActiveRef.current && isPlaying && playerTime <= maxAllowedRef.current + 1.5) {
-                        if (playerTime > maxAllowedRef.current) maxAllowedRef.current = playerTime;
+                    // No-skip + správný watchtime i po přepnutí tabu. Max dosaženou
+                    // pozici posuneme nejvýš o reálně uplynulý wall-clock čas (+1.5 s
+                    // jitter): poctivé přehrávání — včetně dohnání po uspání tabu, kdy
+                    // byl RAF škrcený, ale video hrálo dál — se započítá, zatímco
+                    // okamžitý skok dopředu (scrub) získá ~0 s wall-clocku a zůstane
+                    // zastropovaný (a seek-guard ho stejně vrátí zpět).
+                    const nowTick = performance.now();
+                    if (vslMode && trackingActiveRef.current && isPlaying && playerTime > maxAllowedRef.current) {
+                        maxAllowedRef.current = Math.min(playerTime, maxAllowedRef.current + (nowTick - lastMaxTick) / 1000 + 1.5);
                     }
+                    lastMaxTick = nowTick;
 
                     // VSL watchtime milníky — reálné přehrávání (po zapnutí zvuku), dedup
                     if (vslMode && trackingActiveRef.current && duration > 1) {
