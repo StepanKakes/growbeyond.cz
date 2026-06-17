@@ -76,7 +76,7 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
                 <Card>
                     <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">Ještě jedna důležitá věc…</h3>
                     <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
-                        V dotazníku jsi uvedl/a rozpočet na růst 0–25 tisíc Kč. Buďme na rovinu — naše 1:1 spolupráce vyžaduje vyšší investici. Nechci, abychom na hovoru oba ztráceli čas, pokud by to nakonec nedávalo smysl.
+                        V dotazníku jsi uvedl/a rozpočet na růst 0–25 tisíc Kč. Buďme na rovinu, naše 1:1 spolupráce vyžaduje vyšší počáteční investici. Nechci, abychom na hovoru oba ztráceli čas, pokud by to nakonec nedávalo smysl.
                     </p>
                     <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-8">Jsi otevřený/á najít způsob, jak do sebe investovat víc?</p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
