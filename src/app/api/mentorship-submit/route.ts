@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInstagramProfile } from '@/lib/validate-contact';
+import { plunkEnroll } from '@/lib/plunk';
 
 export const runtime = 'nodejs';
+
+const SITE_URL = 'https://growbeyond.cz';
 
 type UtmPayload = {
     utm_source?: string;
@@ -12,8 +15,8 @@ type UtmPayload = {
 };
 
 export async function POST(request: NextRequest) {
-    const { email, igHandle, q3, q4, q5, q6, q7, clarityUserId, utm } = await request.json() as {
-        email?: string; igHandle?: string;
+    const { firstName, email, igHandle, q3, q4, q5, q6, q7, clarityUserId, utm } = await request.json() as {
+        firstName?: string; email?: string; igHandle?: string;
         q3?: string; q4?: string; q5?: string; q6?: string; q7?: string;
         clarityUserId?: string;
         utm?: UtmPayload;
@@ -63,6 +66,7 @@ export async function POST(request: NextRequest) {
 
     const baseProperties: Record<string, unknown> = {
         'Email': { title: [{ text: { content: email || '' } }] },
+        'Jméno': { rich_text: [{ text: { content: (firstName || '').trim() } }] },
         'IG': { rich_text: [{ text: { content: igHandle || '' } }] },
         'Zdroj': { rich_text: [{ text: { content: zdroj } }] },
         'Kampaň': { rich_text: [{ text: { content: kampan } }] },
@@ -79,7 +83,8 @@ export async function POST(request: NextRequest) {
         'Verified': { checkbox: igVerified },
         ...(igFollowers != null ? { 'Sledující': { number: igFollowers } } : {}),
         ...(igProfilePic ? { 'Profilovka': { url: igProfilePic } } : {}),
-        ...(igName ? { 'Jméno': { rich_text: [{ text: { content: igName } }] } } : {}),
+        // Uživatelem zadané jméno má přednost; IG fullName jen když jméno chybí.
+        ...(!firstName?.trim() && igName ? { 'Jméno': { rich_text: [{ text: { content: igName } }] } } : {}),
         ...(clarityUrl ? { 'Clarity': { url: clarityUrl } } : {}),
     };
 
@@ -111,6 +116,20 @@ export async function POST(request: NextRequest) {
         }
 
         const created = await response.json();
+
+        // Zařaď leada do Plunku → spustí větvenou VSL sekvenci (E1 + follow-up).
+        // lead_url = jeho unikátní stránka (video + formulář) pro odkazy v emailech.
+        // Best-effort: případný fail Plunku nesmí shodit uložení leada.
+        if (email) {
+            const leadUrl = `${SITE_URL}/strategie/${created.id}`;
+            await plunkEnroll({
+                email,
+                firstName,
+                event: 'optin_strategie',
+                data: { lead_url: leadUrl, vsl_max: 0 },
+            }).catch(() => { /* už logováno uvnitř */ });
+        }
+
         // Vrať ID vytvořené Notion stránky — funnel z reklamy podle něj
         // přesměruje na unikátní stránku leadu (/strategie/<id>).
         return NextResponse.json({ success: true, id: created.id });

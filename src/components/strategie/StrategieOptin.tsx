@@ -15,10 +15,11 @@ const incomeOptions = ['Nic', 'Do 50 tisíc Kč', '50 - 80 tisíc Kč', '80 - 12
 
 export const StrategieOptin = () => {
     const router = useRouter();
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [ig, setIg] = useState('');
     const [income, setIncome] = useState('');
-    const [errors, setErrors] = useState<{ email?: string; ig?: string }>({});
+    const [errors, setErrors] = useState<{ name?: string; email?: string; ig?: string }>({});
     const [submitting, setSubmitting] = useState(false);
     const [igPreview, setIgPreview] = useState<IgPreview>({ state: 'idle' });
 
@@ -38,7 +39,7 @@ export const StrategieOptin = () => {
         } catch { setIgPreview({ state: 'idle' }); }
     };
 
-    const isValid = email.includes('@') && ig.trim() !== '' && income !== '';
+    const isValid = name.trim() !== '' && email.includes('@') && ig.trim() !== '' && income !== '';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,7 +82,7 @@ export const StrategieOptin = () => {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, igHandle: ig, q4: income, clarityUserId, utm: getStoredUtm() }),
+                body: JSON.stringify({ firstName: name.trim(), email, igHandle: ig, q4: income, clarityUserId, utm: getStoredUtm() }),
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) {
@@ -108,6 +109,17 @@ export const StrategieOptin = () => {
                     </h3>
 
                     <div className="space-y-4">
+                        <div>
+                            <label className="block text-white font-medium mb-2 text-sm">Tvé jméno</label>
+                            <input
+                                required type="text" value={name}
+                                onChange={e => { setName(e.target.value); if (errors.name) setErrors(p => ({ ...p, name: undefined })); }}
+                                placeholder="Jan"
+                                autoComplete="given-name"
+                                className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.name ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
+                            />
+                            {errors.name && <p className="text-brand-red text-sm mt-2">{errors.name}</p>}
+                        </div>
                         <div>
                             <label className="block text-white font-medium mb-2 text-sm">Tvůj e-mail</label>
                             <input
