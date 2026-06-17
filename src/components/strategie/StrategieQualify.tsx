@@ -108,7 +108,7 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     const stepData: { title: string; field: keyof typeof data; options: string[]; split: boolean }[] = [
         { title: 'Co tě teď nejvíc brzdí?', field: 'q3', options: problemOptions, split: true },
         { title: 'Jak aktuálně prodáváš?', field: 'q5', options: monetizationOptions, split: false },
-        { title: 'Kolik jsi teď schopný/á investovat do růstu?', field: 'q6', options: budgetOptions, split: false },
+        { title: 'Kolik jsi teď schopný/á jednorázově investovat do růstu? (ne měsíční platba)', field: 'q6', options: budgetOptions, split: false },
     ];
     const cur = stepData[step - 1];
 
