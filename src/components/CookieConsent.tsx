@@ -42,6 +42,8 @@ export const CookieConsent = () => {
         localStorage.setItem(CONSENT_KEY, "accepted");
         setVisible(false);
         loadClarity();
+        // Oznámí ostatním (např. Meta Pixel na /strategie), že je souhlas udělen
+        window.dispatchEvent(new Event("gb-cookie-consent-accepted"));
     };
 
     const handleReject = () => {
@@ -55,8 +57,8 @@ export const CookieConsent = () => {
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-[200] bg-[#1A1A1A] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/50">
             <p className="text-white text-sm font-bold mb-2">Cookies 🍪</p>
             <p className="text-gray-400 text-xs leading-relaxed mb-4">
-                Používáme analytické cookies (Microsoft Clarity), abychom pochopili, jak web používáš,
-                a mohli ho zlepšovat. Více v{" "}
+                Používáme analytické a marketingové cookies (Microsoft Clarity, Meta Pixel), abychom pochopili,
+                jak web používáš, a mohli ho zlepšovat. Více v{" "}
                 <Link
                     href="/ochrana-osobnich-udaju"
                     className="underline underline-offset-2 hover:text-white transition-colors"

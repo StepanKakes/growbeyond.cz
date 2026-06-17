@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 import { getStoredUtm } from '@/lib/utm';
+import { trackMetaLead } from '@/lib/metaPixel';
 
 type IgPreview = {
     state: 'idle' | 'loading' | 'found' | 'not_found';
@@ -84,6 +85,8 @@ export const StrategieOptin = () => {
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) {
+                // Meta Pixel: konverze (lead vytvořen). No-op bez souhlasu / bez Pixel ID.
+                trackMetaLead();
                 router.push(`/strategie/${data.id}`);
                 return;
             }
