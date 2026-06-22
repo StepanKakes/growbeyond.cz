@@ -13,14 +13,14 @@ type FormData = {
     q4: string;
     q5: string;
     q6: string;
-    q7: string;
 };
 
 const q3Options = [
-    "Slabý positioning: Můj profil neříká jasně, pro koho jsem a jaký výsledek doručuji, přitahuji nerelevantní cílovku.",
-    `Nefunkční funnel: Nevím, jak diváka efektivně „zahřát" a dovést ho k nákupu ve správný moment.`,
-    `Slabá nabídka: Moje nabídka nikoho nezvedne ze židle, snažím se oslovit každého a ve výsledku neoslovuji nikoho konkrétního.`,
-    "Neefektivní procesy: Tvorba obsahu mi bere moc času a výsledky tomu vůbec neodpovídají."
+    "Stagnace: Zasekl/a jsem se a nedaří se mi posunout dál.",
+    "Nekonzistentní příjem: Jeden měsíc dobrý, druhý slabý.",
+    "Plná kapacita: Časově to nestíhám odbavit, ale chci růst dál.",
+    "Málo klientů: Nechodí dost poptávek.",
+    "Začínám: Zatím (skoro) nevydělávám a chci to rozjet.",
 ];
 
 const q4Options = [
@@ -101,17 +101,8 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
         q3: '',
         q4: '',
         q5: '',
-        q6: '',
-        q7: ''
+        q6: ''
     });
-
-    const getQ7Prompt = () => {
-        if (formData.q3.startsWith("Slabý positioning")) return "Co by pro tebe znamenalo, kdyby tvůj profil oslovoval jen ty, se kterými skutečně chceš pracovat a kteří jsou ochotni zaplatit tvou cenu?";
-        if (formData.q3.startsWith("Nefunkční funnel")) return "Co by pro tebe znamenalo, kdyby k tobě klienti přicházeli sami už v podstatě rozhodnutí, že chtějí nakoupit od tebe?";
-        if (formData.q3.startsWith("Slabá nabídka")) return "Co by pro tebe znamenalo, kdybys měl nabídku, která je tak konkrétní a lákavá, že by ses už nikdy nemusel cítit, že někoho nutíš nakoupit, ale spíše mu pomáháš udělat skvělé rozhodnutí?";
-        if (formData.q3.startsWith("Neefektivní procesy")) return "Co by pro tvůj osobní život znamenalo, kdybys tvorbu obsahu zkrátil na polovinu času, a přitom věděl, že každý post má své jasné místo v prodejní strategii a skutečně ti vydělává?";
-        return "";
-    };
 
     const handleSelect = (field: keyof FormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -177,7 +168,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
     const autoAdvance = (field: keyof FormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         setTimeout(() => {
-            if (currentStep < 6) setCurrentStep(prev => prev + 1);
+            if (currentStep < 5) setCurrentStep(prev => prev + 1);
         }, 150);
     };
 
@@ -188,14 +179,13 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
             case 3: return formData.q4 !== '';
             case 4: return formData.q5 !== '';
             case 5: return formData.q6 !== '';
-            case 6: return formData.q7.trim() !== '';
             default: return false;
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentStep !== 6 || !isStepValid()) return;
+        if (currentStep !== 5 || !isStepValid()) return;
         setIsSubmitting(true);
 
         // Clarity: označ session leadem → hashnuté user id použijeme pro
@@ -389,7 +379,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
             case 2:
                 return (
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2">1. V čem vidíš ten největší problém? Co tě nejvíc drží zpátky?</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2">1. Co tě teď nejvíc brzdí?</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {q3Options.map((opt, i) => {
                                 const [title, ...rest] = opt.split(':');
@@ -447,7 +437,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
             case 5:
                 return (
                     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">4. Kolik jsi teď schopný/á investovat do růstu svého podnikání?</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">4. Kolik jsi teď schopný/á jednorázově investovat do růstu? (ne měsíční platba)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                             {q6Options.map((opt, i) => (
                                 <div
@@ -458,21 +448,6 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                     {opt}
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                );
-            case 6:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2">5. {getQ7Prompt()}</h3>
-                        <div className="flex-1 min-h-[200px]">
-                            <textarea
-                                required
-                                value={formData.q7}
-                                onChange={e => handleSelect('q7', e.target.value)}
-                                className="w-full h-[250px] bg-[#1A1A1A] border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-brand-red focus:bg-[#252525] transition-colors resize-none placeholder:text-gray-600"
-                                placeholder="Napiš svou upřímnou odpověď plnými větami. Je to velmi důležité pro náš start..."
-                            />
                         </div>
                     </div>
                 );
@@ -490,7 +465,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                     <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-white/5">
                         <div
                             className="h-full bg-brand-red transition-all duration-500 ease-out"
-                            style={{ width: `${(currentStep / 6) * 100}%` }}
+                            style={{ width: `${(currentStep / 5) * 100}%` }}
                         />
                     </div>
 
@@ -555,7 +530,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                                 </button>
                             )}
 
-                            {currentStep === 6 && (
+                            {currentStep === 5 && (
                                 <button
                                     type="submit"
                                     disabled={!isStepValid() || isSubmitting}
@@ -570,7 +545,7 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                             )}
                         </div>
 
-                        {(currentStep === 1 || currentStep === 6) && (
+                        {(currentStep === 1 || currentStep === 5) && (
                             <p className="text-gray-500 text-xs leading-relaxed mt-4 text-center md:text-right">
                                 {currentStep === 1 ? 'Pokračováním' : 'Odesláním formuláře'} souhlasíš se zpracováním osobních údajů dle{' '}
                                 <a
