@@ -6,9 +6,9 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 // Bulk doplnění IG enrichmentu (profilovka, jméno, sledující, verified)
-// u starších leadů, kteří to ještě nemají. Chráněno cookie jako /leads.
+// u starších leadů, kteří to ještě nemají. Chráněno cookie jako /leads (interní systémy).
 export async function POST(request: NextRequest) {
-    if (request.cookies.get('sop_authorized')?.value !== 'true') {
+    if (request.cookies.get('internal_authorized')?.value !== 'true') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

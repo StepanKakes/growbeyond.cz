@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 // Smaže (archivuje) lead v Notionu. Archivace = obnovitelné z koše.
-// Chráněno stejnou cookie jako /leads dashboard.
+// Chráněno stejnou cookie jako /leads dashboard (interní systémy).
 export async function POST(request: NextRequest) {
-    if (request.cookies.get('sop_authorized')?.value !== 'true') {
+    if (request.cookies.get('internal_authorized')?.value !== 'true') {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

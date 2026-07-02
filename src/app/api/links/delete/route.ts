@@ -11,6 +11,9 @@ const headers = () => ({
 });
 
 export async function POST(request: NextRequest) {
+    if (request.cookies.get('internal_authorized')?.value !== 'true') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { pageId } = await request.json() as { pageId?: string };
     if (!pageId) return NextResponse.json({ error: 'pageId required' }, { status: 400 });
 

@@ -49,6 +49,9 @@ async function fetchYoutubeTitle(videoId: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
     try {
+        if (request.cookies.get('internal_authorized')?.value !== 'true') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         if (!SHORT_LINKS_DB_ID) {
             return NextResponse.json({ error: 'Chybí env var NOTION_SHORT_LINKS_DB_ID' }, { status: 500 });
         }
