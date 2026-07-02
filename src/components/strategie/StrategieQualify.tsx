@@ -24,7 +24,6 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     const [data, setData] = useState({ q3: '', q4: '', q5: '', q6: '' });
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [budgetConfirmed, setBudgetConfirmed] = useState<boolean | null>(null);
     const formRef = useRef<HTMLElement>(null);
     const startedRef = useRef(false);
 
@@ -71,29 +70,16 @@ export const StrategieQualify = ({ leadId, email }: { leadId: string; email?: st
     };
 
     if (submitted) {
-        if (data.q6 === LOWEST_BUDGET && budgetConfirmed === null) {
-            return (
-                <Card>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">Ještě jedna důležitá věc…</h3>
-                    <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
-                        V dotazníku jsi uvedl/a rozpočet na růst 0–25 tisíc Kč. Buďme na rovinu, naše 1:1 spolupráce vyžaduje vyšší počáteční investici. Nechci, abychom na hovoru oba ztráceli čas, pokud by to nakonec nedávalo smysl.
-                    </p>
-                    <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-8">Jsi otevřený/á najít způsob, jak do sebe investovat víc?</p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <button onClick={() => { setBudgetConfirmed(true); setTimeout(() => document.getElementById('cal-booking')?.scrollIntoView({ behavior: 'smooth' }), 100); }}
-                            className="w-full sm:w-auto bg-brand-red hover:bg-[#cc0b00] text-white px-8 py-4 rounded-full text-base font-bold transition-all">Ano, chci najít způsob</button>
-                        <button onClick={() => setBudgetConfirmed(false)}
-                            className="w-full sm:w-auto bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 text-white px-8 py-4 rounded-full text-base font-bold transition-all">Ne, to je moje maximum</button>
-                    </div>
-                </Card>
-            );
-        }
-        if (data.q6 === LOWEST_BUDGET && budgetConfirmed === false) {
+        // Low budget → přímá diskvalifikace, bez druhé šance.
+        if (data.q6 === LOWEST_BUDGET) {
             return (
                 <Card>
                     <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">Díky za tvé odpovědi!</h3>
+                    <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
+                        V dotazníku jsi uvedl/a rozpočet na růst 0–25 tisíc Kč. Buďme na rovinu, naše 1:1 spolupráce vyžaduje vyšší počáteční investici.
+                    </p>
                     <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                        Vzhledem k tvému rozpočtu si myslíme, že tahle 1:1 spolupráce pro tebe teď není ta správná volba. Díky za tvůj čas a přejeme ti hodně úspěchů na cestě dál.
+                        Vzhledem k tvému rozpočtu tahle 1:1 spolupráce pro tebe teď nejspíš není ta správná volba. Díky za tvůj čas a přejeme ti hodně úspěchů na cestě dál.
                     </p>
                 </Card>
             );
