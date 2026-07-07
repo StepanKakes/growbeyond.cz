@@ -7,7 +7,7 @@ import { VSL_MILESTONES, trackVslEvent, sendVslProgress } from '@/lib/vslTrack';
 
 const DEFAULT_VIMEO_ID = '1181936415';
 
-export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, posterUrl, trackCid, trackEmail }: { vimeoId?: string; videoUrl?: string; posterUrl?: string; trackCid?: string; trackEmail?: string }) => {
+export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, posterUrl, trackCid, trackEmail, trackDay, nativeProgress = false }: { vimeoId?: string; videoUrl?: string; posterUrl?: string; trackCid?: string; trackEmail?: string; trackDay?: number; nativeProgress?: boolean }) => {
     // VSL mód (s trackingem): bez loopu, ať se watchtime počítá čistě.
     const vslMode = !!trackCid;
 
@@ -33,8 +33,11 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
             title: false,
             transparent: false
         },
-        controls: ['play-large', 'play', 'mute', 'volume', 'fullscreen'],
-    }), [vslMode]);
+        // nativeProgress (program videa): normální Plyr seekbar místo fake baru
+        controls: nativeProgress
+            ? ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+            : ['play-large', 'play', 'mute', 'volume', 'fullscreen'],
+    }), [vslMode, nativeProgress]);
 
     // Tracking se aktivuje až po zapnutí zvuku (reálná pozornost), milníky dedup
     const trackingActiveRef = useRef(false);
@@ -59,7 +62,39 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
         if (sec <= lastProgressSentRef.current) return;
         lastProgressSentRef.current = sec;
         const dur = playerRef.current?.plyr?.duration;
-        sendVslProgress(trackCid, sec, dur, trackEmail);
+        sendVslProgress(trackCid, sec, dur, trackEmail, trackDay);
+    };
+
+    // Vyhodnocení watchtime + milníků z aktuální pozice přehrávače. Řídí se z
+    // `timeupdate` eventu (funguje i v iOS nativním fullscreenu a při uspaném
+    // tabu, kde se rAF škrtí) i z rAF (foreground). Sdílený lastMaxTick zajišťuje,
+    // že max pozici posouváme nejvýš o reálně uplynulý wall-clock čas bez ohledu
+    // na to, kdo evaluate zavolal — takže skok dopředu nikdy nenafoukne watchtime.
+    const lastMaxTickRef = useRef(performance.now());
+    const evaluateProgressRef = useRef<() => void>(() => { });
+    evaluateProgressRef.current = () => {
+        if (!vslMode || !trackingActiveRef.current) return;
+        const player = playerRef.current?.plyr;
+        if (!player || !player.ready) return;
+        const playerTime = player.currentTime || 0;
+        const duration = player.duration || 1;
+        const isPlaying = player.playing;
+        const nowTick = performance.now();
+        if (isPlaying && playerTime > maxAllowedRef.current) {
+            maxAllowedRef.current = Math.min(playerTime, maxAllowedRef.current + (nowTick - lastMaxTickRef.current) / 1000 + 1.5);
+        }
+        lastMaxTickRef.current = nowTick;
+        if (duration > 1) {
+            // Milníky z maxAllowed (poctivě odkoukaný čas, wall-clock capped), ne z
+            // aktuální pozice — skok seekbarem na konec tedy "dokoukáno" nespustí.
+            const percent = maxAllowedRef.current / duration;
+            for (const m of VSL_MILESTONES) {
+                if (percent >= m.p && !sentMilestonesRef.current.has(m.name)) {
+                    sentMilestonesRef.current.add(m.name);
+                    trackVslEvent(trackCid as string, m.name, trackEmail, trackDay);
+                }
+            }
+        }
     };
 
     const [showOverlay, setShowOverlay] = useState(true);
@@ -80,9 +115,13 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
         const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
         window.addEventListener('pagehide', flush);
         document.addEventListener('visibilitychange', onVisibility);
+        // Heartbeat: i kdyby iOS/Android při tvrdém zabití appky nefírnul pagehide,
+        // poslední max-vteřina odejde nejpozději po ~12 s. flush() sám dedupuje.
+        const hb = window.setInterval(flush, 12000);
         return () => {
             window.removeEventListener('pagehide', flush);
             document.removeEventListener('visibilitychange', onVisibility);
+            window.clearInterval(hb);
             flush();
         };
     }, [vslMode]);
@@ -107,7 +146,6 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
         let requestRef: number;
         let lastKnownTime = 0;
         let lastSyncTimestamp = performance.now();
-        let lastMaxTick = performance.now();
 
         const updateProgress = () => {
             const player = playerRef.current?.plyr;
@@ -116,20 +154,32 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                     if (!fsAttached.current) {
                         fsAttached.current = true;
                         player.on('enterfullscreen', () => document.documentElement.classList.add('vsl-fs'));
-                        player.on('exitfullscreen', () => document.documentElement.classList.remove('vsl-fs'));
+                        player.on('exitfullscreen', () => {
+                            document.documentElement.classList.remove('vsl-fs');
+                            // Po návratu z (i nativního iOS) fullscreenu dožeň milníky + flush
+                            evaluateProgressRef.current();
+                            flushProgressRef.current();
+                        });
                     }
 
                     // No-skip: zákaz přeskočení dopředu (i v nativním fullscreenu) +
-                    // persistence max watched vteřiny při pauze / konci videa
+                    // persistence max watched vteřiny při pauze / konci videa.
+                    // U nativeProgress je seekování povolené — poctivost milníků drží
+                    // maxAllowed (wall-clock capped) v evaluateProgress.
                     if (vslMode && !seekGuardAttached.current) {
                         seekGuardAttached.current = true;
-                        player.on('seeking', () => {
-                            if (trackingActiveRef.current && player.currentTime > maxAllowedRef.current + 1) {
-                                player.currentTime = maxAllowedRef.current;
-                            }
-                        });
-                        player.on('pause', () => flushProgressRef.current());
-                        player.on('ended', () => flushProgressRef.current());
+                        if (!nativeProgress) {
+                            player.on('seeking', () => {
+                                if (trackingActiveRef.current && player.currentTime > maxAllowedRef.current + 1) {
+                                    player.currentTime = maxAllowedRef.current;
+                                }
+                            });
+                        }
+                        // timeupdate = spolehlivý zdroj milníků i v iOS nativním fullscreenu
+                        // a při uspaném tabu, kde se rAF škrtí nebo úplně zastaví.
+                        player.on('timeupdate', () => evaluateProgressRef.current());
+                        player.on('pause', () => { evaluateProgressRef.current(); flushProgressRef.current(); });
+                        player.on('ended', () => { evaluateProgressRef.current(); flushProgressRef.current(); });
                     }
 
                     if (!hasAutoPlayed.current && showContent) {
@@ -147,28 +197,11 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                         setIsPaused(!isPlaying);
                     }
 
-                    // No-skip + správný watchtime i po přepnutí tabu. Max dosaženou
-                    // pozici posuneme nejvýš o reálně uplynulý wall-clock čas (+1.5 s
-                    // jitter): poctivé přehrávání — včetně dohnání po uspání tabu, kdy
-                    // byl RAF škrcený, ale video hrálo dál — se započítá, zatímco
-                    // okamžitý skok dopředu (scrub) získá ~0 s wall-clocku a zůstane
-                    // zastropovaný (a seek-guard ho stejně vrátí zpět).
-                    const nowTick = performance.now();
-                    if (vslMode && trackingActiveRef.current && isPlaying && playerTime > maxAllowedRef.current) {
-                        maxAllowedRef.current = Math.min(playerTime, maxAllowedRef.current + (nowTick - lastMaxTick) / 1000 + 1.5);
-                    }
-                    lastMaxTick = nowTick;
-
-                    // VSL watchtime milníky — reálné přehrávání (po zapnutí zvuku), dedup
-                    if (vslMode && trackingActiveRef.current && duration > 1) {
-                        const percent = playerTime / duration;
-                        for (const m of VSL_MILESTONES) {
-                            if (percent >= m.p && !sentMilestonesRef.current.has(m.name)) {
-                                sentMilestonesRef.current.add(m.name);
-                                trackVslEvent(trackCid as string, m.name, trackEmail);
-                            }
-                        }
-                    }
+                    // Watchtime (max pozice) + milníky řídí sdílený evaluate — stejná
+                    // funkce je napojená i na timeupdate, takže běží i mimo rAF (fullscreen,
+                    // uspaný tab). Max pozici posouvá nejvýš o reálně uplynulý wall-clock
+                    // čas, takže skok dopředu (scrub) watchtime nenafoukne.
+                    evaluateProgressRef.current();
 
                     if (playerTime !== lastKnownTime) {
                         lastKnownTime = playerTime;
@@ -231,6 +264,7 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
         }
         // Od teď je divák reálně zapojený → spusť watchtime tracking, no-skip od nuly
         maxAllowedRef.current = 0;
+        lastMaxTickRef.current = performance.now();
         trackingActiveRef.current = true;
         setShowOverlay(false);
     };
@@ -343,15 +377,18 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
                         </div>
                     </div>
 
-                    <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
-                        <div
-                            ref={progressBarRef}
-                            className="absolute top-0 left-0 h-full bg-[#FF0E00]"
-                            style={{ width: '0%' }}
-                        >
-                            <div className="absolute top-0 right-0 w-4 h-full bg-white/30 blur-[2px]" />
+                    {/* Fake progress bar (VSL trik) — u nativeProgress ho nahrazuje Plyr seekbar */}
+                    {!nativeProgress && (
+                        <div className="w-full h-1.5 bg-white/10 relative overflow-hidden group">
+                            <div
+                                ref={progressBarRef}
+                                className="absolute top-0 left-0 h-full bg-[#FF0E00]"
+                                style={{ width: '0%' }}
+                            >
+                                <div className="absolute top-0 right-0 w-4 h-full bg-white/30 blur-[2px]" />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
