@@ -24,15 +24,29 @@ IG DM "start"
              └─ submit diagnostiky → web zapíše Q1-Q4 + Bucket → webhook do Bea
                   └─ WF2 DIAGNOSTIKA HOTOVÁ ── pošle link na Den 1 (/program/den/1?u=...)
                        └─ web /program/[id]/1: video Den 1, tracking per den
-                            └─ vsl_finished → web zapíše "D1 dokoukáno" → webhook do Bea
-                                 └─ WF3 DEN 1 DOKOUKÁNO ── 2 otázky → "zítra pošlu další"
-                                      → delay 16 h → pošle link Den 2 → (stejně Den 2 → Den 3)
-                                           └─ WF5 DEN 3 DOKOUKÁNO ── otázky → pitch → cal_slots → cal_book
-Nedokoukané video:
-  WF6 NUDGE SCAN (denně, schedule) → GET web /api/program/nudge-scan (secret)
-    └─ web najde kandidáty v Notionu → POST per kandidát do Bea
-         └─ WF7 NUDGE ── měkká připomínka s odkazem
+                            └─ KONEC SLEDOVÁNÍ (dokoukal → /api/program/track,
+                               NEBO pustil a přestal → watch-scan po 15 min ticha)
+                                 └─ WF3/4 DEN N ── pošle {{question}} (per bucket+den)
+                                      → beo_agent (wait_first): 2-3 doptávací otázky,
+                                        na konci "zítra ti připravím video o X (~Y min),
+                                        kdy ti ho mám poslat?" → capture send_time
+                                      → wait_until send_time (fallback 08:00, min 6 h)
+                                      → pošle link dalšího dne → (Den 2 → Den 3)
+                                 └─ WF5 DEN 3 ── {{question}} → beo_agent (závěr, teaser
+                                    callu) → condition beo_outcome=done → cal_slots
+                                    → cal_book → pipeline "Call Scheduled"
+Nedokoukané video (dny bez aktivity):
+  WF6 NUDGE SCAN (denně 17:00) → /api/program/nudge-scan → WF7 NUDGE (odkaz znovu)
+Watch scan:
+  WF8 WATCH SCAN (každých 10 min) → /api/program/watch-scan (x-cron-secret)
+    └─ web: rozehraný den, max ≥ 15 s, nedokoukáno, otázka neodešla, aktivita
+       (heartbeat) starší 15 min → POST do D{n} hooku s watched=no + pct
 ```
+
+Otázka dne odchází právě JEDNOU (marker "D{n} otázka" v Notionu) — buď hned po
+dokoukání (watched=yes), nebo po opuštění videa (watched=no). Payload hooku:
+`{ username, day, event, watched, pct?, question, bucket, next_title?, next_minutes? }`.
+Program workflows D1-D3 jsou `persistent` — běžná zpráva od leada je nezruší.
 
 Identita: Beo zná `username` (IG). Web klíčuje na Notion page id (`cid` v URL).
 Most: `/program/start?u=<username>` a `/program/den/<n>?u=<username>` — web si
@@ -71,39 +85,26 @@ do Beo webhooků `{ username, day, ... }` — engine si podle username najde lea
 >
 > Dej si na něj klid, není dlouhé. Pak se ti tu ozvu s pár otázkami.
 
-### WF3 — Den 1 dokoukáno (webhook: username, day=1)
+### WF3/WF4 — Den 1/2 (webhook: question payload, watched yes/no)
 
-1. > K dnešnímu videu mám na tebe dvě rychlé otázky. Co z něj na tebe nejvíc sedlo?
-   (wait_for_reply, save_as `d1_a1`)
-2. > Dobrý. A kdybys měl jednou větou říct, komu pomáháš a s čím — jak by zněla?
-   (wait_for_reply, save_as `d1_a2`)
-3. > Přesně tohle je základ, se kterým budeme pracovat. Díky.
-   >
-   > Zítra ti pošlu druhé video. Zatím se měj.
-4. delay 57600 s (16 h)
-5. > Druhý den, druhé video: https://growbeyond.cz/program/den/2?u={{username}}
-   >
-   > Až ho zvládneš, ozvu se tady s otázkami.
+1. `{{question}}` — otázka per bucket+den (BUCKET_DAY_QUESTIONS v free-program.ts)
+2. **beo_agent** `wait_first` — počká na odpověď, pak 2-3 přirozené doptávací
+   otázky (hlas z creator_dna + ai_settings.behavior; ví watched/pct, NIKDY to
+   neprozradí, při nedokoukání jemně povzbudí k dokoukání). Na konci poděkuje,
+   řekne o čem je zítřejší video ({{next_title}}, ~{{next_minutes}} min) a zeptá
+   se, kdy ho poslat → capture `send_time` (HH:MM). Bez odpovědi 10 h → timeout,
+   flow pokračuje.
+3. **wait_until** `send_time`, fallback 08:00, min. odstup 6 h ("ve 20:00" řečené
+   večer = zítra 20:00).
+4. Zpráva s linkem dalšího dne (`/program/den/N?u={{username}}`).
 
-### WF4 — Den 2 dokoukáno (webhook: username, day=2)
+### WF5 — Den 3 (webhook: question payload)
 
-1. > Jak na tebe sedlo dnešní video? Kudy k tobě dneska reálně tečou klienti — co je tvoje cesta zákazníka?
-   (save_as `d2_a1`)
-2. > Rozumím. A kde ti to na té cestě nejvíc padá — kde lidi ztrácíš?
-   (save_as `d2_a2`)
-3. > Dává smysl, tohle řeší skoro každý, kdo za mnou přijde. Zítra poslední video — to nejdůležitější.
-4. delay 57600 s
-5. > Poslední den: https://growbeyond.cz/program/den/3?u={{username}}
-   >
-   > Po něm si řekneme, co dál.
-
-### WF5 — Den 3 dokoukáno (webhook: username, day=3)
-
-1. > Tři dny za námi. Co byl pro tebe za tu dobu největší aha-moment?
-   (save_as `d3_a1`)
-2. > Dobrý. Jestli chceš, projdeme tvoji situaci napřímo — krátký call, kde ti ukážu,
-   > jak to poskládat u tebe. Vyber si termín:
-3. cal_slots → (condition email) → cal_book → pipeline "Call Scheduled"
+1. `{{question}}`
+2. **beo_agent** `wait_first` — doptá se k tématu + co daly 3 dny (aha-moment),
+   na závěr teaser hovoru zdarma a "pošlu ti termíny".
+3. condition `beo_outcome` = done → dál, jinak stop (timeout/handoff = žádný pitch).
+4. cal_slots (day_first) → (condition email) → cal_book → pipeline "Call Scheduled".
 
 ### WF7 — Nudge (webhook: username, day, link)
 
@@ -119,7 +120,8 @@ Den 2/3: >36 h od dokoukání předchozího dne).
 
 `cfe2c40e7d4d42148e922cdb6d5b7f60` (parent: Databases). Row = účastník, page id = cid.
 IG (title), Jméno, Email, Stav (Start/Diagnostika/Den 1-3/Dokončeno/Call),
-Bucket (01/02/03), Q1-Q4 (+Q3 Jinak), D1-D3 max/délka/dokoukáno (+ otevřeno, nudge — viz kód).
+Bucket (01/02/03), Q1-Q4 (+Q3 Jinak), D1-D3 max/délka/dokoukáno/otevřeno/aktivita
+(poslední heartbeat, throttle 2 min)/otázka (marker odeslané otázky), Poslední nudge.
 
 ## Web (growbeyond.cz repo)
 
@@ -129,12 +131,13 @@ Bucket (01/02/03), Q1-Q4 (+Q3 Jinak), D1-D3 max/délka/dokoukáno (+ otevřeno, 
 - `/program/[id]/[den]` → denní video, tracking s `day`
 - `/api/program/progress` → D{n} max/délka (obdoba /api/vsl-progress)
 - `/api/program/track` → milníky; na `vsl_finished` zapíše "D{n} dokoukáno" a
-  **idempotentně** (jen při prvním zápisu) POST do Beo webhooku dne
-- `/api/program/nudge-scan` → hlavička `x-cron-secret`; kandidáti → Beo nudge webhook
+  **idempotentně** POST do Beo webhooku dne (jen pokud otázka ještě neodešla)
+- `/api/program/watch-scan` → `x-cron-secret`; "pustil a přestal" → D{n} hook watched=no
+- `/api/program/nudge-scan` → `x-cron-secret`; kandidáti → Beo nudge webhook
 
 ENV (viz .env.local): `NOTION_FREE_PROGRAM_DB_ID`, `BEO_PROGRAM_HOOK_DIAG`,
 `BEO_PROGRAM_HOOK_D1..D3`, `BEO_PROGRAM_HOOK_NUDGE`, `PROGRAM_CRON_SECRET`.
-Stejné hodnoty nastavit v Coolify.
+V Coolify nastaveno (2026-07-08).
 
 ## TODO obsah (Tim)
 
