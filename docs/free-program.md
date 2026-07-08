@@ -88,9 +88,9 @@ do Beo webhooků `{ username, day, ... }` — engine si podle username najde lea
 ### WF3/WF4 — Den 1/2 (webhook: question payload, watched yes/no)
 
 1. `{{question}}` — otázka per bucket+den (BUCKET_DAY_QUESTIONS v free-program.ts)
-2. **beo_agent** `wait_first` — počká na odpověď, pak 2-3 přirozené doptávací
-   otázky (hlas z creator_dna + ai_settings.behavior; ví watched/pct, NIKDY to
-   neprozradí, při nedokoukání jemně povzbudí k dokoukání). Na konci poděkuje,
+2. **beo_agent** `wait_first` + `use_dna` — počká na odpověď, pak 2-3 přirozené
+   doptávací otázky (hlas přibalený z Creator DNA přes use_dna switch; ví
+   watched/pct, NIKDY to neprozradí, při nedokoukání jemně povzbudí k dokoukání). Na konci poděkuje,
    řekne o čem je zítřejší video ({{next_title}}, ~{{next_minutes}} min) a zeptá
    se, kdy ho poslat → capture `send_time` (HH:MM). Bez odpovědi 10 h → timeout,
    flow pokračuje.
