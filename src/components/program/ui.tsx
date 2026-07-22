@@ -14,6 +14,41 @@ export const Mark = ({ children }: { children: React.ReactNode }) => (
     </span>
 );
 
+// Logo programu „3denní rentgen" — skenovací rámeček se serifovou 3 a červenou
+// skenovací linkou, wordmark s červeně podbarveným „rentgen" (jazyk Mark).
+// Škáluje se přes font-size rodiče (mark i mezery jsou v em).
+export const ProgramLogo = ({ className = '' }: { className?: string }) => (
+    <span className={`inline-flex items-center gap-[0.55em] leading-none select-none ${className}`}>
+        <svg viewBox="0 0 44 44" fill="none" className="h-[1.9em] w-auto shrink-0" aria-hidden>
+            <path d="M2 12V6a4 4 0 0 1 4-4h6" stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M32 2h6a4 4 0 0 1 4 4v6" stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M42 32v6a4 4 0 0 1-4 4h-6" stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M12 42H6a4 4 0 0 1-4-4v-6" stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeLinecap="round" />
+            <text
+                x="22"
+                y="24"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontFamily="var(--font-serif)"
+                fontSize="31"
+                fill="white"
+            >
+                3
+            </text>
+            <line x1="1" y1="22" x2="43" y2="22" stroke="#FF0E00" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+        <span className="font-bold uppercase tracking-[0.08em] text-[0.72em] whitespace-nowrap">
+            denní{' '}
+            <span
+                className="bg-brand-red px-[0.28em] py-[0.1em] text-white"
+                style={{ WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone' }}
+            >
+                rentgen
+            </span>
+        </span>
+    </span>
+);
+
 // Velké serifové číslo kroku (01, 02, ...)
 export const StepNum = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
     <span className={`font-serif text-brand-red text-[40px] leading-none ${className}`}>{children}</span>

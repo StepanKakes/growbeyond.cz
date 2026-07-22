@@ -12,7 +12,7 @@ export const PROGRAM_ORIGIN = 'https://growbeyond.cz';
 
 export type ProgramVideoMeta = { src: string; poster?: string; title: string; takeaways: string[]; minutes?: number };
 
-// Úvodní/analýza video (zatím hlavní VSL — TODO(Tim): natočit intro akcelerátoru)
+// Úvodní/analýza video (zatím hlavní VSL — TODO(Tim): natočit intro rentgenu)
 export const PROGRAM_VIDEOS: Record<'analyza', ProgramVideoMeta> = {
     analyza: { src: 'https://video.growbeyond.cz/main-vsl.mp4', poster: '/images/vsl-nahled.jpg', title: 'Úvodní video', takeaways: [] },
 };

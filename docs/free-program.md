@@ -1,5 +1,6 @@
 # Free Program — architektura a konverzace
 
+Název programu: **3denní rentgen** (logo `ProgramLogo` v `src/components/program/ui.tsx`).
 3denní free program: IG DM "START" → diagnostika na webu → 3 denní videa → Beo konverzačně
 doprovází, doptává se po dokoukání a nakonec rezervuje call. Stav žije v Notionu
 (DB "Free Program", id `cfe2c40e7d4d42148e922cdb6d5b7f60`), konverzace v Beu, web trackuje.
@@ -141,6 +142,6 @@ V Coolify nastaveno (2026-07-08).
 
 ## TODO obsah (Tim)
 
-- 3 denní videa (zatím placeholder main-vsl.mp4) + analýza video na /program/[id]
+- analýza/intro video na /program/[id] (zatím placeholder main-vsl.mp4; denní videa nahraná)
 - finální texty otázek per den (návrhy výše), případně per-bucket varianty
-- redesign stránek (snapshot současné /strategie: ~/Downloads/strategie-web.html)
+

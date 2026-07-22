@@ -3,11 +3,11 @@ import { redirect } from 'next/navigation';
 import { LegalFooter } from '@/components/LegalFooter';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { ProgramDiagnostika } from '@/components/program/ProgramDiagnostika';
-import { Mark, StepNum } from '@/components/program/ui';
+import { ProgramLogo, StepNum } from '@/components/program/ui';
 import { getProgramRow, PROGRAM_VIDEOS } from '@/lib/free-program';
 
 export const metadata: Metadata = {
-    title: '3denní akcelerátor | Growbeyond',
+    title: '3denní rentgen | Growbeyond',
     robots: { index: false, follow: false },
 };
 
@@ -27,8 +27,9 @@ export default async function ProgramEntryPage({ params }: { params: Promise<{ i
             {/* HERO */}
             <section className="pt-14 pb-6 px-6 text-center">
                 <div className="max-w-[820px] mx-auto flex flex-col items-center gap-5">
+                    <ProgramLogo className="text-[clamp(15px,2vw,19px)] mb-1" />
                     <p className="m-0 font-bold leading-[1.5] text-[clamp(18px,2.6vw,24px)]">
-                        Vítej v <Mark>akcelerátoru</Mark>
+                        Vítej v rentgenu
                     </p>
                     <h1 className="m-0 font-bold leading-[1.35] tracking-[-0.02em] text-[clamp(28px,4.4vw,46px)] max-w-[24ch]">
                         Najdeme, co tě nejvíc brzdí — začneme krátkou analýzou

@@ -2,16 +2,21 @@ import type { Metadata } from 'next';
 import { LegalFooter } from '@/components/LegalFooter';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { PROGRAM_VIDEOS } from '@/lib/free-program';
-import { Card, CheckIcon, Mark, PillLink, Underlined } from '@/components/program/ui';
+import { Card, CheckIcon, Mark, PillLink, ProgramLogo, Underlined } from '@/components/program/ui';
 
 export const metadata: Metadata = {
     title: 'Pro kouče a mentory — Opravář tvého podnikání | Growbeyond',
-    description: 'Najdeme, co tě nejvíc brzdí, vyřešíme to a otevřeme ti cestu k 500 000 Kč měsíčně. 3denní akcelerátor zdarma.',
+    description: 'Najdeme, co tě nejvíc brzdí, vyřešíme to a otevřeme ti cestu k 500 000 Kč měsíčně. 3denní rentgen zdarma.',
 };
 
 // LP free programu — 1:1 převod redesignu (landing-redesign.html od Tima).
 // CTA vede do IG DM (keyword "start" spouští Beo workflow Free Program: START).
 const IG_DM_URL = 'https://ig.me/m/creationwithtim';
+
+// Silnice cesty kroků: S-křivka přes uzly na 25/75 % šířky, středy řádků 1-4
+// z pěti stejně vysokých řádků (y = 10/30/50/70), konec u špendlíku (50, 90).
+const ROAD_PATH =
+    'M 25 2 C 25 5 25 7 25 10 C 25 22 75 18 75 30 C 75 42 25 38 25 50 C 25 62 75 58 75 70 C 75 80 50 79 50 88';
 
 const STEPS = [
     { num: '01', text: 'Podíváš se na úvodní video' },
@@ -40,8 +45,9 @@ export default function ProgramLandingPage() {
             {/* HERO */}
             <section className="pt-14 pb-18 px-6 text-center">
                 <div className="relative z-[2] max-w-[900px] mx-auto flex flex-col items-center gap-[22px]">
+                    <ProgramLogo className="text-[clamp(15px,2vw,19px)] mb-1" />
                     <p className="m-0 font-bold leading-[1.5] tracking-[-0.01em] text-[clamp(18px,2.6vw,26px)]">
-                        Hledám <Mark>kouče</Mark> a <Mark>mentory</Mark>
+                        Hledáme <Mark>kouče</Mark> a <Mark>mentory</Mark>
                     </p>
 
                     <h1 className="m-0 font-bold leading-[1.35] tracking-[-0.02em] text-[clamp(30px,5vw,54px)] max-w-[22ch]">
@@ -50,7 +56,7 @@ export default function ProgramLandingPage() {
                     </h1>
 
                     <p className="m-0 font-medium leading-[1.6] text-[clamp(19px,2.4vw,26px)]">
-                        <Underlined>Pomocí našeho 3denního akcelerátoru</Underlined>
+                        <Underlined>Pomocí našeho 3denního rentgenu</Underlined>
                     </p>
 
                     <div className="w-[92vw] max-w-[560px] mt-2.5">
@@ -60,7 +66,7 @@ export default function ProgramLandingPage() {
                     <div className="mt-2">
                         <PillLink href={IG_DM_URL}>Napiš mi „START&ldquo; do DM</PillLink>
                     </div>
-                    <p className="m-0 text-sm text-white/55">Pro okamžitý přístup k akcelerátoru</p>
+                    <p className="m-0 text-sm text-white/55">Pro okamžitý přístup k rentgenu</p>
                 </div>
             </section>
 
@@ -76,28 +82,72 @@ export default function ProgramLandingPage() {
                         </p>
                     </div>
 
-                    {/* Cesta: svislá přerušovaná linka, uzly s čísly, karty střídavě po stranách */}
-                    <div className="relative flex flex-col gap-8 md:gap-12">
-                        <div aria-hidden className="absolute left-7 md:left-1/2 top-6 bottom-6 border-l border-dashed border-white/20 md:-translate-x-px" />
-                        {STEPS.map((step, i) => (
-                            <div key={step.num} className="relative grid grid-cols-[56px_1fr] gap-4 items-center md:grid-cols-[1fr_112px_1fr] md:gap-0">
-                                <div className="relative z-10 flex justify-center md:col-start-2 md:row-start-1">
-                                    <span className="w-14 h-14 rounded-full bg-brand-dark border border-brand-red/60 flex items-center justify-center font-serif text-brand-red text-[24px] leading-none">
-                                        {step.num}
-                                    </span>
+                    {/* Cesta: nakreslená klikatá road — silnice (široký tah + přerušovaná
+                        středová čára, sketch filtr pro ručně kreslený vzhled) se čtyřmi
+                        zatáčkami; uzly s čísly sedí na zatáčkách (25 % / 75 % šířky,
+                        středy pěti stejně vysokých řádků), cíl = červený špendlík. */}
+                    <div className="relative grid auto-rows-fr">
+                        <svg
+                            aria-hidden
+                            className="absolute inset-0 w-full h-full"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            fill="none"
+                        >
+                            <defs>
+                                <filter id="road-sketch" x="-10%" y="-10%" width="120%" height="120%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="noise" />
+                                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" />
+                                </filter>
+                            </defs>
+                            <g filter="url(#road-sketch)">
+                                <path
+                                    d={ROAD_PATH}
+                                    stroke="white"
+                                    strokeOpacity="0.07"
+                                    strokeWidth="30"
+                                    strokeLinecap="round"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                                <path
+                                    d={ROAD_PATH}
+                                    stroke="white"
+                                    strokeOpacity="0.4"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeDasharray="9 13"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                            </g>
+                        </svg>
+
+                        {STEPS.map((step, i) => {
+                            const nodeLeft = i % 2 === 0;
+                            return (
+                                <div key={step.num} className="relative grid grid-cols-2 items-center gap-3 md:gap-6 py-4 md:py-6">
+                                    <div className={`flex justify-center ${nodeLeft ? '' : 'order-2'}`}>
+                                        <span className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-dark border-2 border-brand-red flex items-center justify-center font-bold text-brand-red text-[17px] md:text-[19px] tracking-[0.02em]">
+                                            {step.num}
+                                        </span>
+                                    </div>
+                                    <Card
+                                        className={`p-4 md:p-6 ${nodeLeft ? 'rotate-[-0.6deg]' : 'order-1 rotate-[0.6deg]'}`}
+                                    >
+                                        <p className="m-0 text-[15px] md:text-lg font-semibold leading-[1.5]">{step.text}</p>
+                                    </Card>
                                 </div>
-                                <Card
-                                    className={`p-6 md:row-start-1 ${i % 2 === 0
-                                        ? 'md:col-start-1 md:text-right'
-                                        : 'md:col-start-3'}`}
-                                >
-                                    <p className="m-0 text-lg font-semibold leading-[1.5]">{step.text}</p>
-                                </Card>
-                            </div>
-                        ))}
-                        {/* cíl cesty */}
-                        <div className="relative z-10 flex justify-start md:justify-center pl-[22px] md:pl-0">
-                            <span aria-hidden className="w-3 h-3 rounded-full bg-brand-red" />
+                            );
+                        })}
+
+                        {/* cíl cesty — červený špendlík na konci silnice */}
+                        <div className="relative flex items-center justify-center">
+                            <svg aria-hidden width="36" height="45" viewBox="0 0 24 30">
+                                <path
+                                    d="M12 1C6.2 1 1.5 5.6 1.5 11.3c0 7.8 9 17.3 10.5 17.3s10.5-9.5 10.5-17.3C22.5 5.6 17.8 1 12 1z"
+                                    fill="#FF0E00"
+                                />
+                                <circle cx="12" cy="11.3" r="4" fill="#111111" />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -146,7 +196,7 @@ export default function ProgramLandingPage() {
                 <div className="relative z-[2] max-w-[720px] mx-auto flex flex-col items-center gap-6">
                     <h2 className="m-0 font-bold leading-[1.4] tracking-[-0.02em] text-[clamp(28px,4vw,44px)]">
                         Pokud to myslíš vážně, napiš mi na Instagramu do DM slovo&nbsp;<Mark>„START&ldquo;</Mark> a
-                        hned dostaneš přístup do akcelerátoru
+                        hned dostaneš přístup k rentgenu
                     </h2>
                     <PillLink href={IG_DM_URL}>Napsat „START&ldquo; na Instagramu</PillLink>
                 </div>

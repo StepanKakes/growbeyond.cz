@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { dayVideo, getProgramRow, markDayOpened, type ProgramDay } from '@/lib/free-program';
+import { ProgramLogo } from '@/components/program/ui';
 
 export const metadata: Metadata = {
-    title: '3denní akcelerátor | Growbeyond',
+    title: '3denní rentgen | Growbeyond',
     robots: { index: false, follow: false },
 };
 
@@ -32,6 +33,8 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white flex flex-col overflow-x-hidden">
             <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-[26px] md:pt-10 pb-12 flex flex-col gap-[30px] md:gap-10">
+
+                <ProgramLogo className="self-center text-[13px]" />
 
                 {/* progress: tenké pruhy per den */}
                 <div className="flex gap-2 items-center w-full max-w-[440px] mx-auto">
@@ -86,7 +89,7 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
 
             {/* mini footer */}
             <div className="text-center px-[22px] pt-[18px] pb-7 text-[11px] leading-[1.7] text-white/30">
-                Vlastimil Trnka · IČO: 24080349<br />beyond akcelerátor
+                Vlastimil Trnka · IČO: 24080349<br />3denní rentgen
             </div>
         </main>
     );
