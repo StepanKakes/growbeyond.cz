@@ -152,3 +152,46 @@ body {
   left: 0;
   background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.27) 45px);
 }
+/* Free program — skenovací linka rentgenu přes sekci kroků */
+@keyframes program-scan {
+  0% { top: -4px; opacity: 0; }
+  6% { opacity: 1; }
+  94% { opacity: 1; }
+  100% { top: calc(100% + 4px); opacity: 0; }
+}
+
+.program-scanline {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  top: 0;
+  height: 2px;
+  background: var(--color-brand-red);
+  box-shadow: 0 0 16px rgba(255, 14, 0, 0.9), 0 0 40px rgba(255, 14, 0, 0.35);
+  animation: program-scan 7s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .program-scanline { display: none; }
+}
+
+/* Free program — blikající kontrolka skeneru */
+@keyframes program-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.program-blink {
+  animation: program-blink 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .program-blink { animation: none; }
+}
+
+/* rentgenové ikony — měkký červený glow */
+.program-xray {
+  filter: drop-shadow(0 0 10px rgba(255, 14, 0, 0.35)) drop-shadow(0 0 26px rgba(255, 14, 0, 0.15));
+}

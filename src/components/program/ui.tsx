@@ -49,6 +49,17 @@ export const ProgramLogo = ({ className = '' }: { className?: string }) => (
     </span>
 );
 
+// Rentgenový snímek — rámeček jen z rohových závorek (stejný jazyk jako logo)
+export const ScanFrame = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`relative ${className}`}>
+        <span aria-hidden className="absolute left-0 top-0 w-6 h-6 border-l-2 border-t-2 border-white/50 rounded-tl-lg" />
+        <span aria-hidden className="absolute right-0 top-0 w-6 h-6 border-r-2 border-t-2 border-white/50 rounded-tr-lg" />
+        <span aria-hidden className="absolute right-0 bottom-0 w-6 h-6 border-r-2 border-b-2 border-white/50 rounded-br-lg" />
+        <span aria-hidden className="absolute left-0 bottom-0 w-6 h-6 border-l-2 border-b-2 border-white/50 rounded-bl-lg" />
+        {children}
+    </div>
+);
+
 // Velké serifové číslo kroku (01, 02, ...)
 export const StepNum = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
     <span className={`font-serif text-brand-red text-[40px] leading-none ${className}`}>{children}</span>

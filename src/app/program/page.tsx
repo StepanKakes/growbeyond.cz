@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { LegalFooter } from '@/components/LegalFooter';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { PROGRAM_VIDEOS } from '@/lib/free-program';
-import { Card, CheckIcon, Mark, PillLink, ProgramLogo, Underlined } from '@/components/program/ui';
+import { CheckIcon, Mark, PillLink, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
 
 export const metadata: Metadata = {
     title: 'Pro kouče a mentory — Opravář tvého podnikání | Growbeyond',
@@ -13,10 +13,14 @@ export const metadata: Metadata = {
 // CTA vede do IG DM (keyword "start" spouští Beo workflow Free Program: START).
 const IG_DM_URL = 'https://ig.me/m/creationwithtim';
 
-// Silnice cesty kroků: S-křivka přes uzly na 25/75 % šířky, středy řádků 1-4
-// z pěti stejně vysokých řádků (y = 10/30/50/70), konec u špendlíku (50, 90).
-const ROAD_PATH =
-    'M 25 2 C 25 5 25 7 25 10 C 25 22 75 18 75 30 C 75 42 25 38 25 50 C 25 62 75 58 75 70 C 75 80 50 79 50 88';
+// Rentgenové snímky kroků (Higgsfield, přebarvené do tmavého radiogramu
+// skriptem — invert z bílého pozadí, červená zachována). Zdroje ~/Downloads.
+const STEP_IMAGES = [
+    '/images/program/xray-tv.png',
+    '/images/program/xray-form.png',
+    '/images/program/xray-lens.png',
+    '/images/program/xray-tools.png',
+];
 
 const STEPS = [
     { num: '01', text: 'Podíváš se na úvodní video' },
@@ -82,74 +86,57 @@ export default function ProgramLandingPage() {
                         </p>
                     </div>
 
-                    {/* Cesta: nakreslená klikatá road — silnice (široký tah + přerušovaná
-                        středová čára, sketch filtr pro ručně kreslený vzhled) se čtyřmi
-                        zatáčkami; uzly s čísly sedí na zatáčkách (25 % / 75 % šířky,
-                        středy pěti stejně vysokých řádků), cíl = červený špendlík. */}
-                    <div className="relative grid auto-rows-fr">
-                        <svg
-                            aria-hidden
-                            className="absolute inset-0 w-full h-full"
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="none"
-                            fill="none"
-                        >
-                            <defs>
-                                <filter id="road-sketch" x="-10%" y="-10%" width="120%" height="120%">
-                                    <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="7" result="noise" />
-                                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" />
-                                </filter>
-                            </defs>
-                            <g filter="url(#road-sketch)">
-                                <path
-                                    d={ROAD_PATH}
-                                    stroke="white"
-                                    strokeOpacity="0.07"
-                                    strokeWidth="30"
-                                    strokeLinecap="round"
-                                    vectorEffect="non-scaling-stroke"
-                                />
-                                <path
-                                    d={ROAD_PATH}
-                                    stroke="white"
-                                    strokeOpacity="0.4"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeDasharray="9 13"
-                                    vectorEffect="non-scaling-stroke"
-                                />
-                            </g>
-                        </svg>
+                    {/* Rentgen: monitor letištního skeneru — rám s rohovými závorkami,
+                        uvnitř mřížka, kroky jako reálné rentgenové snímky (mix-blend
+                        screen, černé pozadí splyne s displejem), ghost čísla vpravo
+                        a přes celý monitor pomalu přejíždí červená skenovací linka. */}
+                    <ScanFrame className="max-w-[720px] mx-auto w-full p-2 md:p-3">
+                        <div className="relative rounded-xl border border-white/[0.08] bg-[#0C0C0C] overflow-hidden">
+                            <div
+                                aria-hidden
+                                className="absolute inset-0"
+                                style={{
+                                    backgroundImage:
+                                        'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
+                                    backgroundSize: '28px 28px',
+                                }}
+                            />
+                            <div
+                                aria-hidden
+                                className="absolute inset-0"
+                                style={{ background: 'radial-gradient(130% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.6))' }}
+                            />
+                            <span aria-hidden className="program-scanline" />
 
-                        {STEPS.map((step, i) => {
-                            const nodeLeft = i % 2 === 0;
-                            return (
-                                <div key={step.num} className="relative grid grid-cols-2 items-center gap-3 md:gap-6 py-4 md:py-6">
-                                    <div className={`flex justify-center ${nodeLeft ? '' : 'order-2'}`}>
-                                        <span className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-dark border-2 border-brand-red flex items-center justify-center font-bold text-brand-red text-[17px] md:text-[19px] tracking-[0.02em]">
+                            {/* kroky = prosvícené objekty */}
+                            <div className="relative flex flex-col">
+                                {STEPS.map((step, i) => (
+                                    <div
+                                        key={step.num}
+                                        className={`relative grid grid-cols-[104px_1fr] md:grid-cols-[150px_1fr] items-center gap-4 md:gap-7 px-4 md:px-8 py-4 md:py-5 pr-14 md:pr-24 ${i > 0 ? 'border-t border-dashed border-white/[0.07]' : ''}`}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 font-bold leading-none text-[52px] md:text-[76px] tracking-[-0.03em] select-none"
+                                            style={{ WebkitTextStroke: '1.5px rgba(255,255,255,0.09)', color: 'transparent' }}
+                                        >
                                             {step.num}
                                         </span>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={STEP_IMAGES[i]}
+                                            alt=""
+                                            width={560}
+                                            height={560}
+                                            loading="lazy"
+                                            className="w-[104px] md:w-[150px] mix-blend-screen select-none pointer-events-none"
+                                        />
+                                        <p className="m-0 text-[15px] md:text-[19px] font-semibold leading-[1.45]">{step.text}</p>
                                     </div>
-                                    <Card
-                                        className={`p-4 md:p-6 ${nodeLeft ? 'rotate-[-0.6deg]' : 'order-1 rotate-[0.6deg]'}`}
-                                    >
-                                        <p className="m-0 text-[15px] md:text-lg font-semibold leading-[1.5]">{step.text}</p>
-                                    </Card>
-                                </div>
-                            );
-                        })}
-
-                        {/* cíl cesty — červený špendlík na konci silnice */}
-                        <div className="relative flex items-center justify-center">
-                            <svg aria-hidden width="36" height="45" viewBox="0 0 24 30">
-                                <path
-                                    d="M12 1C6.2 1 1.5 5.6 1.5 11.3c0 7.8 9 17.3 10.5 17.3s10.5-9.5 10.5-17.3C22.5 5.6 17.8 1 12 1z"
-                                    fill="#FF0E00"
-                                />
-                                <circle cx="12" cy="11.3" r="4" fill="#111111" />
-                            </svg>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </ScanFrame>
                 </div>
             </section>
 
