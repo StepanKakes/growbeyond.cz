@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findOrCreateByUsername, sanitizeUsername } from '@/lib/free-program';
+import { findOrCreateByUsername, PROGRAM_ORIGIN, sanitizeUsername } from '@/lib/free-program';
 
 export const runtime = 'nodejs';
 
@@ -7,7 +7,8 @@ export const runtime = 'nodejs';
 // Založí (nebo najde) řádek v Notion DB Free Program a přesměruje na kanonickou
 // URL /program/[id] (analýza + diagnostika). Beo zná jen username — most na cid.
 export async function GET(req: NextRequest) {
-    const origin = req.nextUrl.origin;
+    // Za Traefikem/Coolify je req.nextUrl.origin localhost — vždy kanonický origin.
+    const origin = PROGRAM_ORIGIN;
     const u = sanitizeUsername(req.nextUrl.searchParams.get('u'));
     if (!u) return NextResponse.redirect(`${origin}/strategie`, 302);
 

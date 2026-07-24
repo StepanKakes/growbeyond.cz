@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findByUsername, sanitizeUsername } from '@/lib/free-program';
+import { findByUsername, PROGRAM_ORIGIN, sanitizeUsername } from '@/lib/free-program';
 
 export const runtime = 'nodejs';
 
@@ -10,7 +10,8 @@ export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ den: string }> }
 ) {
-    const origin = req.nextUrl.origin;
+    // Za Traefikem/Coolify je req.nextUrl.origin localhost — vždy kanonický origin.
+    const origin = PROGRAM_ORIGIN;
     const { den } = await params;
     const day = Number(den);
     const u = sanitizeUsername(req.nextUrl.searchParams.get('u'));
