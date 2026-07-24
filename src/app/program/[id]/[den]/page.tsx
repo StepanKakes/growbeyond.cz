@@ -34,7 +34,7 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white flex flex-col overflow-x-hidden">
             <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-[26px] md:pt-10 pb-12 flex flex-col gap-[30px] md:gap-10">
 
-                <ProgramLogo className="self-center text-[13px]" />
+                <ProgramLogo className="self-center w-[180px]" />
 
                 {/* progress: tenké pruhy per den */}
                 <div className="flex gap-2 items-center w-full max-w-[440px] mx-auto">

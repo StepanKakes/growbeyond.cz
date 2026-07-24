@@ -27,7 +27,7 @@ export default async function ProgramEntryPage({ params }: { params: Promise<{ i
             {/* HERO */}
             <section className="pt-14 pb-6 px-6 text-center">
                 <div className="max-w-[820px] mx-auto flex flex-col items-center gap-5">
-                    <ProgramLogo className="text-[clamp(15px,2vw,19px)] mb-1" />
+                    <ProgramLogo className="w-[min(280px,64vw)] mb-1" />
                     <p className="m-0 font-bold leading-[1.5] text-[clamp(18px,2.6vw,24px)]">
                         Vítej v rentgenu
                     </p>
