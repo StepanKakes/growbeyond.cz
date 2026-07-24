@@ -12,9 +12,11 @@ export const PROGRAM_ORIGIN = 'https://growbeyond.cz';
 
 export type ProgramVideoMeta = { src: string; poster?: string; title: string; takeaways: string[]; minutes?: number };
 
-// Úvodní/analýza video (intro rentgenu, ~3:15, z YT Cxiq9eXJspU)
-export const PROGRAM_VIDEOS: Record<'analyza', ProgramVideoMeta> = {
+// analyza = intro na LP (~3:15, YT Cxiq9eXJspU)
+// vstup = video na vstupní stránce před diagnostikou (~6:38, YT lNLFsZEa8NU)
+export const PROGRAM_VIDEOS: Record<'analyza' | 'vstup', ProgramVideoMeta> = {
     analyza: { src: 'https://video.growbeyond.cz/program-intro.mp4', poster: 'https://video.growbeyond.cz/program-intro.jpg', title: 'Úvodní video', takeaways: [], minutes: 3 },
+    vstup: { src: 'https://video.growbeyond.cz/program-analyza.mp4', poster: 'https://video.growbeyond.cz/program-analyza.jpg', title: 'Analýza', takeaways: [], minutes: 7 },
 };
 
 // Denní videa per bucket (pořadí resources z podkladu Free Program.md).
