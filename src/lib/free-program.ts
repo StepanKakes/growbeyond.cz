@@ -443,7 +443,7 @@ export async function markNudged(id: string): Promise<void> {
 // ─── Watch scan (konec sledování bez dokoukání) ─────────────────────────────────
 
 const MIN_WATCH_SECONDS = 15; // "pustil video" = aspoň 15 s poctivého sledování
-const ABANDON_AFTER_MS = 15 * 60 * 1000; // 15 min bez heartbeatu = odešel
+const ABANDON_AFTER_MS = 3 * 60 * 1000; // TEST: 3 min (normálně 15) bez heartbeatu = odešel
 
 export type AbandonedCandidate = {
     id: string;
