@@ -12,9 +12,9 @@ export const PROGRAM_ORIGIN = 'https://growbeyond.cz';
 
 export type ProgramVideoMeta = { src: string; poster?: string; title: string; takeaways: string[]; minutes?: number };
 
-// Úvodní/analýza video (zatím hlavní VSL — TODO(Tim): natočit intro rentgenu)
+// Úvodní/analýza video (intro rentgenu, ~3:15, z YT Cxiq9eXJspU)
 export const PROGRAM_VIDEOS: Record<'analyza', ProgramVideoMeta> = {
-    analyza: { src: 'https://video.growbeyond.cz/main-vsl.mp4', poster: '/images/vsl-nahled.jpg', title: 'Úvodní video', takeaways: [] },
+    analyza: { src: 'https://video.growbeyond.cz/program-intro.mp4', poster: 'https://video.growbeyond.cz/program-intro.jpg', title: 'Úvodní video', takeaways: [], minutes: 3 },
 };
 
 // Denní videa per bucket (pořadí resources z podkladu Free Program.md).
