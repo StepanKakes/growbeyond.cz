@@ -5,7 +5,7 @@ import { PROGRAM_VIDEOS } from '@/lib/free-program';
 import { CheckIcon, Mark, PillLink, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
 
 export const metadata: Metadata = {
-    title: 'Pro kouče a mentory — Rentgen tvého podnikání | Growbeyond',
+    title: 'Rentgen tvého podnikání pro kouče a mentory | Growbeyond',
     description: 'Najdeme, co tě nejvíc brzdí, vyřešíme to a otevřeme ti cestu k 500 000 Kč měsíčně. 3denní rentgen zdarma.',
 };
 

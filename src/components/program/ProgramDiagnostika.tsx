@@ -105,7 +105,7 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
 
     return (
         <div className="relative rounded-xl border border-white/[0.08] bg-[#0C0C0C] overflow-hidden">
-            {/* mřížka + vinětace + skenovací linka — jazyk monitoru z LP */}
+            {/* mřížka + vinětace, jazyk monitoru z LP (bez animované linky) */}
             <div
                 aria-hidden
                 className="absolute inset-0"
@@ -120,7 +120,6 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
                 className="absolute inset-0"
                 style={{ background: 'radial-gradient(130% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.6))' }}
             />
-            <span aria-hidden className="program-scanline" />
 
             <div className="relative px-5 md:px-8 py-7 md:py-9 flex flex-col gap-6">
                 {/* progress: tenké pruhy per otázka */}
@@ -139,9 +138,6 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
                     >
                         0{step + 1}
                     </span>
-                    <p className="m-0 mb-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.16em] text-brand-red">
-                        Otázka {step + 1}/{QUESTIONS.length}
-                    </p>
                     <p className="m-0 text-white text-[18px] md:text-[21px] font-bold leading-[1.4]">{q.label}</p>
                 </div>
 
