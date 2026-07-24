@@ -24,7 +24,7 @@ export const ProgramLogo = ({ className = '' }: { className?: string }) => (
         alt="3denní rentgen"
         width={1200}
         height={525}
-        className={`mix-blend-screen select-none ${className}`}
+        className={`select-none ${className}`}
     />
 );
 

@@ -49,7 +49,7 @@ export default function ProgramLandingPage() {
             {/* HERO */}
             <section className="pt-14 pb-18 px-6 text-center">
                 <div className="relative z-[2] max-w-[900px] mx-auto flex flex-col items-center gap-[22px]">
-                    <ProgramLogo className="w-[min(340px,72vw)] mb-1" />
+                    <ProgramLogo className="w-[min(250px,56vw)] mb-1" />
                     <p className="m-0 font-bold leading-[1.5] tracking-[-0.01em] text-[clamp(18px,2.6vw,26px)]">
                         Hledáme <Mark>kouče</Mark> a <Mark>mentory</Mark>
                     </p>
