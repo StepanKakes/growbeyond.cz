@@ -5,7 +5,7 @@ import { PROGRAM_VIDEOS } from '@/lib/free-program';
 import { CheckIcon, Mark, PillLink, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
 
 export const metadata: Metadata = {
-    title: 'Pro kouče a mentory — Opravář tvého podnikání | Growbeyond',
+    title: 'Pro kouče a mentory — Rentgen tvého podnikání | Growbeyond',
     description: 'Najdeme, co tě nejvíc brzdí, vyřešíme to a otevřeme ti cestu k 500 000 Kč měsíčně. 3denní rentgen zdarma.',
 };
 
@@ -79,7 +79,7 @@ export default function ProgramLandingPage() {
                 <div className="max-w-[820px] mx-auto flex flex-col gap-10">
                     <div className="text-center flex flex-col gap-4">
                         <h2 className="m-0 font-bold leading-[1.3] tracking-[-0.02em] text-[clamp(28px,4vw,44px)]">
-                            Tento program funguje jako opravář&nbsp;tvého podnikání
+                            Tento program funguje jako rentgen&nbsp;tvého podnikání
                         </h2>
                         <p className="m-0 mx-auto leading-[1.6] text-white/75 max-w-[56ch] text-[clamp(17px,2vw,21px)]">
                             Stejně jako jsem odhalil svůj největší problém, chci najít ten tvůj a pomoct ti ho vyřešit
