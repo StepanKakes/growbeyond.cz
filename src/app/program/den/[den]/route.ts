@@ -16,7 +16,7 @@ export async function GET(
     const day = Number(den);
     const u = sanitizeUsername(req.nextUrl.searchParams.get('u'));
 
-    if (!u || ![1, 2, 3].includes(day)) return NextResponse.redirect(`${origin}/strategie`, 302);
+    if (!u || ![1, 2, 3].includes(day)) return NextResponse.redirect(`${origin}/program`, 302);
 
     const row = await findByUsername(u);
     if (!row) return NextResponse.redirect(`${origin}/program/start?u=${encodeURIComponent(u)}`, 302);

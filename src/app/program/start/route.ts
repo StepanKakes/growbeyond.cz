@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
     // Za Traefikem/Coolify je req.nextUrl.origin localhost — vždy kanonický origin.
     const origin = PROGRAM_ORIGIN;
     const u = sanitizeUsername(req.nextUrl.searchParams.get('u'));
-    if (!u) return NextResponse.redirect(`${origin}/strategie`, 302);
+    if (!u) return NextResponse.redirect(`${origin}/program`, 302);
 
     const utm = req.nextUrl.searchParams.get('utm_source') || 'ig-dm';
     const row = await findOrCreateByUsername(u, utm);
-    if (!row) return NextResponse.redirect(`${origin}/strategie`, 302);
+    if (!row) return NextResponse.redirect(`${origin}/program`, 302);
 
     return NextResponse.redirect(`${origin}/program/${row.id}`, 302);
 }
