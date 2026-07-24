@@ -1,19 +1,18 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { LegalFooter } from '@/components/LegalFooter';
-import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { ProgramDiagnostika } from '@/components/program/ProgramDiagnostika';
 import { ProgramLogo } from '@/components/program/ui';
-import { getProgramRow, PROGRAM_VIDEOS } from '@/lib/free-program';
+import { getProgramRow } from '@/lib/free-program';
 
 export const metadata: Metadata = {
     title: '3denní rentgen | Growbeyond',
     robots: { index: false, follow: false },
 };
 
-// Vstupní stránka programu: hlavní krok je diagnostika (intro video člověk viděl
-// na LP, kde je CTA "napiš START"); intro je dole jen jako záchrana pro ty, kdo
-// přišli rovnou z DM. Když už má diagnostiku za sebou, jde rovnou na aktuální den.
+// Vstupní stránka programu: jen diagnostika — intro video člověk viděl na LP,
+// kde je CTA "napiš START". Po odeslání dotazníku jde rovnou na Den 1 (video).
+// Když už má diagnostiku za sebou, jde rovnou na aktuální den.
 export default async function ProgramEntryPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const row = await getProgramRow(id);
@@ -38,24 +37,14 @@ export default async function ProgramEntryPage({ params }: { params: Promise<{ i
                 </div>
             </section>
 
-            {/* DOTAZNÍK — hlavní a jediný krok */}
-            <section className="pt-8 pb-16 px-6">
+            {/* DOTAZNÍK — jediný krok; po odeslání redirect rovnou na Den 1 */}
+            <section className="pt-8 pb-24 px-6">
                 <div className="max-w-[820px] mx-auto flex flex-col gap-4">
                     <h2 className="m-0 text-[clamp(22px,3vw,30px)] font-bold tracking-[-0.02em]">Vyplň krátký dotazník</h2>
                     <p className="m-0 text-white/75 leading-[1.6] text-[17px] mb-6">
                         My za tebe identifikujeme tvůj největší problém a hned ti otevřeme první den.
                     </p>
                     <ProgramDiagnostika cid={id} />
-                </div>
-            </section>
-
-            {/* Intro video — jen pro ty, kdo přišli rovnou z DM a neviděli LP */}
-            <section className="pt-12 pb-24 px-6 border-t border-white/[0.06]">
-                <div className="max-w-[680px] mx-auto flex flex-col gap-5">
-                    <p className="m-0 text-[13px] font-bold uppercase tracking-[0.08em] text-white/40 text-center">
-                        Ještě jsi neviděl úvodní video? Pusť si ho tady (3 min)
-                    </p>
-                    <ProgramVideo videoUrl={PROGRAM_VIDEOS.analyza.src} posterUrl={PROGRAM_VIDEOS.analyza.poster} />
                 </div>
             </section>
 
