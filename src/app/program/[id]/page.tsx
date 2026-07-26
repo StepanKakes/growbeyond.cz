@@ -11,7 +11,8 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };
 
-// Vstupní stránka programu: analýza video + krokový dotazník (rentgen design).
+// Vstupní stránka programu, layout jako YouTube na mobilu: video úplně nahoře
+// na celou šířku, pod ním logo, nadpis a krokový dotazník (rentgen design).
 // Po odeslání dotazníku jde člověk rovnou na Den 1 (video).
 // Když už má diagnostiku za sebou, jde rovnou na aktuální den.
 export default async function ProgramEntryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,23 +26,23 @@ export default async function ProgramEntryPage({ params }: { params: Promise<{ i
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white overflow-x-hidden">
 
-            {/* HERO */}
-            <section className="pt-14 pb-6 px-6 text-center">
-                <div className="max-w-[820px] mx-auto flex flex-col items-center gap-5">
-                    <ProgramLogo className="w-[min(210px,50vw)] mb-1" />
-                    <p className="m-0 font-bold leading-[1.5] text-[clamp(18px,2.6vw,24px)]">
-                        Vítej v programu!
-                    </p>
-                    <h1 className="m-0 font-bold leading-[1.35] tracking-[-0.02em] text-[clamp(28px,4.4vw,46px)] max-w-[24ch]">
-                        Začneme krátkou analýzou a identifikujeme, co tě nejvíc brzdí
-                    </h1>
+            {/* VIDEO nahoře, na mobilu edge-to-edge */}
+            <section className="md:pt-8 md:px-6">
+                <div className="w-full max-w-[880px] mx-auto md:rounded-xl overflow-hidden">
+                    <ProgramVideo videoUrl={PROGRAM_VIDEOS.vstup.src} posterUrl={PROGRAM_VIDEOS.vstup.poster} />
                 </div>
             </section>
 
-            {/* ANALÝZA VIDEO */}
-            <section className="pt-6 pb-10 px-6">
-                <div className="max-w-[720px] mx-auto">
-                    <ProgramVideo videoUrl={PROGRAM_VIDEOS.vstup.src} posterUrl={PROGRAM_VIDEOS.vstup.poster} />
+            {/* pod videem: logo + nadpis */}
+            <section className="pt-8 pb-4 px-6 text-center">
+                <div className="max-w-[820px] mx-auto flex flex-col items-center gap-4">
+                    <ProgramLogo className="w-[min(180px,44vw)]" />
+                    <p className="m-0 font-bold leading-[1.5] text-[clamp(16px,2.2vw,20px)] text-white/85">
+                        Vítej v programu!
+                    </p>
+                    <h1 className="m-0 font-bold leading-[1.35] tracking-[-0.02em] text-[clamp(24px,3.6vw,38px)] max-w-[26ch]">
+                        Začneme krátkou analýzou a identifikujeme, co tě nejvíc brzdí
+                    </h1>
                 </div>
             </section>
 

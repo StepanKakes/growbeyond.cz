@@ -9,8 +9,8 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };
 
-// Denní stránka — "Program den simple" design, responzivně: full-width brand-dark,
-// na mobilu kompaktní sloupec, na desktopu se obsah (video, 3 věci) rozloží do šířky.
+// Denní stránka, layout jako YouTube na mobilu: video úplně nahoře na celou
+// šířku, pod ním logo, progress dnů, nadpis a klíčové body z videa.
 // Video + takeaways per bucket z diagnostiky.
 const DAYS: ProgramDay[] = [1, 2, 3];
 
@@ -32,7 +32,21 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
 
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white flex flex-col overflow-x-hidden">
-            <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-[26px] md:pt-10 pb-12 flex flex-col gap-[30px] md:gap-10">
+
+            {/* video nahoře, na mobilu edge-to-edge */}
+            <div className="w-full md:pt-8 md:px-8">
+                <div className="w-full max-w-[880px] mx-auto md:rounded-xl overflow-hidden md:shadow-[0_18px_50px_-16px_rgba(0,0,0,0.7)]">
+                    <ProgramVideo
+                        videoUrl={video.src}
+                        posterUrl={video.poster}
+                        trackCid={id}
+                        trackDay={day}
+                        nativeProgress
+                    />
+                </div>
+            </div>
+
+            <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-7 md:pt-9 pb-12 flex flex-col gap-[26px] md:gap-9">
 
                 <ProgramLogo className="self-center w-[140px]" />
 
@@ -48,25 +62,14 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
                     ))}
                 </div>
 
-                {/* titulek */}
+                {/* nadpis */}
                 <div className="flex flex-col gap-4">
-                    <span className="self-center bg-brand-red px-2 text-[22px] font-bold tracking-[-0.02em]">
+                    <span className="self-center bg-brand-red px-2 text-[20px] font-bold tracking-[-0.02em]">
                         Den {day}
                     </span>
-                    <h1 className="m-0 text-[33px] md:text-[44px] font-bold leading-[1.12] tracking-[-0.032em] text-center [text-wrap:balance] max-w-[24ch] mx-auto">
+                    <h1 className="m-0 text-[28px] md:text-[40px] font-bold leading-[1.15] tracking-[-0.032em] text-center [text-wrap:balance] max-w-[26ch] mx-auto">
                         {video.title}
                     </h1>
-                </div>
-
-                {/* video */}
-                <div className="w-full max-w-[820px] mx-auto rounded-xl overflow-hidden shadow-[0_18px_50px_-16px_rgba(0,0,0,0.7)]">
-                    <ProgramVideo
-                        videoUrl={video.src}
-                        posterUrl={video.poster}
-                        trackCid={id}
-                        trackDay={day}
-                        nativeProgress
-                    />
                 </div>
 
                 {/* 3 klíčové věci — mobil pod sebou, desktop vedle sebe */}
