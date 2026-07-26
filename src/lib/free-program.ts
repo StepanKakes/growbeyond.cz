@@ -121,6 +121,28 @@ const headers = () => ({
 
 export const isValidPageId = (id: string) => /^[0-9a-fA-F-]{32,36}$/.test(id);
 
+// IG in-app browser otvírá URL tlačítka ve svém webview. Tenhle interstitial
+// se pokusí vyskočit do systémového prohlížeče: Android přes intent:// (Chrome),
+// iOS přes x-safari- scheme. Když se breakout nepovede, po chvíli pokračujeme
+// normálně ve webview (?br=1 brání nekonečné smyčce interstitialu).
+export function igBrowserBreakout(ua: string | null, pathname: string, search: string): Response | null {
+    if (!/instagram/i.test(ua || '')) return null;
+    const params = new URLSearchParams(search);
+    if (params.get('br') === '1') return null;
+
+    const target = `${PROGRAM_ORIGIN}${pathname}${search ? `?${params.toString()}` : ''}`;
+    params.set('br', '1');
+    const fallback = `${PROGRAM_ORIGIN}${pathname}?${params.toString()}`;
+    const host = PROGRAM_ORIGIN.replace('https://', '');
+    const intent = `intent://${host}${pathname}${search ? `?${new URLSearchParams(search).toString()}` : ''}#Intent;scheme=https;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+
+    const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>3denní rentgen</title><style>body{background:#111;color:#fff;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;display:flex;min-height:100dvh;align-items:center;justify-content:center;margin:0;text-align:center;padding:24px}a{display:inline-block;color:#fff;background:#FF0E00;padding:15px 28px;border-radius:999px;text-decoration:none;font-weight:700;letter-spacing:.02em}p{color:rgba(255,255,255,.6);font-size:14px;line-height:1.6}</style></head><body><div><p>Otevírám v prohlížeči…</p><a href="${fallback}">Pokračovat</a><script>(function(){var android=/android/i.test(navigator.userAgent||'');try{location.href=android?${JSON.stringify(intent)}:'x-safari-'+${JSON.stringify(target)};}catch(e){}setTimeout(function(){location.replace(${JSON.stringify(fallback)});},1500);})();</script></div></body></html>`;
+
+    return new Response(html, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+}
+
 // IG username: písmena/čísla/tečka/podtržítko, max 30 znaků
 export function sanitizeUsername(raw: string | null | undefined): string {
     const u = (raw || '').trim().toLowerCase().replace(/^@/, '');
