@@ -33,9 +33,11 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
             title: false,
             transparent: false
         },
-        // nativeProgress (program videa): normální Plyr seekbar místo fake baru
+        // nativeProgress (program videa): normální Plyr seekbar místo fake baru;
+        // čas jako YouTube (3:12 / 15:00), ne odpočet do konce
+        invertTime: false,
         controls: nativeProgress
-            ? ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+            ? ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen']
             : ['play-large', 'play', 'mute', 'volume', 'fullscreen'],
     }), [vslMode, nativeProgress]);
 
