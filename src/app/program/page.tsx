@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { LegalFooter } from '@/components/LegalFooter';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
-import { PROGRAM_VIDEOS } from '@/lib/free-program';
+import { PROGRAM_VIDEOS, sanitizeUsername } from '@/lib/free-program';
 import { CheckIcon, Mark, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
 import { ProgramJoin } from '@/components/program/ProgramJoin';
 
@@ -43,7 +43,11 @@ const NOT_FOR_YOU = [
     'Kdo je úplně na začátku',
 ];
 
-export default function ProgramLandingPage() {
+// ?u=<ig_username> (posílá Beo keyword "rentgen" jako URL button) předvyplní
+// Instagram ve formuláři — člověk z DM už jen doplní email.
+export default async function ProgramLandingPage({ searchParams }: { searchParams: Promise<{ u?: string }> }) {
+    const { u } = await searchParams;
+    const initialUsername = sanitizeUsername(u);
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white overflow-x-hidden">
 
@@ -69,7 +73,7 @@ export default function ProgramLandingPage() {
                     </div>
 
                     <div className="mt-3 w-full flex justify-center">
-                        <ProgramJoin />
+                        <ProgramJoin initialUsername={initialUsername} />
                     </div>
                 </div>
             </section>
@@ -185,7 +189,7 @@ export default function ProgramLandingPage() {
                         Pokud to myslíš vážně, <Mark>vstup do programu</Mark> a hned dostaneš přístup k rentgenu
                     </h2>
                     <div className="w-full flex justify-center">
-                        <ProgramJoin />
+                        <ProgramJoin initialUsername={initialUsername} />
                     </div>
                 </div>
             </section>

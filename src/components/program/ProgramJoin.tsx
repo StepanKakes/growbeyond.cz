@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 // → rovnou redirect na /program/[id] (analýza + diagnostika). Nahrazuje dřívější
 // CTA "napiš START do DM".
 
-export const ProgramJoin = () => {
-    const [username, setUsername] = useState('');
+export const ProgramJoin = ({ initialUsername = '' }: { initialUsername?: string }) => {
+    const [username, setUsername] = useState(initialUsername);
     const [email, setEmail] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
