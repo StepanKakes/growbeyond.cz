@@ -411,6 +411,17 @@ export async function setRowEmail(id: string, email: string): Promise<boolean> {
     return patchPage(id, { Email: { email } });
 }
 
+// Odstranění účastníka (archivace řádku) — může pak projít programem znovu od nuly.
+export async function archiveRow(id: string): Promise<boolean> {
+    if (!isValidPageId(id)) return false;
+    const res = await fetch(`${NOTION}/pages/${id}`, {
+        method: 'PATCH',
+        headers: headers(),
+        body: JSON.stringify({ archived: true }),
+    });
+    return res.ok;
+}
+
 // ─── Beo webhooky ───────────────────────────────────────────────────────────────
 
 // Fire-and-forget POST do Beo incoming_webhook (URL v env, případně fallback
