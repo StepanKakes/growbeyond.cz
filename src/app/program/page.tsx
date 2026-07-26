@@ -73,7 +73,7 @@ export default async function ProgramLandingPage({ searchParams }: { searchParam
                     </div>
 
                     <div className="mt-3 w-full flex justify-center">
-                        <ProgramJoin initialUsername={initialUsername} />
+                        <ProgramJoin username={initialUsername} />
                     </div>
                 </div>
             </section>
@@ -189,7 +189,7 @@ export default async function ProgramLandingPage({ searchParams }: { searchParam
                         Pokud to myslíš vážně, <Mark>vstup do programu</Mark> a hned dostaneš přístup k rentgenu
                     </h2>
                     <div className="w-full flex justify-center">
-                        <ProgramJoin initialUsername={initialUsername} />
+                        <ProgramJoin username={initialUsername} />
                     </div>
                 </div>
             </section>
