@@ -33,9 +33,14 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white flex flex-col overflow-x-hidden">
 
-            {/* video nahoře, na mobilu edge-to-edge */}
-            <div className="w-full md:pt-8 md:px-8">
-                <div className="w-full max-w-[880px] mx-auto md:rounded-xl overflow-hidden md:shadow-[0_18px_50px_-16px_rgba(0,0,0,0.7)]">
+            {/* logo úplně nahoře */}
+            <div className="w-full pt-7 pb-6 flex justify-center">
+                <ProgramLogo className="w-[140px]" />
+            </div>
+
+            {/* video, na mobilu edge-to-edge, bez zaoblení */}
+            <div className="w-full md:px-8">
+                <div className="w-full max-w-[880px] mx-auto">
                     <ProgramVideo
                         videoUrl={video.src}
                         posterUrl={video.poster}
@@ -47,8 +52,6 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
             </div>
 
             <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-7 md:pt-9 pb-12 flex flex-col gap-[26px] md:gap-9">
-
-                <ProgramLogo className="self-center w-[140px]" />
 
                 {/* progress: tenké pruhy per den */}
                 <div className="flex gap-2 items-center w-full max-w-[440px] mx-auto">

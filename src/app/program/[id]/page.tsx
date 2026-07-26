@@ -26,20 +26,26 @@ export default async function ProgramEntryPage({ params }: { params: Promise<{ i
     return (
         <main className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-red selection:text-white overflow-x-hidden">
 
-            {/* VIDEO nahoře, na mobilu edge-to-edge */}
-            <section className="md:pt-8 md:px-6">
-                <div className="w-full max-w-[880px] mx-auto md:rounded-xl overflow-hidden">
-                    <ProgramVideo videoUrl={PROGRAM_VIDEOS.vstup.src} posterUrl={PROGRAM_VIDEOS.vstup.poster} />
+            {/* logo + uvítání úplně nahoře */}
+            <section className="pt-8 pb-6 px-6 text-center">
+                <div className="max-w-[820px] mx-auto flex flex-col items-center gap-4">
+                    <ProgramLogo className="w-[min(180px,44vw)]" />
+                    <p className="m-0 font-bold leading-[1.5] text-[clamp(17px,2.4vw,22px)]">
+                        Vítej v programu!
+                    </p>
                 </div>
             </section>
 
-            {/* pod videem: logo + nadpis */}
+            {/* video, na mobilu edge-to-edge, bez zaoblení, normální seekbar */}
+            <section className="md:px-6">
+                <div className="w-full max-w-[880px] mx-auto">
+                    <ProgramVideo videoUrl={PROGRAM_VIDEOS.vstup.src} posterUrl={PROGRAM_VIDEOS.vstup.poster} nativeProgress />
+                </div>
+            </section>
+
+            {/* nadpis pod videem */}
             <section className="pt-8 pb-4 px-6 text-center">
-                <div className="max-w-[820px] mx-auto flex flex-col items-center gap-4">
-                    <ProgramLogo className="w-[min(180px,44vw)]" />
-                    <p className="m-0 font-bold leading-[1.5] text-[clamp(16px,2.2vw,20px)] text-white/85">
-                        Vítej v programu!
-                    </p>
+                <div className="max-w-[820px] mx-auto flex flex-col items-center">
                     <h1 className="m-0 font-bold leading-[1.35] tracking-[-0.02em] text-[clamp(24px,3.6vw,38px)] max-w-[26ch]">
                         Začneme krátkou analýzou a identifikujeme, co tě nejvíc brzdí
                     </h1>

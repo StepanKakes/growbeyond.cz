@@ -271,7 +271,7 @@ export const MentorshipVideoSection = ({ vimeoId = DEFAULT_VIMEO_ID, videoUrl, p
 
     return (
         <div ref={sectionRef} id="vsl" className="w-full">
-            <div ref={videoContainerRef} className="relative rounded-lg md:rounded-xl overflow-hidden border border-white/10 bg-[#151515] z-20">
+            <div ref={videoContainerRef} className={`relative overflow-hidden bg-[#151515] z-20 ${nativeProgress ? '' : 'rounded-lg md:rounded-xl border border-white/10'}`}>
                 <style>{`
                     .plyr {
                         --plyr-color-main: #FF0E00;
