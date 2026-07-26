@@ -38,6 +38,23 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
                 <ProgramLogo className="w-[140px]" />
             </div>
 
+            {/* nad videem: Den X + progress dnů */}
+            <div className="w-full max-w-[440px] mx-auto px-[22px] pb-6 flex flex-col gap-4">
+                <span className="self-center bg-brand-red px-2 text-[18px] font-bold tracking-[-0.02em]">
+                    Den {day}
+                </span>
+                <div className="flex gap-2 items-center w-full">
+                    {DAYS.map(d => (
+                        <div key={d} className="flex-1 flex flex-col gap-[7px]">
+                            <span className={`h-[3px] rounded-full ${d <= day ? 'bg-brand-red' : 'bg-white/[0.14]'}`} />
+                            <span className={`text-xs text-center ${d === day ? 'font-bold text-white' : d < day ? 'font-semibold text-white/35' : 'font-semibold text-white/[0.28]'}`}>
+                                {label(d)}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* video, na mobilu edge-to-edge, bez zaoblení */}
             <div className="w-full md:px-8">
                 <div className="w-full max-w-[880px] mx-auto">
@@ -51,34 +68,17 @@ export default async function ProgramDayPage({ params }: { params: Promise<{ id:
                 </div>
             </div>
 
-            <div className="flex-1 w-full max-w-[440px] md:max-w-[900px] mx-auto px-[22px] md:px-8 pt-7 md:pt-9 pb-12 flex flex-col gap-[26px] md:gap-9">
+            <div className="flex-1 w-full max-w-[440px] md:max-w-[880px] mx-auto px-[22px] md:px-8 pt-5 md:pt-6 pb-12 flex flex-col gap-[26px] md:gap-9">
 
-                {/* progress: tenké pruhy per den */}
-                <div className="flex gap-2 items-center w-full max-w-[440px] mx-auto">
-                    {DAYS.map(d => (
-                        <div key={d} className="flex-1 flex flex-col gap-[7px]">
-                            <span className={`h-[3px] rounded-full ${d <= day ? 'bg-brand-red' : 'bg-white/[0.14]'}`} />
-                            <span className={`text-xs text-center ${d === day ? 'font-bold text-white' : d < day ? 'font-semibold text-white/35' : 'font-semibold text-white/[0.28]'}`}>
-                                {label(d)}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* nadpis */}
-                <div className="flex flex-col gap-4">
-                    <span className="self-center bg-brand-red px-2 text-[20px] font-bold tracking-[-0.02em]">
-                        Den {day}
-                    </span>
-                    <h1 className="m-0 text-[28px] md:text-[40px] font-bold leading-[1.15] tracking-[-0.032em] text-center [text-wrap:balance] max-w-[26ch] mx-auto">
-                        {video.title}
-                    </h1>
-                </div>
+                {/* nadpis videa pod videem, jako popisek na YouTube */}
+                <h1 className="m-0 text-[17px] md:text-[21px] font-semibold leading-[1.4] text-left">
+                    {video.title}
+                </h1>
 
                 {/* 3 klíčové věci — mobil pod sebou, desktop vedle sebe */}
                 {video.takeaways.length > 0 && (
                     <div className="flex flex-col gap-6 md:gap-8">
-                        <p className="m-0 text-[13px] font-bold uppercase tracking-[0.08em] text-white/40 text-center">
+                        <p className="m-0 text-[13px] font-bold uppercase tracking-[0.08em] text-white/40 text-left">
                             3 věci, které si z dneška vezmi
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
