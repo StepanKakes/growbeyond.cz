@@ -62,7 +62,7 @@ export const ProgramJoin = ({ username = '' }: { username?: string }) => {
 
             {open && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/75 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-start justify-center px-6 pt-[12vh] md:items-center md:pt-0 bg-black/75 backdrop-blur-sm"
                     onClick={e => { if (e.target === e.currentTarget && !submitting) setOpen(false); }}
                 >
                     <div className="relative w-full max-w-[400px] rounded-2xl border border-white/[0.12] bg-[#0C0C0C] p-7 pt-8">
