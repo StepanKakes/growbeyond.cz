@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { LegalFooter } from '@/components/LegalFooter';
 import { ProgramVideo } from '@/components/program/ProgramVideo';
 import { PROGRAM_VIDEOS } from '@/lib/free-program';
-import { CheckIcon, Mark, PillLink, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
+import { CheckIcon, Mark, ProgramLogo, ScanFrame, Underlined } from '@/components/program/ui';
+import { ProgramJoin } from '@/components/program/ProgramJoin';
 
 export const metadata: Metadata = {
     title: 'Rentgen tvého podnikání pro kouče a mentory | Growbeyond',
@@ -10,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 // LP free programu — 1:1 převod redesignu (landing-redesign.html od Tima).
-// CTA vede do IG DM (keyword "start" spouští Beo workflow Free Program: START).
-const IG_DM_URL = 'https://ig.me/m/creationwithtim';
+// Vstup přes formulář (IG + email → /api/program/join); keyword "start" v DM
+// zůstává jako záložní cesta pro lidi ze starších postů.
 
 // Rentgenové snímky kroků (Higgsfield, přebarvené do tmavého radiogramu
 // skriptem — invert z bílého pozadí, červená zachována). Zdroje ~/Downloads.
@@ -67,10 +68,9 @@ export default function ProgramLandingPage() {
                         <ProgramVideo videoUrl={PROGRAM_VIDEOS.analyza.src} posterUrl={PROGRAM_VIDEOS.analyza.poster} />
                     </div>
 
-                    <div className="mt-2">
-                        <PillLink href={IG_DM_URL}>Napiš mi „START&ldquo; do DM</PillLink>
+                    <div className="mt-3 w-full flex justify-center">
+                        <ProgramJoin />
                     </div>
-                    <p className="m-0 text-sm text-white/55">Pro okamžitý přístup k rentgenu</p>
                 </div>
             </section>
 
@@ -182,10 +182,11 @@ export default function ProgramLandingPage() {
             <section className="pt-24 pb-28 px-6 text-center border-t border-white/[0.06]">
                 <div className="relative z-[2] max-w-[720px] mx-auto flex flex-col items-center gap-6">
                     <h2 className="m-0 font-bold leading-[1.4] tracking-[-0.02em] text-[clamp(28px,4vw,44px)]">
-                        Pokud to myslíš vážně, napiš mi na Instagramu do DM slovo&nbsp;<Mark>„START&ldquo;</Mark> a
-                        hned dostaneš přístup k rentgenu
+                        Pokud to myslíš vážně, <Mark>vstup do programu</Mark> a hned dostaneš přístup k rentgenu
                     </h2>
-                    <PillLink href={IG_DM_URL}>Napsat „START&ldquo; na Instagramu</PillLink>
+                    <div className="w-full flex justify-center">
+                        <ProgramJoin />
+                    </div>
                 </div>
             </section>
 

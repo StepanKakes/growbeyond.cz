@@ -15,6 +15,28 @@ export function czVocative(firstNameRaw?: string): string | undefined {
     return v.charAt(0).toUpperCase() + v.slice(1);
 }
 
+/**
+ * Transakční email přes Plunk (POST /v1/send). Plain text dostane <br> zalomení.
+ * Best-effort: nikdy nehodí, vrací jen success flag.
+ */
+export async function plunkSendEmail(opts: { to: string; subject: string; body: string }): Promise<boolean> {
+    const key = process.env.PLUNK_SECRET_KEY;
+    if (!key || !opts.to) return false;
+    const body = opts.body.includes('<') ? opts.body : opts.body.replace(/\n/g, '<br>');
+    try {
+        const res = await fetch('https://api.useplunk.com/v1/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+            body: JSON.stringify({ to: opts.to, subject: opts.subject, body }),
+        });
+        if (!res.ok) console.error('Plunk send failed:', res.status, await res.text().catch(() => ''));
+        return res.ok;
+    } catch (e) {
+        console.error('Plunk send error:', e);
+        return false;
+    }
+}
+
 type EnrollInput = {
     email: string;
     firstName?: string;

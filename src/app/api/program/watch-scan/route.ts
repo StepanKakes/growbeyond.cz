@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
             ...(c.watchedPct != null ? { pct: String(c.watchedPct) } : {}),
             question: c.question,
             bucket: c.bucket,
+            ...(c.email ? { email: c.email } : {}),
             ...nextDayContext(c.bucket, c.day),
         });
         sent++;

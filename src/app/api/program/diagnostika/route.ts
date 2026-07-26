@@ -10,7 +10,7 @@ const OPT = /^[A-D]$/;
 export async function POST(req: Request) {
     try {
         const { cid, q1, q2, q3, q4, q3jinak } = await req.json().catch(() => ({}));
-        if (!cid || !isValidPageId(cid) || ![q1, q2, q3].every(v => OPT.test(v ?? '')) || !/^[A-C]$/.test(q4 ?? '')) {
+        if (!cid || !isValidPageId(cid) || ![q1, q3].every(v => OPT.test(v ?? '')) || !/^[A-E]$/.test(q2 ?? '') || !/^[A-C]$/.test(q4 ?? '')) {
             return NextResponse.json({ ok: false }, { status: 400 });
         }
 
@@ -26,10 +26,11 @@ export async function POST(req: Request) {
                 username: row.ig,
                 bucket: saved.bucket,
                 link: dayLink(1, row.ig),
+                ...(row.email ? { email: row.email } : {}),
             });
         }
 
-        return NextResponse.json({ ok: true, next: `/program/${cid}/1` });
+        return NextResponse.json({ ok: true, next: `/program/${cid}/1`, bucket: saved.bucket });
     } catch (e) {
         console.error('program/diagnostika error', e);
         return NextResponse.json({ ok: false }, { status: 500 });

@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
             username: c.ig,
             day: String(c.day),
             link: c.link,
+            ...(c.email ? { email: c.email } : {}),
         });
         await markNudged(c.id);
         sent++;

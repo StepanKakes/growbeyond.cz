@@ -33,6 +33,7 @@ const QUESTIONS: Question[] = [
             { value: 'B', text: 'Pozná, kdo jsem, ale ne jak mu mohu pomoci' },
             { value: 'C', text: 'Pozná, komu pomáhám, ale nabídka ho nezaujme' },
             { value: 'D', text: 'Vidí to jasně a stejně se nic neděje' },
+            { value: 'E', text: 'Ano, pozná to hned a funguje to' },
         ],
     },
     {
@@ -56,12 +57,35 @@ const QUESTIONS: Question[] = [
     },
 ];
 
+// Lidský popis výsledku pro obrazovku po vyhodnocení (per bucket).
+const BUCKET_RESULT: Record<string, { title: string; desc: string }> = {
+    '01 Publikum a positioning': {
+        title: 'Publikum a positioning',
+        desc: 'Tvůj největší problém není obsah ani píle. Sledují tě lidé, kterým nikdy neprodáš. Následující 3 dny ti ukážou, jak přitáhnout ty správné a jak k nim mluvit.',
+    },
+    '02 Málo prodejů': {
+        title: 'Málo prodejů',
+        desc: 'Lidé tě sledují, ale mezi sledováním a nákupem jim chybí jasná cesta. Následující 3 dny ti ukážou, jak z diváků udělat klienty.',
+    },
+    '03 Strop a škálování': {
+        title: 'Strop a škálování',
+        desc: 'Prodáváš, ale všechno stojí na tobě a narazil jsi na strop. Následující 3 dny ti ukážou, jak ho prolomit a postavit systém, který poroste bez tebe.',
+    },
+};
+
+// Fáze vyhodnocovací animace (rentgen jazyk, postupné kroky skenu)
+const SCAN_STAGES = ['Načítám odpovědi', 'Prosvěcuji tvoje podnikání', 'Hledám největší brzdu', 'Sestavuji 3denní plán'];
+const SCAN_STAGE_MS = 850;
+
 export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
     const [step, setStep] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [q3jinak, setQ3jinak] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [phase, setPhase] = useState<'form' | 'analyzing' | 'result'>('form');
+    const [scanStage, setScanStage] = useState(0);
+    const [result, setResult] = useState<{ bucket: string; next: string } | null>(null);
 
     const q = QUESTIONS[step];
     const isLast = step === QUESTIONS.length - 1;
@@ -72,6 +96,20 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
         if (submitting) return;
         setSubmitting(true);
         setError('');
+        setPhase('analyzing');
+        setScanStage(0);
+
+        // animace jede po fázích; výsledek se ukáže až po API i po celé animaci
+        const animation = new Promise<void>(resolve => {
+            let i = 0;
+            const tick = () => {
+                i += 1;
+                if (i < SCAN_STAGES.length) { setScanStage(i); setTimeout(tick, SCAN_STAGE_MS); }
+                else setTimeout(resolve, SCAN_STAGE_MS);
+            };
+            setTimeout(tick, SCAN_STAGE_MS);
+        });
+
         try {
             const res = await fetch('/api/program/diagnostika', {
                 method: 'POST',
@@ -79,14 +117,17 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
                 body: JSON.stringify({ cid, ...finalAnswers, q3jinak: finalAnswers.q3 === 'D' ? q3jinak : undefined }),
             });
             const data = await res.json().catch(() => null);
+            await animation;
             if (data?.ok && data.next) {
-                window.location.href = data.next;
+                setResult({ bucket: data.bucket ?? '', next: data.next });
+                setPhase('result');
                 return;
             }
             setError('Něco se pokazilo, zkus to prosím znovu.');
         } catch {
             setError('Něco se pokazilo, zkus to prosím znovu.');
         }
+        setPhase('form');
         setSubmitting(false);
     };
 
@@ -121,6 +162,53 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
                 style={{ background: 'radial-gradient(130% 100% at 50% 0%, transparent 55%, rgba(0,0,0,0.6))' }}
             />
 
+            {phase === 'analyzing' && (
+                <>
+                    <span aria-hidden className="program-scanline" />
+                    <div className="relative px-5 md:px-8 py-14 md:py-16 flex flex-col items-center gap-7 text-center">
+                        <div className="flex flex-col gap-2 items-center">
+                            {SCAN_STAGES.map((stage, i) => (
+                                <p
+                                    key={stage}
+                                    className={`m-0 text-[15px] md:text-[16px] font-semibold transition-opacity duration-500 ${i < scanStage ? 'text-white/35' : i === scanStage ? 'text-white' : 'text-white/15'}`}
+                                >
+                                    {i < scanStage ? '✓ ' : ''}{stage}{i === scanStage ? '…' : ''}
+                                </p>
+                            ))}
+                        </div>
+                        <div className="w-full max-w-[320px] h-[3px] rounded-full bg-white/[0.12] overflow-hidden">
+                            <span
+                                className="block h-full bg-brand-red rounded-full transition-all duration-700"
+                                style={{ width: `${Math.round(((scanStage + 1) / SCAN_STAGES.length) * 100)}%` }}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {phase === 'result' && result && (
+                <div className="relative px-5 md:px-8 py-12 md:py-14 flex flex-col items-center gap-5 text-center">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-brand-red/45 bg-brand-red/[0.1] px-4 py-1.5 text-[12px] font-bold tracking-[0.14em] uppercase text-brand-red">
+                        Zanalyzováno
+                    </span>
+                    <p className="m-0 text-white/55 text-[14px] font-semibold">Tvoje největší brzda</p>
+                    <p className="m-0 text-white font-bold leading-[1.25] tracking-[-0.02em] text-[26px] md:text-[34px]">
+                        {(BUCKET_RESULT[result.bucket] ?? BUCKET_RESULT['03 Strop a škálování']).title}
+                    </p>
+                    <p className="m-0 text-white/75 text-[15px] md:text-[16px] leading-[1.6] max-w-[46ch]">
+                        {(BUCKET_RESULT[result.bucket] ?? BUCKET_RESULT['03 Strop a škálování']).desc}
+                    </p>
+                    <p className="m-0 text-white/55 text-[14px] leading-[1.6]">První video na tebe čeká hned za tímhle tlačítkem.</p>
+                    <a
+                        href={result.next}
+                        className="mt-1 inline-block bg-brand-red hover:bg-[#cc0b00] text-white px-9 py-4 rounded-full text-[15px] font-bold tracking-[0.02em] uppercase transition-colors no-underline"
+                    >
+                        Vstoupit do programu
+                    </a>
+                </div>
+            )}
+
+            {phase === 'form' && (
             <div className="relative px-5 md:px-8 py-7 md:py-9 flex flex-col gap-6">
                 {/* progress: tenké pruhy per otázka */}
                 <div className="flex gap-2 items-center">
@@ -196,6 +284,7 @@ export const ProgramDiagnostika = ({ cid }: { cid: string }) => {
 
                 {error && <p className="m-0 text-brand-red text-sm">{error}</p>}
             </div>
+            )}
         </div>
     );
 };

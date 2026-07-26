@@ -122,9 +122,10 @@ const headers = () => ({
 export const isValidPageId = (id: string) => /^[0-9a-fA-F-]{32,36}$/.test(id);
 
 // IG in-app browser otvírá URL tlačítka ve svém webview. Tenhle interstitial
-// se pokusí vyskočit do systémového prohlížeče: Android přes intent:// (Chrome),
-// iOS přes x-safari- scheme. Když se breakout nepovede, po chvíli pokračujeme
-// normálně ve webview (?br=1 brání nekonečné smyčce interstitialu).
+// vyskakuje do systémového prohlížeče: Android přes intent:// (auto redirect
+// funguje), iOS přes x-safari- scheme, který ale IG webview pouští JEN z přímého
+// kliknutí uživatele, takže na iOS ukazujeme tlačítko místo auto redirectu.
+// ?br=1 brání nekonečné smyčce interstitialu, kdyby breakout selhal.
 export function igBrowserBreakout(ua: string | null, pathname: string, search: string): Response | null {
     if (!/instagram/i.test(ua || '')) return null;
     const params = new URLSearchParams(search);
@@ -135,8 +136,10 @@ export function igBrowserBreakout(ua: string | null, pathname: string, search: s
     const fallback = `${PROGRAM_ORIGIN}${pathname}?${params.toString()}`;
     const host = PROGRAM_ORIGIN.replace('https://', '');
     const intent = `intent://${host}${pathname}${search ? `?${new URLSearchParams(search).toString()}` : ''}#Intent;scheme=https;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+    const ios = /iphone|ipad|ipod/i.test(ua || '');
+    const primary = ios ? `x-safari-${target}` : intent;
 
-    const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>3denní rentgen</title><style>body{background:#111;color:#fff;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;display:flex;min-height:100dvh;align-items:center;justify-content:center;margin:0;text-align:center;padding:24px}a{display:inline-block;color:#fff;background:#FF0E00;padding:15px 28px;border-radius:999px;text-decoration:none;font-weight:700;letter-spacing:.02em}p{color:rgba(255,255,255,.6);font-size:14px;line-height:1.6}</style></head><body><div><p>Otevírám v prohlížeči…</p><a href="${fallback}">Pokračovat</a><script>(function(){var android=/android/i.test(navigator.userAgent||'');try{location.href=android?${JSON.stringify(intent)}:'x-safari-'+${JSON.stringify(target)};}catch(e){}setTimeout(function(){location.replace(${JSON.stringify(fallback)});},1500);})();</script></div></body></html>`;
+    const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>3denní rentgen</title><style>body{background:#111;color:#fff;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;display:flex;min-height:100dvh;align-items:center;justify-content:center;margin:0;text-align:center;padding:24px}main{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:340px}h1{margin:0;font-size:20px;line-height:1.4}.btn{display:inline-block;color:#fff;background:#FF0E00;padding:16px 32px;border-radius:999px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:.02em}p{margin:0;color:rgba(255,255,255,.55);font-size:13px;line-height:1.6}.alt{color:rgba(255,255,255,.45);font-size:13px;text-decoration:underline}</style></head><body><main><h1>Program se otevírá v&nbsp;prohlížeči</h1><a class="btn" href="${primary}">Otevřít v prohlížeči</a><p>Kdyby tlačítko nereagovalo, klepni vpravo nahoře na tři tečky a vyber Otevřít v&nbsp;externím prohlížeči.</p><a class="alt" href="${fallback}">Pokračovat tady v Instagramu</a>${ios ? '' : `<script>try{location.href=${JSON.stringify(intent)};}catch(e){}</script>`}</main></body></html>`;
 
     return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
@@ -391,11 +394,18 @@ export async function markQuestionSent(id: string, day: ProgramDay): Promise<voi
     } catch { /* best-effort */ }
 }
 
+// Email z web formuláře (/api/program/join) — Beo workflows ho dostávají v payloadu
+// a posílají přes něj upozornění na nová videa (plunk_email kroky).
+export async function setRowEmail(id: string, email: string): Promise<boolean> {
+    return patchPage(id, { Email: { email } });
+}
+
 // ─── Beo webhooky ───────────────────────────────────────────────────────────────
 
-// Fire-and-forget POST do Beo incoming_webhook (URL v env). Nikdy nesmí shodit request.
-export async function fireBeoHook(envName: string, payload: Record<string, unknown>): Promise<void> {
-    const url = process.env[envName];
+// Fire-and-forget POST do Beo incoming_webhook (URL v env, případně fallback
+// zadrátovaný v kódu, ať nový hook nečeká na env v Coolify). Nikdy nesmí shodit request.
+export async function fireBeoHook(envName: string, payload: Record<string, unknown>, fallbackUrl?: string): Promise<void> {
+    const url = process.env[envName] || fallbackUrl;
     if (!url) {
         console.warn(`fireBeoHook: ${envName} není nastavené`);
         return;
@@ -419,7 +429,7 @@ export const dayLink = (day: ProgramDay, username: string) =>
 const HOURS = 3600 * 1000;
 const STAV_DAY: Record<string, ProgramDay> = { 'Den 1': 1, 'Den 2': 2, 'Den 3': 3 };
 
-export type NudgeCandidate = { id: string; ig: string; day: ProgramDay; link: string };
+export type NudgeCandidate = { id: string; ig: string; day: ProgramDay; link: string; email: string };
 
 // Kandidát: rozehraný den, video nedokoukané, uplynul práh (Den 1: 20 h od registrace,
 // Den 2/3: 36 h od dokoukání předchozího dne = 16 h delay v Beu + 20 h), nudge max 1× / 20 h.
@@ -454,7 +464,7 @@ export async function listNudgeCandidates(now = Date.now()): Promise<NudgeCandid
                 const reference = day === 1 ? row.createdTime : row.dayWatched[(day - 1) as ProgramDay];
                 const threshold = day === 1 ? 20 * HOURS : 36 * HOURS;
                 if (!reference || now - Date.parse(reference) < threshold) continue;
-                out.push({ id: row.id, ig: row.ig, day, link: dayLink(day, row.ig) });
+                out.push({ id: row.id, ig: row.ig, day, link: dayLink(day, row.ig), email: row.email });
             }
             cursor = data.has_more ? data.next_cursor : undefined;
         } while (cursor);
@@ -481,6 +491,7 @@ export type AbandonedCandidate = {
     day: ProgramDay;
     bucket: string;
     question: string;
+    email: string;
     watchedPct: number | null; // % videa, kam se poctivě dostal (null = neznámá délka)
 };
 
@@ -528,6 +539,7 @@ export async function listAbandonedCandidates(now = Date.now()): Promise<Abandon
                     day,
                     bucket: row.bucket,
                     question: dayQuestion(row.bucket, day),
+                    email: row.email,
                     watchedPct: dur && dur > 0 ? Math.min(100, Math.round((max / dur) * 100)) : null,
                 });
             }
