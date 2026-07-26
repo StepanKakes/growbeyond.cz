@@ -424,6 +424,35 @@ export async function fireBeoHook(envName: string, payload: Record<string, unkno
 export const dayLink = (day: ProgramDay, username: string) =>
     `${PROGRAM_ORIGIN}/program/den/${day}?u=${encodeURIComponent(username)}`;
 
+// ─── Tracking (Beo dashboard /program) ──────────────────────────────────────────
+
+// Všechny řádky programu, nejnovější první. Konzumuje Beo přes /api/program/leads.
+export async function listAllRows(): Promise<ProgramRow[]> {
+    if (!dbId()) return [];
+    const out: ProgramRow[] = [];
+    let cursor: string | undefined;
+    try {
+        do {
+            const res = await fetch(`${NOTION}/databases/${dbId()}/query`, {
+                method: 'POST',
+                headers: headers(),
+                body: JSON.stringify({
+                    sorts: [{ timestamp: 'created_time', direction: 'descending' }],
+                    page_size: 100,
+                    ...(cursor ? { start_cursor: cursor } : {}),
+                }),
+            });
+            if (!res.ok) break;
+            const data = await res.json();
+            for (const page of data.results ?? []) out.push(parseRow(page));
+            cursor = data.has_more ? data.next_cursor : undefined;
+        } while (cursor);
+    } catch (e) {
+        console.error('listAllRows failed', e);
+    }
+    return out;
+}
+
 // ─── Nudge scan ─────────────────────────────────────────────────────────────────
 
 const HOURS = 3600 * 1000;
