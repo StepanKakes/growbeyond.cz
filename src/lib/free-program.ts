@@ -325,7 +325,7 @@ export async function saveDiagnostika(id: string, d: Diagnostika): Promise<{ buc
 // Server drží MAX dosaženou vteřinu (stejný princip jako /api/vsl-progress).
 // Navíc razítkuje "D{n} aktivita" (poslední heartbeat, throttle 2 min) — z něj
 // watch-scan pozná, že divák pustil video a přestal sledovat (odešel ze stránky).
-const ACTIVITY_THROTTLE_MS = 2 * 60 * 1000;
+const ACTIVITY_THROTTLE_MS = 30 * 1000; // klient posílá progress po 12 s, razítko max po 30 s
 
 export async function updateDayProgress(id: string, day: ProgramDay, second: number, duration?: number): Promise<boolean> {
     const page = await getPage(id);
@@ -351,8 +351,14 @@ export async function updateDayProgress(id: string, day: ProgramDay, second: num
 // Bez vlastního GETu — stav bere z už načteného row (šetří Notion rate limit).
 export async function markDayOpened(row: ProgramRow, day: ProgramDay): Promise<void> {
     try {
-        if (row.dayOpened[day]) return;
-        await patchPage(row.id, { [`D${day} otevřeno`]: { date: { start: new Date().toISOString() } } });
+        const patch: Record<string, unknown> = {};
+        if (!row.dayOpened[day]) patch[`D${day} otevřeno`] = { date: { start: new Date().toISOString() } };
+        // Stav = aktuální den (watch-scan podle něj vybírá, který den vyhodnotit).
+        // Dokoukání ho posouvá v markDayWatched, ale při nedokoukání by zůstal
+        // pozadu — otevření vyššího dne ho proto dorovná.
+        const stavDay = STAV_DAY[row.stav] ?? 0;
+        if (row.stav !== 'Dokončeno' && day > stavDay) patch['Stav'] = { select: { name: `Den ${day}` } };
+        if (Object.keys(patch).length) await patchPage(row.id, patch);
     } catch { /* best-effort */ }
 }
 
@@ -467,7 +473,7 @@ export async function markNudged(id: string): Promise<void> {
 // ─── Watch scan (konec sledování bez dokoukání) ─────────────────────────────────
 
 const MIN_WATCH_SECONDS = 15; // "pustil video" = aspoň 15 s poctivého sledování
-const ABANDON_AFTER_MS = 3 * 60 * 1000; // TEST: 3 min (normálně 15) bez heartbeatu = odešel
+const ABANDON_AFTER_MS = 75 * 1000; // 75 s bez heartbeatu = přestal koukat (sken jede po minutě)
 
 export type AbandonedCandidate = {
     id: string;
