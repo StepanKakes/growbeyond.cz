@@ -24,10 +24,12 @@ export async function plunkSendEmail(opts: { to: string; subject: string; body: 
     if (!key || !opts.to) return false;
     const body = opts.body.includes('<') ? opts.body : opts.body.replace(/\n/g, '<br>');
     try {
-        const res = await fetch('https://api.useplunk.com/v1/send', {
+        // next-api = aktuální Plunk (starý api.useplunk.com vrací Unauthorized);
+        // /v1/send vyžaduje ověřeného odesílatele
+        const res = await fetch(`${PLUNK_API_URL}/v1/send`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-            body: JSON.stringify({ to: opts.to, subject: opts.subject, body }),
+            body: JSON.stringify({ to: opts.to, from: 'tim@creationwithtim.com', name: 'Tim', subject: opts.subject, body }),
         });
         if (!res.ok) console.error('Plunk send failed:', res.status, await res.text().catch(() => ''));
         return res.ok;
