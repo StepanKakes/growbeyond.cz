@@ -36,7 +36,7 @@ export async function POST(req: Request) {
             plunkSendEmail({
                 to: email,
                 subject: 'Tvůj vstup do 3denního rentgenu',
-                body: `Vítej v programu.\n\nTady je tvůj osobní odkaz, přes který se do programu kdykoliv vrátíš:\n${programUrl}\n\nZačni krátkou analýzou, zabere ti minutku. Další videa ti budu posílat na Instagram i sem na email.\n\nTim`,
+                body: `<div style="background:#111111;padding:32px 16px;font-family:-apple-system,Helvetica,Arial,sans-serif"><div style="max-width:480px;margin:0 auto"><img src="https://growbeyond.cz/images/program/logo-rentgen.png" alt="3denni rentgen" width="150" style="display:block;margin:0 auto 24px"><div style="background:#0C0C0C;border:1px solid #262626;border-radius:16px;padding:32px 28px;text-align:center"><h1 style="margin:0 0 12px;font-size:20px;line-height:1.4;color:#ffffff;font-weight:700">Vítej v programu</h1><p style="margin:0 0 26px;font-size:15px;line-height:1.7;color:#b3b3b3">Tohle je tvůj osobní přístup, přes který se do programu kdykoliv vrátíš. Začni krátkou analýzou, zabere ti minutku. Další videa ti budu posílat na Instagram i sem na email.</p><a href="${programUrl}" style="display:inline-block;background:#FF0E00;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:14px 30px;border-radius:999px">Vstoupit do programu</a></div><p style="margin:20px 0 0;text-align:center;font-size:12px;color:#737373">Tim, growbeyond.cz</p></div></div>`,
             }),
         ]);
 
