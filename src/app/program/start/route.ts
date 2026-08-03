@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findOrCreateByUsername, igBrowserBreakout, PROGRAM_ORIGIN, sanitizeUsername } from '@/lib/free-program';
+import { findOrCreateByUsername, fireBeoHook, igBrowserBreakout, PROGRAM_ORIGIN, sanitizeUsername } from '@/lib/free-program';
 
 export const runtime = 'nodejs';
 
@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
     const utm = req.nextUrl.searchParams.get('utm_source') || 'ig-dm';
     const row = await findOrCreateByUsername(u, utm);
     if (!row) return NextResponse.redirect(`${origin}/program`, 302);
+
+    // Hlídka prvního videa (idempotentní — check-d1 má marker, opakovaný vstup nevadí).
+    await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username: u }, 'https://beo.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
 
     return NextResponse.redirect(`${origin}/program/${row.id}`, 302);
 }

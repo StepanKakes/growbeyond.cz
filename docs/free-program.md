@@ -93,19 +93,27 @@ do Beo webhooků `{ username, day, ... }` — engine si podle username najde lea
    doptávací otázky (hlas přibalený z Creator DNA přes use_dna switch; ví
    watched/pct, NIKDY to neprozradí, při nedokoukání jemně povzbudí k dokoukání). Na konci poděkuje,
    řekne o čem je zítřejší video ({{next_title}}, ~{{next_minutes}} min) a zeptá
-   se, kdy ho poslat → capture `send_time` (HH:MM). Bez odpovědi 10 h → timeout,
-   flow pokračuje.
-3. **wait_until** `send_time`, fallback 08:00, min. odstup 6 h ("ve 20:00" řečené
+   se, kdy ho poslat → capture `send_time` (HH:MM). `max_wait_hours: 1` je
+   klouzavé okno: hodina se počítá od posledního tahu Bea, takže každá odpověď
+   leada ji resetuje. Ticho celou hodinu → `beo_outcome=timeout`.
+3. condition timeout → follow up větev: připomínka v DM + **plunk_email**
+   "Ještě od tebe nemám pár slov" (optional, `email_var: email`, CTA na
+   ig.me/m/creationwithtim) + druhý beo_agent s oknem 24 h. Jinak rovnou dál.
+4. **wait_until** `send_time`, fallback 08:00, min. odstup 6 h ("ve 20:00" řečené
    večer = zítra 20:00).
-4. Zpráva s linkem dalšího dne (`/program/den/N?u={{username}}`).
+5. Zpráva s linkem dalšího dne (`/program/den/N?u={{username}}`) + plunk_email
+   se stejným odkazem.
 
 ### WF5 — Den 3 (webhook: question payload)
 
 1. `{{question}}`
 2. **beo_agent** `wait_first` — doptá se k tématu + co daly 3 dny (aha-moment),
-   na závěr teaser hovoru zdarma a "pošlu ti termíny".
-3. condition `beo_outcome` = done → dál, jinak stop (timeout/handoff = žádný pitch).
-4. cal_slots (day_first) → (condition email) → cal_book → pipeline "Call Scheduled".
+   na závěr teaser hovoru zdarma a "pošlu ti termíny". Okno 1 h, klouzavé
+   (resetuje se každou odpovědí leada).
+3. condition timeout → follow up v DM + **plunk_email** "Ještě od tebe nemám
+   pár slov" + druhý beo_agent s oknem 20 h.
+4. condition `beo_outcome` = done → dál, jinak stop (timeout/handoff = žádný pitch).
+5. cal_slots (day_first) → (condition email) → cal_book → pipeline "Call Scheduled".
 
 ### WF7 — Nudge (webhook: username, day, link)
 

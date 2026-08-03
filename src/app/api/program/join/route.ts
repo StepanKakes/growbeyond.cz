@@ -42,6 +42,8 @@ export async function POST(req: Request) {
 
         // Uvítací DM přes Beo (jen pokud lead existuje, tzn. někdy nám psal)
         await fireBeoHook('BEO_PROGRAM_HOOK_JOIN', { username, email, link: `${PROGRAM_ORIGIN}/program/start?u=${encodeURIComponent(username)}` }, JOIN_HOOK_FALLBACK);
+        // Hlídka prvního videa: Beo workflow počká a zkontroluje přes /api/program/check-d1.
+        await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username, ...(email ? { email } : {}) }, 'https://beo.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
 
         return NextResponse.json({ ok: true, next: `/program/${row.id}` });
     } catch (e) {

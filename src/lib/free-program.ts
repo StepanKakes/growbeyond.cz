@@ -184,6 +184,7 @@ export type ProgramRow = {
     dayActivity: Record<ProgramDay, string>; // ISO poslední heartbeat přehrávače (throttled)
     dayQuestionSent: Record<ProgramDay, string>; // ISO odeslání post-watch otázky do Bea, '' = ne
     lastNudge: string;
+    regNudge: string;
     // odpovědi diagnostiky (písmena A-E; texty zná frontend) + volný text u Q3 D
     q1: string;
     q2: string;
@@ -222,6 +223,7 @@ function parseRow(page: Record<string, unknown>): ProgramRow {
         dayActivity,
         dayQuestionSent,
         lastNudge: props['Poslední nudge']?.date?.start ?? '',
+        regNudge: props['Reg nudge']?.date?.start ?? '',
         q1: plain(props['Q1 Publikum']),
         q2: plain(props['Q2 Jasnost profilu']),
         q3: plain(props['Q3 Cesta klienta']),
