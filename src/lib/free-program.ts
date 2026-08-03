@@ -482,6 +482,55 @@ const STAV_DAY: Record<string, ProgramDay> = { 'Den 1': 1, 'Den 2': 2, 'Den 3': 
 
 export type NudgeCandidate = { id: string; ig: string; day: ProgramDay; link: string; email: string };
 
+const MINUTES = 60 * 1000;
+
+// ─── Rychlý nudge po registraci ──────────────────────────────────────────────
+// Kandidát: registrace před 10+ minutami (max 6 h zpět), Den 1, video dne 1
+// vůbec nespuštěné. Jednorázově (marker "Reg nudge"). Nezávislé na denním
+// nudgi — tohle chytá lidi, co vyplní vstup a hned odpadnou.
+
+export type RegNudgeCandidate = { id: string; ig: string; link: string; email: string };
+
+export async function listRegNudgeCandidates(now = Date.now()): Promise<RegNudgeCandidate[]> {
+    if (!dbId()) return [];
+    const out: RegNudgeCandidate[] = [];
+    try {
+        const res = await fetch(`${NOTION}/databases/${dbId()}/query`, {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+                filter: {
+                    and: [
+                        { property: 'Stav', select: { equals: 'Den 1' } },
+                        { timestamp: 'created_time', created_time: { on_or_after: new Date(now - 6 * HOURS).toISOString() } },
+                    ],
+                },
+                page_size: 100,
+            }),
+        });
+        if (!res.ok) return out;
+        const data = await res.json();
+        for (const page of data.results ?? []) {
+            const row = parseRow(page);
+            const props = ((page.properties ?? {}) as Record<string, NotionProp>);
+            const regNudge = props['Reg nudge']?.date?.start ?? '';
+            if (!row.ig || regNudge) continue;
+            if (!row.createdTime || now - Date.parse(row.createdTime) < 10 * MINUTES) continue;
+            if ((row.dayMax[1] ?? 0) > 0 || row.dayWatched[1]) continue;
+            out.push({ id: row.id, ig: row.ig, link: dayLink(1, row.ig), email: row.email });
+        }
+    } catch (e) {
+        console.error('listRegNudgeCandidates failed', e);
+    }
+    return out;
+}
+
+export async function markRegNudged(id: string): Promise<void> {
+    try {
+        await patchPage(id, { 'Reg nudge': { date: { start: new Date().toISOString() } } });
+    } catch { /* best-effort */ }
+}
+
 // Kandidát: rozehraný den, video nedokoukané, uplynul práh (Den 1: 20 h od registrace,
 // Den 2/3: 36 h od dokoukání předchozího dne = 16 h delay v Beu + 20 h), nudge max 1× / 20 h.
 export async function listNudgeCandidates(now = Date.now()): Promise<NudgeCandidate[]> {
