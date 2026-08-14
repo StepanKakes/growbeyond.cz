@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Krátké odkazy se přestěhovaly pod Beo (beo.growbeyond.cz/l/<slug>).
+// Krátké odkazy se přestěhovaly pod Beo (app.growbeyond.cz/l/<slug>).
 // Web už jen předává dál: kliky, statistiky per lead i otevírání YouTube
 // v nativní aplikaci řeší Beo (stránka Odkazy). Historická klik data
 // zůstávají v Notion, nové kliky se počítají v Beo.
@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Sluggy byly do Beo naimportované 1:1. Neznámý slug pošle Beo zpět na
 // growbeyond.cz homepage, takže se nikdo neztratí. Scraperům (náhledy
 // v chatech) stačí řetěz 302 → YouTube, OG si přečtou z cílové stránky.
-const BEO_LINKS = 'https://beo.growbeyond.cz/l';
+const BEO_LINKS = 'https://app.growbeyond.cz/l';
 
 export async function GET(
     request: NextRequest,

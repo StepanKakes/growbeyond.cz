@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     if (!row) return NextResponse.redirect(`${origin}/program`, 302);
 
     // Hlídka prvního videa (idempotentní — check-d1 má marker, opakovaný vstup nevadí).
-    await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username: u }, 'https://beo.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
+    await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username: u }, 'https://app.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
 
     return NextResponse.redirect(`${origin}/program/${row.id}`, 302);
 }

@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 // "Free Program: Nudge registrace" (DM s odkazem na první video). Max 1×
 // na osobu (marker "Reg nudge" v Notion, zapisuje se PŘED hookem — radši
 // připomínku ztratit než poslat dvakrát).
-const BEO_HOOK_FALLBACK = 'https://beo.growbeyond.cz/api/automations/hooks/442d5b0833e969b9d169a46eba7487c81e3a0ff3';
+const BEO_HOOK_FALLBACK = 'https://app.growbeyond.cz/api/automations/hooks/442d5b0833e969b9d169a46eba7487c81e3a0ff3';
 
 export async function POST(req: NextRequest) {
     const secret = process.env.PROGRAM_CRON_SECRET;

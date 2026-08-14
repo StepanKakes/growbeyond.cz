@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 // hook do Bea, workflow počká (výchozí 5 min, editovatelné v Beu) a pak POSTne
 // sem. Když člověk video dne 1 ještě nespustil, odejde mu připomínka přes
 // workflow "Free Program: Nudge registrace". Max 1x (marker Reg nudge).
-const BEO_HOOK_FALLBACK = 'https://beo.growbeyond.cz/api/automations/hooks/442d5b0833e969b9d169a46eba7487c81e3a0ff3';
+const BEO_HOOK_FALLBACK = 'https://app.growbeyond.cz/api/automations/hooks/442d5b0833e969b9d169a46eba7487c81e3a0ff3';
 
 export async function POST(req: NextRequest) {
     const secret = process.env.PROGRAM_CRON_SECRET;

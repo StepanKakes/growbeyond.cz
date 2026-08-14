@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 // Klient pak přesměruje rovnou na /program/[id] (analýza + diagnostika).
 
 // Fallback URL hooku "Free Program: JOIN (web)" — env BEO_PROGRAM_HOOK_JOIN má přednost.
-const JOIN_HOOK_FALLBACK = 'https://beo.growbeyond.cz/api/automations/hooks/whk_GrwrPXo2MWv4OXb39c7wQ8TX';
+const JOIN_HOOK_FALLBACK = 'https://app.growbeyond.cz/api/automations/hooks/whk_GrwrPXo2MWv4OXb39c7wQ8TX';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         // Uvítací DM přes Beo (jen pokud lead existuje, tzn. někdy nám psal)
         await fireBeoHook('BEO_PROGRAM_HOOK_JOIN', { username, email, link: `${PROGRAM_ORIGIN}/program/start?u=${encodeURIComponent(username)}` }, JOIN_HOOK_FALLBACK);
         // Hlídka prvního videa: Beo workflow počká a zkontroluje přes /api/program/check-d1.
-        await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username, ...(email ? { email } : {}) }, 'https://beo.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
+        await fireBeoHook('BEO_PROGRAM_HOOK_REGISTERED', { username, ...(email ? { email } : {}) }, 'https://app.growbeyond.cz/api/automations/hooks/85c07cf4a93692a8c08cf5bd3b8bfb5893b4b5fc');
 
         return NextResponse.json({ ok: true, next: `/program/${row.id}` });
     } catch (e) {
