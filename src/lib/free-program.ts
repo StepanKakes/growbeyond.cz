@@ -533,8 +533,18 @@ export async function markRegNudged(id: string): Promise<void> {
     } catch { /* best-effort */ }
 }
 
+// Kdy se přestává připomínat. Sken jede jednou denně, takže tímhle oknem
+// projdou nejvýš dvě připomínky na jeden den programu.
+//
+// Bez téhle hranice se připomínalo donekonečna: kdo zůstal viset na Dnu 1,
+// dostával každý večer tutéž větu klidně čtrnáct dní po sobě. Kdo tři dny
+// nespustil další video, ho spustit nechce — další zpráva už není připomínka,
+// ale otrava.
+const NUDGE_KONEC = 3 * 24 * HOURS;
+
 // Kandidát: rozehraný den, video nedokoukané, uplynul práh (Den 1: 20 h od registrace,
-// Den 2/3: 36 h od dokoukání předchozího dne = 16 h delay v Beu + 20 h), nudge max 1× / 20 h.
+// Den 2/3: 36 h od dokoukání předchozího dne = 16 h delay v Beu + 20 h), nudge max 1× / 20 h
+// a jen do NUDGE_KONEC od zpřístupnění dne.
 export async function listNudgeCandidates(now = Date.now()): Promise<NudgeCandidate[]> {
     if (!dbId()) return [];
     const out: NudgeCandidate[] = [];
@@ -565,7 +575,9 @@ export async function listNudgeCandidates(now = Date.now()): Promise<NudgeCandid
                 if (row.lastNudge && now - Date.parse(row.lastNudge) < 20 * HOURS) continue;
                 const reference = day === 1 ? row.createdTime : row.dayWatched[(day - 1) as ProgramDay];
                 const threshold = day === 1 ? 20 * HOURS : 36 * HOURS;
-                if (!reference || now - Date.parse(reference) < threshold) continue;
+                if (!reference) continue;
+                const cekaUz = now - Date.parse(reference);
+                if (cekaUz < threshold || cekaUz > NUDGE_KONEC) continue;
                 out.push({ id: row.id, ig: row.ig, day, link: dayLink(day, row.ig), email: row.email });
             }
             cursor = data.has_more ? data.next_cursor : undefined;
