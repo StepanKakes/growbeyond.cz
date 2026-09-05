@@ -294,20 +294,9 @@ body {
   50% { transform: translateX(calc(1.7 * var(--led-shift))); }
 }
 
-/* Webinář 2030 — kontrolka živého přenosu */
-@keyframes webinar-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-.webinar-blink {
-  animation: webinar-blink 1.8s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .led,
   .led--turn-on,
   .led__ab--a,
-  .led__ab--b,
-  .webinar-blink { animation: none; }
+  .led__ab--b { animation: none; }
 }

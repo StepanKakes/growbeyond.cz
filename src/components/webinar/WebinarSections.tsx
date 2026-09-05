@@ -3,172 +3,156 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FadeUp } from '../FadeUp';
 import { LedText } from './LedText';
 import { WebinarForm } from './WebinarForm';
 import { WEBINAR } from './webinarConfig';
 import { REGISTRATION_ID } from './scroll';
+import { LEGAL } from '@/lib/legal';
 
-const SectionTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-    <h2 className={`text-[30px] md:text-[56px] font-bold tracking-[-0.03em] leading-[1.1] md:leading-[1.05] ${className}`}>{children}</h2>
+// Společná kostra sekcí: linka nahoře, nadpis vlevo, obsah vpravo.
+// Hierarchii dělá velikost písma a prostor, ne kontejnery.
+const Section = ({ id, title, children, className = '' }: { id?: string; title: string; children: React.ReactNode; className?: string }) => (
+    <section id={id} className={`relative z-10 border-t border-white/10 scroll-mt-4 ${className}`}>
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-24 grid gap-8 md:gap-12 md:grid-cols-12">
+            <h2 className="md:col-span-4 text-2xl md:text-[32px] font-bold tracking-[-0.02em] leading-[1.15]">{title}</h2>
+            <div className="md:col-span-8 md:col-start-5 max-w-[640px]">{children}</div>
+        </div>
+    </section>
 );
 
-const LiveDot = () => (
-    <span
-        className="inline-block w-2 h-2 rounded-full bg-brand-red shrink-0 shadow-[0_0_6px_rgba(255,14,0,0.6),0_0_16px_rgba(255,14,0,0.35)] webinar-blink"
-        aria-hidden="true"
-    />
+const Row = ({ children }: { children: React.ReactNode }) => (
+    <li className="border-t border-white/10 py-5 md:py-6 first:border-t-0 first:pt-0 last:pb-0">{children}</li>
 );
 
 export const EventDetails = () => (
-    <div className="flex items-start gap-7 md:gap-16">
+    <dl className="mt-8 md:mt-10">
         {[
-            { label: 'Datum', value: WEBINAR.date },
-            { label: 'Čas', value: WEBINAR.time },
-            { label: 'Kde', value: WEBINAR.place, live: true },
-        ].map(({ label, value, live }) => (
-            <div key={label} className="flex flex-col gap-1 md:gap-1.5">
-                <span className="text-[13px] md:text-sm font-bold text-white/45">{label}</span>
-                <span className="text-[17px] md:text-xl font-bold text-white/95 flex items-center gap-2">
-                    {live && <LiveDot />}
-                    {value}
-                </span>
+            ['Datum', WEBINAR.date],
+            ['Čas', WEBINAR.time],
+            ['Kde', WEBINAR.place],
+            ['Délka', `${WEBINAR.durationMinutes} minut`],
+            ['Cena', 'Zdarma'],
+        ].map(([k, v]) => (
+            <div key={k} className="flex items-baseline justify-between gap-6 border-t border-white/10 py-3 text-[17px] md:text-lg">
+                <dt className="text-white/50">{k}</dt>
+                <dd className="text-right">{v}</dd>
             </div>
         ))}
-    </div>
+    </dl>
 );
 
-export const RegistrationSection = ({ id, showDescription }: { id?: string; showDescription: boolean }) => (
-    <section id={id} className="relative z-10 px-5 md:px-[120px] pb-24 md:pb-40 flex flex-col items-center gap-7 md:gap-9 scroll-mt-6">
-        <FadeUp><EventDetails /></FadeUp>
-        <FadeUp delay={0.1} className="w-full flex justify-center">
-            <WebinarForm showDescription={showDescription} />
-        </FadeUp>
+export const RegistrationSection = ({ id, closing = false }: { id?: string; closing?: boolean }) => (
+    <section id={id} className="relative z-10 border-t border-white/10 scroll-mt-4">
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-24 grid gap-10 md:gap-12 md:grid-cols-12">
+            <div className="md:col-span-5">
+                <h2 className="text-2xl md:text-[32px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.title}</h2>
+                <p className="mt-4 text-[17px] md:text-lg text-white/70 leading-[1.55]">
+                    {closing ? WEBINAR.closing.promise : WEBINAR.form.description}
+                </p>
+                <div className="hidden md:block"><EventDetails /></div>
+            </div>
+            <div className="md:col-span-6 md:col-start-7">
+                <WebinarForm />
+                <div className="md:hidden"><EventDetails /></div>
+            </div>
+        </div>
     </section>
 );
 
 export const AgendaSection = () => (
-    <section className="relative z-10 px-5 md:px-[120px] pt-20 md:pt-[120px] pb-24 md:pb-40 flex flex-col items-center">
-        <div className="w-full max-w-[1200px] flex flex-col gap-8 md:gap-12">
-            <FadeUp><SectionTitle>{WEBINAR.agenda.title}</SectionTitle></FadeUp>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                {WEBINAR.agenda.items.map((item, i) => (
-                    <FadeUp key={item.title} delay={0.05 * i}>
-                        <article className="h-full rounded-[20px] bg-white/[0.04] border border-white/[0.08] p-6 md:p-8 flex flex-col gap-3">
-                            <span className="text-brand-red font-bold text-[15px] md:text-lg leading-none">{i + 1}</span>
-                            <h3 className="text-xl md:text-[30px] font-bold tracking-[-0.02em] leading-[1.18] md:leading-[1.15]">{item.title}</h3>
-                            <p className="text-white/55 font-bold text-[15px] md:text-lg leading-[1.4] md:leading-[1.45]">{item.text}</p>
-                        </article>
-                    </FadeUp>
-                ))}
-            </div>
-        </div>
-    </section>
+    <Section title={WEBINAR.agenda.title}>
+        <ul>
+            {WEBINAR.agenda.items.map(item => (
+                <Row key={item.title}>
+                    <h3 className="text-xl md:text-2xl font-bold tracking-[-0.015em] leading-[1.25]">{item.title}</h3>
+                    <p className="mt-2 text-[17px] md:text-lg text-white/70 leading-[1.55]">{item.text}</p>
+                </Row>
+            ))}
+        </ul>
+    </Section>
 );
 
 export const TebeSection = () => (
-    <section className="relative z-10 px-5 md:px-[120px] py-24 md:py-40 flex flex-col items-center text-center overflow-hidden">
-        <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[420px] md:w-[1300px] md:h-[700px] rounded-full pointer-events-none blur-[80px] md:blur-[160px]"
-            style={{ background: 'radial-gradient(closest-side, rgba(255,14,0,0.16), transparent 100%)' }}
-            aria-hidden="true"
-        />
-        <FadeUp>
-            <p className="relative text-white/70 font-bold text-lg md:text-[28px] leading-[1.4] md:leading-[1.35] tracking-[-0.015em] max-w-[320px] md:max-w-[720px]">
+    <section className="relative z-10 border-t border-white/10">
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-20 md:py-36 flex flex-col items-center text-center">
+            <p className="max-w-[30ch] md:max-w-[38ch] text-xl md:text-[28px] font-bold tracking-[-0.015em] leading-[1.3]">
                 {WEBINAR.tebe.intro}
             </p>
-        </FadeUp>
-        <FadeUp delay={0.1} className="relative my-6 md:my-10">
             <LedText
                 as="p"
                 color="red"
                 text={WEBINAR.tebe.word}
-                className="block font-bold leading-[0.9] tracking-[-0.05em] text-[clamp(110px,22vw,320px)]"
+                className="my-8 md:my-12 block font-bold leading-[0.9] tracking-[-0.04em] text-[clamp(104px,20vw,300px)]"
             />
-        </FadeUp>
-        <FadeUp delay={0.15}>
-            <p className="relative text-white/65 font-bold text-base md:text-[22px] leading-[1.45] max-w-[330px] md:max-w-[760px]">
+            <p className="max-w-[36ch] md:max-w-[56ch] text-[17px] md:text-[21px] text-white/70 leading-[1.55]">
                 {WEBINAR.tebe.explanation}
             </p>
-        </FadeUp>
+        </div>
     </section>
 );
 
 export const AudienceSection = () => (
-    <section className="relative z-10 px-5 md:px-[120px] pt-20 md:pt-[120px] pb-24 md:pb-40 flex flex-col items-center">
-        <div className="w-full max-w-[1200px] flex flex-col gap-7 md:gap-12">
-            <FadeUp><SectionTitle>{WEBINAR.audience.title}</SectionTitle></FadeUp>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
-                {WEBINAR.audience.items.map((text, i) => (
-                    <FadeUp key={text} delay={0.05 * i}>
-                        <div className="h-full rounded-[20px] bg-white/[0.04] border border-white/[0.08] p-6 md:p-7 flex flex-col gap-3 md:gap-4">
-                            <span className="text-brand-red font-bold text-[15px] md:text-lg leading-none">{i + 1}</span>
-                            <p className="text-white/90 font-bold text-[17px] md:text-[22px] leading-[1.35] tracking-[-0.015em]">{text}</p>
-                        </div>
-                    </FadeUp>
-                ))}
-            </div>
-            <FadeUp>
-                <p className="text-white/40 font-bold text-[15px] md:text-lg leading-[1.4]">{WEBINAR.audience.not}</p>
-            </FadeUp>
-        </div>
-    </section>
+    <Section title={WEBINAR.audience.title}>
+        <ul>
+            {WEBINAR.audience.items.map(text => (
+                <Row key={text}>
+                    <p className="text-[17px] md:text-xl leading-[1.5]">{text}</p>
+                </Row>
+            ))}
+        </ul>
+        <p className="mt-8 text-[17px] md:text-lg text-white/50 leading-[1.55]">{WEBINAR.audience.not}</p>
+    </Section>
 );
 
 export const HostSection = () => (
-    <section className="relative z-10 px-5 md:px-[120px] pt-20 md:pt-[120px] pb-28 md:pb-[200px] flex flex-col items-center">
-        <div className="w-full max-w-[1200px] flex flex-col md:flex-row md:items-center gap-7 md:gap-20">
-            <FadeUp className="md:hidden"><SectionTitle>{WEBINAR.host.title}</SectionTitle></FadeUp>
-            <FadeUp className="w-full md:w-[480px] shrink-0">
-                <div className="relative w-full aspect-[350/400] md:aspect-[480/560] rounded-3xl md:rounded-[28px] overflow-hidden bg-[#141414]">
-                    <Image
-                        src={WEBINAR.host.photo}
-                        alt={WEBINAR.host.name}
-                        fill
-                        sizes="(min-width: 768px) 480px, 100vw"
-                        className="object-cover"
-                    />
-                </div>
-            </FadeUp>
-            <FadeUp delay={0.1} className="flex flex-col gap-2.5 md:gap-4 md:max-w-[640px]">
-                <span className="hidden md:block text-white/45 font-bold text-xl">{WEBINAR.host.title}</span>
-                <h3 className="text-[26px] md:text-5xl font-bold tracking-[-0.03em] leading-[1.05]">{WEBINAR.host.name}</h3>
-                <p className="text-brand-red font-bold text-base md:text-xl">{WEBINAR.host.role}</p>
-                <p className="mt-1 md:mt-2 text-white/75 font-bold text-base md:text-[22px] leading-[1.45]">{WEBINAR.host.bio}</p>
-            </FadeUp>
+    <Section title={WEBINAR.host.title}>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+            <div className="relative w-[160px] aspect-[4/5] shrink-0 overflow-hidden rounded-lg bg-[#141414] sm:w-[200px]">
+                <Image
+                    src={WEBINAR.host.photo}
+                    alt={WEBINAR.host.name}
+                    fill
+                    sizes="200px"
+                    className="object-cover"
+                />
+            </div>
+            <div>
+                <h3 className="text-xl md:text-2xl font-bold tracking-[-0.015em] leading-[1.25]">{WEBINAR.host.name}</h3>
+                <p className="mt-1 text-[17px] md:text-lg text-white/50">{WEBINAR.host.role}</p>
+                <p className="mt-4 text-[17px] md:text-lg text-white/70 leading-[1.55]">{WEBINAR.host.bio}</p>
+            </div>
         </div>
-    </section>
+    </Section>
 );
 
 export const ClosingSection = () => (
-    <section className="relative z-10 px-5 md:px-[120px] pt-24 md:pt-40 pb-24 md:pb-40 flex flex-col items-center text-center gap-8 md:gap-12 overflow-hidden">
-        <FadeUp>
+    <section className="relative z-10 border-t border-white/10 overflow-hidden">
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 pt-20 md:pt-36 pb-6 md:pb-10 flex flex-col items-center text-center">
             <LedText
                 as="h2"
                 text={WEBINAR.closing.title}
                 px={3}
-                className="block font-bold leading-[0.95] tracking-[-0.045em] text-[clamp(52px,8.9vw,128px)] max-w-[350px] md:max-w-none mx-auto"
+                className="block font-bold leading-[0.95] tracking-[-0.04em] text-[clamp(52px,8.5vw,120px)] max-w-[8ch] md:max-w-none"
             />
-        </FadeUp>
-        <FadeUp delay={0.1}>
-            <p className="text-white/65 font-bold text-base md:text-2xl leading-[1.45] max-w-[330px] md:max-w-[760px]">{WEBINAR.closing.promise}</p>
-        </FadeUp>
-        <FadeUp delay={0.15}><EventDetails /></FadeUp>
-        <FadeUp delay={0.2} className="w-full flex justify-center">
-            <WebinarForm showDescription />
-        </FadeUp>
+        </div>
     </section>
 );
 
 export const WebinarFooter = () => (
     <footer className="relative z-10 border-t border-white/10">
-        <div className="px-5 md:px-12 py-8 md:py-9 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <Link href="/" className="text-white text-[22px] md:text-2xl font-serif italic leading-none">Beyond</Link>
-            <div className="flex flex-wrap gap-x-5 gap-y-2.5 text-[13px] font-bold text-white/50">
-                <a href="https://growbeyond.cz" className="hover:text-white transition-colors">growbeyond.cz</a>
-                <Link href="/obchodni-podminky" className="hover:text-white transition-colors">Obchodní podmínky</Link>
-                <Link href="/ochrana-osobnich-udaju" className="hover:text-white transition-colors">Ochrana osobních údajů</Link>
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-10 md:py-12 flex flex-col gap-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <Link href="/" className="text-white text-[22px] font-serif italic leading-none">Beyond</Link>
+                <nav aria-label="Patička" className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/60">
+                    <Link href="/" className="hover:text-white transition-colors">growbeyond.cz</Link>
+                    <Link href="/obchodni-podminky" className="hover:text-white transition-colors">Obchodní podmínky</Link>
+                    <Link href="/ochrana-osobnich-udaju" className="hover:text-white transition-colors">Ochrana osobních údajů</Link>
+                </nav>
             </div>
+            <p className="text-sm text-white/45 leading-[1.6] max-w-[70ch]">
+                {LEGAL.name}, IČO {LEGAL.ico}, {LEGAL.address}. {LEGAL.registration}{' '}
+                <a href={`mailto:${LEGAL.email}`} className="underline underline-offset-[3px] hover:text-white transition-colors">{LEGAL.email}</a>
+            </p>
         </div>
     </footer>
 );

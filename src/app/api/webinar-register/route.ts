@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     // Odfiltruje vymyšlené a dočasné schránky; při nejistotě pouští dál (fail-open).
     try {
         const v = await validateEmail(email);
-        if (!v.ok) return bad('email', v.reason || 'Zkontroluj prosím email.');
+        if (!v.ok) return bad('email', 'Zadej prosím email, který skutečně používáš.');
     } catch { /* fail-open */ }
 
     const utm: Record<string, string> = {};
