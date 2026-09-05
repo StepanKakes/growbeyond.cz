@@ -33,18 +33,14 @@ export const WebinarHero = ({ videoSrc, videoPoster }: { videoSrc?: string; vide
 
             {/* Střed */}
             <div className="relative z-20 w-full max-w-[960px] flex flex-col items-center text-center pt-6 md:pt-4">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.96, filter: 'blur(12px)' }}
-                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                    transition={{ duration: 1.1, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="leading-none"
-                >
+                {/* Zapnutí obrazovky řeší CSS animace led-turn-on */}
+                <div className="leading-none">
                     <LedText
                         as="h1"
                         text={WEBINAR.hero.year}
-                        className="block font-bold leading-[0.88] tracking-[-0.06em] text-[clamp(160px,27.5vw,400px)]"
+                        className="led--turn-on block font-bold leading-[0.88] tracking-[-0.06em] text-[clamp(160px,27.5vw,400px)]"
                     />
-                </motion.div>
+                </div>
 
                 <motion.h2
                     initial={{ opacity: 0, y: 16 }}
