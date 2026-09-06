@@ -13,11 +13,10 @@ export const WEBINAR = {
         year: '2030',
         headline: 'Bude někoho zajímat tvoje firma, když nebude znát',
         headlineAccent: 'tebe?',
-        subline: 'Webinář zdarma o tom, jak z osobní značky udělat distribuční kanál pro tvůj byznys.',
+        subline: 'Webinář zdarma o tom, jak z osobní značky udělat distribuční kanál pro tvůj byznys',
         cta: 'Rezervovat místo zdarma',
         navCta: 'Rezervovat místo',
         live: 'živě',
-        note: 'Webinář zdarma, 75 minut. Odkaz na živý přenos ti přijde emailem.',
     },
 
     agenda: {
@@ -25,62 +24,62 @@ export const WEBINAR = {
         items: [
             {
                 title: 'Proč bude v roce 2030 tvoje jméno cennější než logo tvé firmy',
-                text: 'Co se mění v tom, jak si lidé vybírají, komu věří a od koho nakupují.',
+                text: 'Co se mění v tom, jak si lidé vybírají, komu věří a od koho nakupují',
             },
             {
                 title: 'Co AI nezkopíruje',
-                text: 'Obsah, weby i produkty půjdou replikovat stále snáz. Důvěra, identita, reputace a distribuce přes lidi ne.',
+                text: 'Obsah, weby i produkty půjdou replikovat stále snáz. Důvěra, identita, reputace a distribuce přes lidi ne',
             },
             {
                 title: 'Jak z osobní značky udělat distribuční kanál',
-                text: 'Konkrétní způsob, jak proměnit zkušenosti, znalosti a jméno v stabilní přísun klientů.',
+                text: 'Konkrétní způsob, jak proměnit zkušenosti, znalosti a jméno v stabilní přísun klientů',
             },
             {
                 title: 'Čím začít už dnes',
-                text: 'Kroky, které dávají smysl teď, abys v roce 2030 nezačínal od nuly.',
+                text: 'Kroky, které dávají smysl teď, abys v roce 2030 nezačínal od nuly',
             },
         ],
     },
 
     tebe: {
-        intro: 'V době, kdy dokáže AI vytvořit skoro cokoliv, bude stále těžší zkopírovat jednu věc.',
-        word: 'TEBE.',
+        intro: 'V době, kdy dokáže AI vytvořit skoro cokoliv, bude stále těžší zkopírovat jednu věc',
+        word: 'TEBE',
         explanation:
-            'Tvoje jméno, reputace, zkušenosti, příběhy a publikum. Důvěra, kterou sis vybudoval. To je důvod budovat osobní značku. Ne kvůli sledujícím, ale protože se může stát jedním z nejcennějších distribučních aktiv tvého byznysu.',
+            'Tvoje jméno, reputace, zkušenosti, příběhy a publikum. Důvěra, kterou sis vybudoval. To je důvod budovat osobní značku. Ne kvůli sledujícím, ale protože se může stát jedním z nejcennějších distribučních aktiv tvého byznysu',
     },
 
     audience: {
         title: 'Pro koho webinář je',
         items: [
-            'Pro podnikatele, kteří chtějí, aby jim zákazníci věřili dřív, než je vůbec osloví.',
-            'Pro kouče, konzultanty a experty, kteří prodávají své znalosti a zkušenosti.',
-            'Pro každého, kdo staví firmu na vlastním jméně a chce z toho mít dlouhodobý užitek.',
+            'Pro podnikatele, kteří chtějí, aby jim zákazníci věřili dřív, než je vůbec osloví',
+            'Pro kouče, konzultanty a experty, kteří prodávají své znalosti a zkušenosti',
+            'Pro každého, kdo staví firmu na vlastním jméně a chce z toho mít dlouhodobý užitek',
         ],
-        not: 'Není pro tebe, pokud hledáš triky na rychlé sledující.',
+        not: 'Není pro tebe, pokud hledáš triky na rychlé sledující',
     },
 
     host: {
         title: 'Kdo webinář vede',
         name: 'Tim Trnka',
         role: 'Zakladatel Beyond',
-        bio: 'Pomáhá koučům, mentorům a konzultantům budovat osobní značku a prodávat kvalitnějším klientům. Na webináři ukáže, co funguje dnes a co se do roku 2030 změní.',
+        bio: 'Pomáhá koučům, mentorům a konzultantům budovat osobní značku a prodávat kvalitnějším klientům. Na webináři ukáže, co funguje dnes a co se do roku 2030 změní',
         // Zástupná fotka, dokud Tim nedodá portrét pro webinář.
         photo: '/images/hero/Still 2026-03-12 235253.jpg',
     },
 
     closing: {
-        title: '2030 ZAČÍNÁ DNES.',
+        title: '2030 ZAČÍNÁ DNES',
         promise:
-            '75 minut o tom, jak postavit osobní značku, která promění tvoje zkušenosti, znalosti a jméno v distribuční kanál pro tvůj byznys.',
+            '75 minut o tom, jak postavit osobní značku, která promění tvoje zkušenosti, znalosti a jméno v distribuční kanál pro tvůj byznys',
     },
 
     form: {
         title: 'Rezervuj si místo na webináři',
-        description: 'Je zdarma. Odkaz na živý přenos ti pošleme emailem.',
+        description: 'Je zdarma. Odkaz na živý přenos ti pošleme emailem',
         submit: 'Rezervovat místo zdarma',
-        consent: 'Odesláním souhlasíš se zpracováním osobních údajů.',
-        successTitle: 'Máš rezervované místo.',
-        successText: 'Odkaz na živý přenos ti přijde na email.',
+        consent: 'Odesláním souhlasíš se zpracováním osobních údajů',
+        successTitle: 'Máš rezervované místo',
+        successText: 'Odkaz na živý přenos ti přijde na email',
     },
 } as const;
 

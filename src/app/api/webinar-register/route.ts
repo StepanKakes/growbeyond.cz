@@ -34,14 +34,14 @@ export async function POST(req: Request) {
     const email = String(body.email || '').trim().toLowerCase();
     const phone = normalizePhone(String(body.phone || ''));
 
-    if (name.length < 2) return bad('name', 'Vyplň prosím své jméno.');
-    if (!EMAIL_RE.test(email)) return bad('email', 'Zkontroluj prosím email.');
-    if (!phone) return bad('phone', 'Zkontroluj prosím telefonní číslo.');
+    if (name.length < 2) return bad('name', 'Vyplň prosím své jméno');
+    if (!EMAIL_RE.test(email)) return bad('email', 'Zkontroluj prosím email');
+    if (!phone) return bad('phone', 'Zkontroluj prosím telefonní číslo');
 
     // Odfiltruje vymyšlené a dočasné schránky; při nejistotě pouští dál (fail-open).
     try {
         const v = await validateEmail(email);
-        if (!v.ok) return bad('email', 'Zadej prosím email, který skutečně používáš.');
+        if (!v.ok) return bad('email', 'Zadej prosím email, který skutečně používáš');
     } catch { /* fail-open */ }
 
     const utm: Record<string, string> = {};
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 
     if (!plunkOk && !hookOk) {
         console.error('Webinar registration not stored anywhere', { email });
-        return NextResponse.json({ ok: false, error: 'Něco se pokazilo, zkus to prosím znovu.' }, { status: 502 });
+        return NextResponse.json({ ok: false, error: 'Něco se pokazilo, zkus to prosím znovu' }, { status: 502 });
     }
 
     return NextResponse.json({ ok: true });

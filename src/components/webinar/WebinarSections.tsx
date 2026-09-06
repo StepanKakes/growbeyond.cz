@@ -100,7 +100,6 @@ export const ClosingSection = () => {
                 <LedText
                     as="h2"
                     text={WEBINAR.closing.title}
-                    px={3}
                     className="block font-bold leading-[0.95] tracking-[-0.04em] text-[clamp(52px,8.5vw,120px)] max-w-[8ch] md:max-w-none"
                 />
                 <p className="mt-8 md:mt-10 max-w-[36ch] md:max-w-[56ch] text-[18px] md:text-[22px] text-white/70 leading-[1.5]">{WEBINAR.closing.promise}</p>
@@ -108,7 +107,6 @@ export const ClosingSection = () => {
                     {weekday} {display}, {WEBINAR.time}, <span className="text-brand-red">{WEBINAR.hero.live}</span>
                 </p>
                 <PrimaryButton className="mt-6 md:mt-8 w-full sm:w-auto">{WEBINAR.hero.cta}</PrimaryButton>
-                <p className="mt-4 text-sm text-white/55">{WEBINAR.hero.note}</p>
             </div>
         </Shell>
     );
@@ -126,7 +124,7 @@ export const WebinarFooter = () => (
                 </nav>
             </div>
             <p className="text-sm text-white/45 leading-[1.6] max-w-[70ch]">
-                {LEGAL.name}, IČO {LEGAL.ico}, {LEGAL.address}. {LEGAL.registration}{' '}
+                {LEGAL.name}, IČO {LEGAL.ico}, {LEGAL.address}, {LEGAL.registration.replace(/\.$/, '')},{' '}
                 <a href={`mailto:${LEGAL.email}`} className="underline underline-offset-[3px] hover:text-white transition-colors">{LEGAL.email}</a>
             </p>
         </div>

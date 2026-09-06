@@ -23,9 +23,9 @@ export const WebinarForm = () => {
 
     const validate = (): Errors => {
         const e: Errors = {};
-        if (values.name.trim().length < 2) e.name = 'Doplň prosím jméno.';
-        if (!EMAIL_RE.test(values.email.trim())) e.email = 'Email nevypadá správně. Zkontroluj ho prosím.';
-        if (!phoneOk(values.phone)) e.phone = 'Telefon zadej včetně předvolby, například +420 777 123 456.';
+        if (values.name.trim().length < 2) e.name = 'Doplň prosím jméno';
+        if (!EMAIL_RE.test(values.email.trim())) e.email = 'Email nevypadá správně, zkontroluj ho prosím';
+        if (!phoneOk(values.phone)) e.phone = 'Telefon zadej včetně předvolby, například +420 777 123 456';
         return e;
     };
 
@@ -49,10 +49,10 @@ export const WebinarForm = () => {
                 return;
             }
             const field = data?.field && ['name', 'email', 'phone'].includes(data.field) ? (data.field as keyof Errors) : 'form';
-            setErrors({ [field]: data?.error || 'Odeslání se nepovedlo. Zkus to prosím za chvíli znovu.' });
+            setErrors({ [field]: data?.error || 'Odeslání se nepovedlo, zkus to prosím za chvíli znovu' });
             setStatus('idle');
         } catch {
-            setErrors({ form: 'Odeslání se nepovedlo. Zkontroluj připojení a zkus to znovu.' });
+            setErrors({ form: 'Odeslání se nepovedlo, zkontroluj připojení a zkus to znovu' });
             setStatus('idle');
         }
     };
@@ -62,7 +62,7 @@ export const WebinarForm = () => {
             <div className="w-full max-w-[480px]" role="status" aria-live="polite">
                 <h3 className="text-2xl md:text-[28px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.successTitle}</h3>
                 <p className="mt-3 text-white/70 text-[17px] md:text-lg leading-[1.55]">
-                    {WEBINAR.form.successText} <span className="text-white">{values.email.trim()}</span>.
+                    {WEBINAR.form.successText} <span className="text-white">{values.email.trim()}</span>
                 </p>
             </div>
         );

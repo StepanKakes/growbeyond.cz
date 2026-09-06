@@ -26,25 +26,23 @@ export const PrimaryButton = ({ children, className = '' }: { children: React.Re
 
 // Informace o termínu vedle videa: tři fakta velkým písmem pod sebou, pak akce.
 const EventPanel = () => {
-    const { display, weekday } = webinarDate();
-    const facts: { label: string; value: string; accent?: boolean }[] = [
-        { label: weekday, value: display },
-        { label: 'Začátek', value: WEBINAR.time },
-        { label: 'Online', value: WEBINAR.hero.live, accent: true },
+    const { display } = webinarDate();
+    const facts: { value: string; accent?: boolean }[] = [
+        { value: display },
+        { value: WEBINAR.time },
+        { value: WEBINAR.hero.live, accent: true },
     ];
     return (
         <div className="flex h-full flex-col justify-between rounded-xl border border-white/10 bg-[#111111] px-6 py-6 md:px-8 md:py-8 text-left">
-            <dl>
+            <ul>
                 {facts.map((f, i) => (
-                    <div key={f.label} className={`flex flex-col gap-1 py-4 md:py-5 ${i > 0 ? 'border-t border-white/10' : 'pt-0'}`}>
-                        <dt className="text-sm text-white/50">{f.label}</dt>
-                        <dd className={`text-[34px] md:text-[40px] font-bold tracking-[-0.03em] leading-none ${f.accent ? 'text-brand-red' : ''}`}>{f.value}</dd>
-                    </div>
+                    <li key={f.value} className={`py-4 md:py-5 ${i > 0 ? 'border-t border-white/10' : 'pt-0'}`}>
+                        <span className={`block text-[34px] md:text-[40px] font-bold tracking-[-0.03em] leading-none ${f.accent ? 'text-brand-red' : ''}`}>{f.value}</span>
+                    </li>
                 ))}
-            </dl>
+            </ul>
             <div className="mt-6 md:mt-8">
                 <PrimaryButton className="w-full">{WEBINAR.hero.cta}</PrimaryButton>
-                <p className="mt-4 text-sm text-white/55 leading-[1.5]">{WEBINAR.hero.note}</p>
             </div>
         </div>
     );

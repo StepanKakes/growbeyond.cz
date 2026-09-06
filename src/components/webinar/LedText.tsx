@@ -10,12 +10,17 @@ type LedTextProps = {
     /** Velikost LED tečky v px (u menších textů zmenšit). */
     px?: number;
     className?: string;
-    as?: 'span' | 'h1' | 'h2' | 'p' | 'div';
+    as?: 'span' | 'h1' | 'h2' | 'h3' | 'p' | 'div';
+    /** Jen měkká záře bez aberace a mřížky, vhodné pro menší text a použití v řádku. */
+    soft?: boolean;
 };
 
-export const LedText = ({ text, color = 'white', px, className = '', as = 'span' }: LedTextProps) => {
+export const LedText = ({ text, color = 'white', px, className = '', as = 'span', soft = false }: LedTextProps) => {
     const Tag = as;
     const style = px ? ({ ['--led-px' as string]: `${px}px` } as React.CSSProperties) : undefined;
+    if (soft) {
+        return <Tag className={`led led--soft ${color === 'red' ? 'led--red' : ''} ${className}`}>{text}</Tag>;
+    }
     return (
         <Tag className={`led ${color === 'red' ? 'led--red' : ''} ${className}`} style={style}>
             {text}
