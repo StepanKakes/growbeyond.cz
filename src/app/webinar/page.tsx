@@ -4,19 +4,19 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { initUtmTracking } from '@/lib/utm';
 import { TextureOverlay } from '@/components/TextureOverlay';
+import { WebinarTopBar } from '@/components/webinar/WebinarTopBar';
 import { WebinarHero } from '@/components/webinar/WebinarHero';
 import {
-    RegistrationSection,
     AgendaSection,
     TebeSection,
     AudienceSection,
     HostSection,
     ClosingSection,
     WebinarFooter,
-    REGISTRATION_ID,
 } from '@/components/webinar/WebinarSections';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
+const WebinarFormModal = dynamic(() => import('@/components/webinar/WebinarFormModal').then(mod => mod.WebinarFormModal), { ssr: false });
 
 // VSL se doplní přes env NEXT_PUBLIC_WEBINAR_VIDEO_URL (a volitelně poster),
 // do té doby je v hero zástupný rámeček.
@@ -31,18 +31,19 @@ export default function WebinarPage() {
     return (
         <SmoothScroll>
             <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
+                <WebinarTopBar />
                 <TextureOverlay />
 
                 <WebinarHero videoSrc={VIDEO_SRC} videoPoster={VIDEO_POSTER} />
-                <RegistrationSection id={REGISTRATION_ID} />
                 <AgendaSection />
                 <TebeSection />
                 <AudienceSection />
                 <HostSection />
                 <ClosingSection />
-                <RegistrationSection closing />
                 <WebinarFooter />
             </main>
+
+            <WebinarFormModal />
         </SmoothScroll>
     );
 }

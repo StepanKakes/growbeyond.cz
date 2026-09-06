@@ -15,8 +15,9 @@ export const WEBINAR = {
         headlineAccent: 'tebe?',
         subline: 'Webinář zdarma o tom, jak z osobní značky udělat distribuční kanál pro tvůj byznys.',
         cta: 'Rezervovat místo zdarma',
-        navCta: 'Rezervovat',
-        videoLabel: 'Přehrát video',
+        navCta: 'Rezervovat místo',
+        live: 'živě',
+        note: 'Webinář zdarma, 75 minut. Odkaz na živý přenos ti přijde emailem.',
     },
 
     agenda: {
@@ -92,4 +93,11 @@ export function webinarDate() {
         display: `${d}. ${m}. ${y}`,
         weekday: weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1),
     };
+}
+
+/** Začátek webináře jako Date v místním čase prohlížeče (pro odpočet). */
+export function webinarStart() {
+    const [y, m, d] = WEBINAR.dateISO.split('-').map(Number);
+    const [hh, mm] = WEBINAR.time.split(':').map(Number);
+    return new Date(y, m - 1, d, hh, mm, 0, 0);
 }
