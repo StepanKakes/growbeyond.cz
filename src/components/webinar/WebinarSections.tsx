@@ -23,17 +23,19 @@ const Title = ({ children }: { children: React.ReactNode }) => (
 export const AgendaSection = () => (
     <Shell>
         <Title>{WEBINAR.agenda.title}</Title>
-        <ul className="mt-10 md:mt-14 grid border-t border-white/10 md:grid-cols-2">
+        <ol className="mt-10 md:mt-14 border-t border-white/10">
             {WEBINAR.agenda.items.map((item, i) => (
-                <li
-                    key={item.title}
-                    className={`border-b border-white/10 py-7 md:py-10 ${i % 2 === 1 ? 'md:border-l md:pl-12' : 'md:pr-12'}`}
-                >
-                    <h3 className="text-[22px] md:text-[30px] font-bold tracking-[-0.02em] leading-[1.2] max-w-[22ch]">{item.title}</h3>
-                    <p className="mt-3 md:mt-4 text-[17px] md:text-[19px] text-white/70 leading-[1.55] max-w-[48ch]">{item.text}</p>
+                <li key={item.title} className="grid gap-2 border-b border-white/10 py-8 md:grid-cols-12 md:gap-8 md:py-12 md:items-start">
+                    <div className="md:col-span-2">
+                        <LedText soft color="red" text={String(i + 1)} className="text-[72px] md:text-[128px] font-bold tracking-[-0.05em] leading-[0.85]" />
+                    </div>
+                    <div className="md:col-span-10 md:pt-2">
+                        <h3 className="text-[28px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.08] max-w-[22ch]">{item.title}</h3>
+                        <p className="mt-4 text-[18px] md:text-[21px] text-white/70 leading-[1.5] max-w-[52ch]">{item.text}</p>
+                    </div>
                 </li>
             ))}
-        </ul>
+        </ol>
     </Shell>
 );
 
@@ -56,17 +58,24 @@ export const TebeSection = () => (
     </Shell>
 );
 
+const AUDIENCE_LEADS = ['Podnikatelé', 'Experti', 'Zakladatelé'];
+
 export const AudienceSection = () => (
     <Shell>
         <Title>{WEBINAR.audience.title}</Title>
-        <ul className="mt-10 md:mt-14 grid border-t border-white/10 md:grid-cols-3">
+        <ol className="mt-10 md:mt-14 border-t border-white/10">
             {WEBINAR.audience.items.map((text, i) => (
-                <li key={text} className={`border-b border-white/10 py-7 md:py-10 ${i > 0 ? 'md:border-l md:pl-10' : ''} ${i < 2 ? 'md:pr-10' : ''}`}>
-                    <p className="text-[20px] md:text-[24px] font-bold tracking-[-0.015em] leading-[1.3]">{text}</p>
+                <li key={text} className="grid gap-3 border-b border-white/10 py-8 md:grid-cols-12 md:gap-8 md:py-12 md:items-start">
+                    <div className="md:col-span-4">
+                        <LedText soft color="red" text={AUDIENCE_LEADS[i]} className="text-[34px] md:text-[48px] font-bold tracking-[-0.03em] leading-[0.95]" />
+                    </div>
+                    <div className="md:col-span-8">
+                        <p className="text-[24px] md:text-[36px] font-bold tracking-[-0.025em] leading-[1.15] max-w-[26ch]">{text}</p>
+                    </div>
                 </li>
             ))}
-        </ul>
-        <p className="mt-8 md:mt-10 text-[17px] md:text-[19px] text-white/50 leading-[1.55]">{WEBINAR.audience.not}</p>
+        </ol>
+        <p className="mt-8 md:mt-10 text-[18px] md:text-[21px] text-white/50 leading-[1.5]">{WEBINAR.audience.not}</p>
     </Shell>
 );
 
@@ -84,8 +93,8 @@ export const HostSection = () => (
                 />
             </div>
             <div className="md:col-span-6 md:col-start-7 md:pb-4">
-                <h3 className="text-[32px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">{WEBINAR.host.name}</h3>
-                <p className="mt-2 text-[18px] md:text-[20px] text-white/50">{WEBINAR.host.role}</p>
+                <LedText soft color="red" as="p" text={WEBINAR.host.role} className="block text-[22px] md:text-[28px] font-bold tracking-[-0.02em] leading-none" />
+                <h3 className="mt-4 text-[36px] md:text-[56px] font-bold tracking-[-0.03em] leading-[1.02]">{WEBINAR.host.name}</h3>
                 <p className="mt-6 text-[18px] md:text-[21px] text-white/70 leading-[1.5]">{WEBINAR.host.bio}</p>
             </div>
         </div>
