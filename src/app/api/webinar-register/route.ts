@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     let token: string | null = null;
+    let joinUrl = '';
     let stored = false;
 
     if (dbConfigured()) {
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
                 utm,
             });
             token = registration.token;
+            joinUrl = registration.zoom_join_url || edition.zoom_join_url || '';
             stored = true;
 
             // Osobní join link ze Zoomu. Když Zoom ještě není nakonfigurovaný,
@@ -92,6 +94,7 @@ export async function POST(req: Request) {
                         zoom_registrant_id: r.registrantId,
                         zoom_join_url: r.joinUrl,
                     });
+                    joinUrl = r.joinUrl;
                 } catch (e) {
                     console.error('Zoom registrant selhal:', e);
                 }
@@ -101,7 +104,12 @@ export async function POST(req: Request) {
         }
     }
 
-    // Plunk drží kontaktní databázi a vokativ, sekvenci řídí náš scheduler.
+    // Plunk drží kontakty a rozesílá naplánované kampaně. Osobní odkazy proto
+    // musí být v datech kontaktu, kampaň je vezme jako {{ webinar_join_url }}
+    // a {{ webinar_page_url }}.
+    const site = process.env.NEXT_PUBLIC_BASE_URL || 'https://growbeyond.cz';
+    const pageUrl = token ? `${site}/webinar/dekujeme?t=${token}` : `${site}/webinar`;
+
     const plunkOk = await plunkEnroll({
         email,
         firstName: name,
@@ -111,6 +119,9 @@ export async function POST(req: Request) {
             webinar: '2030',
             source: 'growbeyond.cz/webinar',
             registered_at: new Date().toISOString(),
+            webinar_page_url: pageUrl,
+            webinar_join_url: joinUrl || pageUrl,
+            webinar_apply_url: token ? `${site}/webinar/prihlaska?t=${token}` : `${site}/webinar/prihlaska`,
             ...utm,
         },
     });

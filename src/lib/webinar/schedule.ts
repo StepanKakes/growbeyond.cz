@@ -1,11 +1,17 @@
-// Plán zpráv webinářového funnelu.
+// Plán zpráv webinářového funnelu, ta část, kterou nezvládne Plunk.
 //
-// Klíčová vlastnost: kroky jsou časované RELATIVNĚ KE STARTU WEBINÁŘE, ne od
-// registrace. Kdo se přihlásí tři dny předem, nedostane mail "sedm dní před",
-// dostane jen to, co ještě dává smysl. Tohle Plunk workflows neumí, proto
-// vlastní scheduler.
+// Dělba práce:
+//   Plunk kampaně  = hodnotové maily a upomínky, naplánované na pevné časy
+//                    a cílené na segment "Webinář 2030 registrovaní". Text
+//                    si Tim upravuje přímo v Plunku, bez nasazení.
+//   tenhle soubor  = všechno ostatní, tedy WhatsApp (Plunk ho neumí),
+//                    potvrzení hned po registraci (nese osobní token)
+//                    a větve po webináři (závisí na tom, kdo přišel).
 //
-// Copy je výchozí návrh, Tim si ho ladí tady na jednom místě.
+// Kroky jsou časované relativně ke startu webináře, ne od registrace, protože
+// "tři hodiny před" je pro všechny stejný okamžik. Kdo se přihlásí až po čase
+// kroku, ten krok přeskočí (viz stepMissed).
+//
 // Pravidla textů: česky, žádná emoji, žádné pomlčky, věty bez tečky na konci.
 
 import type { Edition, Registration } from './db';
@@ -108,84 +114,12 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone),
     },
 
-    // ---------- hodnota v týdnu před ----------
-    {
-        key: 'value-7d',
-        channel: 'email',
-        offsetMinutes: -7 * 24 * 60,
-        subject: () => 'Proč tvoje jméno poroste na ceně',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>za týden se vidíme na webináři, tak ti do té doby pošlu pár věcí, ať nepřijdeš studený</p>
-<p>Začnu tím nejdůležitějším. Firmy dnes soutěží o pozornost s nástroji, které umí vyrobit obsah, web i produkt během odpoledne. Co se vyrobit nedá, je důvěra ke konkrétnímu člověku</p>
-<p>Proto v roce 2030 nebude rozhodovat, jak vypadá tvoje logo, ale jestli lidi vědí, kdo za firmou stojí a proč mu věřit</p>
-<p>Na webináři si ukážeme, jak z toho udělat systém, ne náhodu</p>`,
-                c,
-            ),
-    },
-    {
-        key: 'value-5d',
-        channel: 'email',
-        offsetMinutes: -5 * 24 * 60,
-        subject: () => 'Co AI nezkopíruje',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>zkopírovat se dá text, vizuál, nabídka i celá struktura služby</p>
-<p>Nezkopíruje se tvoje jméno, tvoje zkušenosti, tvoje chyby a lidi, kteří tě už znají. To je jediné aktivum, které s časem roste místo toho, aby zlevňovalo</p>
-<p>Většina podnikatelů to má obráceně. Staví všechno na věcech, které jdou napodobit za víkend, a to jediné nenapodobitelné nechává ležet</p>
-<p>Na webináři projdeme, jak to otočit</p>`,
-                c,
-            ),
-    },
-    {
-        key: 'value-3d',
-        channel: 'email',
-        offsetMinutes: -3 * 24 * 60,
-        subject: () => 'Osobní značka jako distribuční kanál',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>osobní značka není o sledujících. Je to distribuce</p>
-<p>Distribuce znamená, že když máš co nabídnout, máš to komu říct, a ti lidé už ti věří. Bez toho platíš za pozornost pokaždé znovu</p>
-<p>Rozdíl mezi tvůrcem a podnikatelem s osobní značkou je přesně tady. Tvůrce sbírá dosah, podnikatel staví kanál, kterým prodává</p>
-<p>Za tři dny si ukážeme, jak ten kanál vypadá v praxi</p>`,
-                c,
-            ),
-    },
-    {
-        key: 'value-2d',
-        channel: 'email',
-        offsetMinutes: -2 * 24 * 60,
-        subject: c => `Pozítří ${c.timeLabel}, co si připravit`,
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>pozítří jdeme živě. Ať z toho něco máš, dopředu si odpověz na jednu otázku</p>
-<p><strong>Odkud ti dnes chodí klienti a co se stane, když ten zdroj vypne?</strong></p>
-<p>Většina odpovědí spadne do dvou skupin. Buď doporučení, které neumíš ovlivnit, nebo placená reklama, která zdražuje. Obojí je zranitelné</p>
-<p>Na webináři ukážu třetí variantu a co pro ni musíš udělat</p>
-<p><a href="${c.joinUrl}">Tady je tvůj odkaz na vysílání</a></p>`,
-                c,
-            ),
-    },
-
-    // ---------- den před ----------
-    {
-        key: 'reminder-1d-email',
-        channel: 'email',
-        offsetMinutes: -24 * 60,
-        subject: c => `Zítra ${c.timeLabel} jdeme živě`,
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>zítra ${c.whenLabel} začínáme. Vysíláme ${c.edition.duration_minutes} minut a bude to živě, takže se můžeš ptát</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Odkaz na vysílání</a></p>
-<p>Doporučuju si to hodit do kalendáře a připojit se z počítače, na mobilu se hůř dělají poznámky</p>`,
-                c,
-            ),
-    },
+    // ---------- hodnotové maily a upomínky ----------
+    // Emaily v téhle fázi rozesílá Plunk naplánovanými kampaněmi na segment
+    // "Webinář 2030 registrovaní", ne scheduler. Zdroj pravdy pro jejich text
+    // je Plunk, ať je Tim může upravovat bez nasazení. Osobní odkazy tam chodí
+    // jako {{ webinar_join_url }} a {{ webinar_page_url }} z dat kontaktu.
+    // Scheduler si tady nechává jen WhatsApp, ten Plunk neumí.
     {
         key: 'reminder-1d-wa',
         channel: 'whatsapp',
@@ -198,35 +132,6 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         ],
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
     },
-
-    // ---------- den D ----------
-    {
-        key: 'reminder-8h',
-        channel: 'email',
-        offsetMinutes: -8 * 60,
-        subject: c => `Dnes ${c.timeLabel}`,
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>dnes v ${c.timeLabel} jdeme živě</p>
-<p>Vezmi si papír, budeme dělat jedno cvičení, po kterém budeš vědět, co ti v distribuci chybí</p>
-<p><a href="${c.joinUrl}">Odkaz na vysílání</a></p>`,
-                c,
-            ),
-    },
-    {
-        key: 'reminder-3h-email',
-        channel: 'email',
-        offsetMinutes: -180,
-        subject: () => 'Za tři hodiny začínáme',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>za tři hodiny se vidíme</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Připojit se</a></p>`,
-                c,
-            ),
-    },
     {
         key: 'reminder-3h-wa',
         channel: 'whatsapp',
@@ -238,32 +143,6 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
             c => `Dnes v ${c.timeLabel}, zbývají tři hodiny\n${c.joinUrl}`,
         ],
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
-    },
-    {
-        key: 'reminder-30m',
-        channel: 'email',
-        offsetMinutes: -30,
-        subject: () => 'Za půl hodiny',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>za půl hodiny začínáme, tady je odkaz</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Vstoupit do vysílání</a></p>`,
-                c,
-            ),
-    },
-    {
-        key: 'reminder-5m-email',
-        channel: 'email',
-        offsetMinutes: -5,
-        subject: () => 'Začínáme',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>jdeme na to, připoj se</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Vstoupit do vysílání</a></p>`,
-                c,
-            ),
     },
     {
         // Posíláme s předstihem, aby dávka doběhla ještě před startem.
@@ -279,21 +158,7 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         ],
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
     },
-    {
-        key: 'live-20m',
-        channel: 'email',
-        offsetMinutes: 20,
-        subject: () => 'Jsme živě, ještě se dá naskočit',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>běžíme dvacet minut, to podstatné teprve přijde, tak pokud jsi to nestihl, naskoč</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Vstoupit do vysílání</a></p>`,
-                c,
-            ),
-        // Nemá smysl posílat tomu, kdo už na vysílání je.
-        when: c => c.reg.attended !== true,
-    },
+
 
     // ---------- po webináři ----------
     // Obě větve čekají, až doběhne synchronizace účasti ze Zoomu, jinak
