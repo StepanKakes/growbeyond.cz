@@ -202,14 +202,14 @@ body {
    (background-clip: text). Velikost pixelu roste s písmem (--led-px v em). */
 .led {
   --led-rgb: 255, 255, 255;
-  --led-px: clamp(3px, 0.032em, 12px);
+  --led-px: clamp(2px, 0.016em, 5px);
   --led-shift: 0.005em;
   --led-ab-a: #ff3b3b;
   --led-ab-b: #38b6ff;
-  --led-sub-r: rgba(255, 70, 70, 0.22);
-  --led-sub-g: rgba(70, 255, 70, 0.16);
-  --led-sub-b: rgba(70, 70, 255, 0.26);
-  --led-gap: rgba(0, 0, 0, 0.62);
+  --led-sub-r: rgba(255, 70, 70, 0.14);
+  --led-sub-g: rgba(70, 255, 70, 0.1);
+  --led-sub-b: rgba(70, 70, 255, 0.16);
+  --led-gap: rgba(0, 0, 0, 0.42);
   position: relative;
   display: inline-block;
   color: rgb(var(--led-rgb));
@@ -225,8 +225,8 @@ body {
   --led-ab-b: #ff0080;
   /* u červeného textu svítí jen červený subpixel, zelený a modrý jsou tmavé */
   --led-sub-r: transparent;
-  --led-sub-g: rgba(0, 0, 0, 0.5);
-  --led-sub-b: rgba(0, 0, 0, 0.5);
+  --led-sub-g: rgba(0, 0, 0, 0.38);
+  --led-sub-b: rgba(0, 0, 0, 0.38);
 }
 
 .led__layer {
