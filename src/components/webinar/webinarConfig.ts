@@ -2,10 +2,10 @@
 // (BeyondLandingPage → sekce Webinář 2030), Tim si je ladí tady na jednom místě.
 
 export const WEBINAR = {
-    // Zástupné údaje termínu, dokud není webinář naplánovaný. Datum drž v ISO,
-    // zobrazení a den v týdnu se odvozují (viz webinarDate níže).
-    dateISO: '2026-10-15',
-    time: '19:00',
+    // Termín drž v ISO, zobrazení a den v týdnu se odvozují (viz webinarDate níže).
+    // Backend má stejný termín v DB (webinar.editions.starts_at), měň obojí.
+    dateISO: '2026-09-21',
+    time: '17:00',
     place: 'Online, živě',
     durationMinutes: 75,
 

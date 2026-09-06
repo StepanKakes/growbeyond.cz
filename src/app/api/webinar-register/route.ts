@@ -1,13 +1,17 @@
+import { randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { validateEmail } from '@/lib/validate-contact';
 import { plunkEnroll } from '@/lib/plunk';
 import { UTM_KEYS } from '@/lib/utm';
+import { dbConfigured, getEdition, updateRegistration, upsertRegistration } from '@/lib/webinar/db';
+import { addRegistrant, zoomConfigured } from '@/lib/webinar/zoom';
 
 export const runtime = 'nodejs';
 
-// Registrace na webinář 2030: jméno, email, telefon.
-// Kontakt jde do Plunku (event webinar-2030-registrace, telefon v datech kontaktu)
-// a volitelně na webhook WEBINAR_WEBHOOK_URL (n8n, Notion apod.).
+// Registrace na webinář. Zdroj pravdy je tabulka webinar.registrations,
+// odkud si bere práci scheduler. Plunk zůstává kvůli kontaktní databázi,
+// ale sekvenci už neřídí (kroky jsou časované ke startu webináře, ne
+// k registraci, což Plunk workflows neumí).
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PLUNK_EVENT = 'webinar-2030-registrace';
@@ -52,37 +56,69 @@ export async function POST(req: Request) {
         }
     }
 
-    const data = {
-        phone,
-        webinar: '2030',
-        source: 'growbeyond.cz/webinar',
-        registered_at: new Date().toISOString(),
-        ...utm,
-    };
+    let token: string | null = null;
+    let stored = false;
 
-    const plunkOk = await plunkEnroll({ email, firstName: name, event: PLUNK_EVENT, data });
-
-    let hookOk = false;
-    const hook = process.env.WEBINAR_WEBHOOK_URL;
-    if (hook) {
+    if (dbConfigured()) {
         try {
-            const res = await fetch(hook, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, ...data }),
-                signal: AbortSignal.timeout(6000),
+            const edition = await getEdition();
+            if (!edition) throw new Error('edice nenalezena');
+
+            const { registration, created } = await upsertRegistration({
+                edition_id: edition.id,
+                token: randomBytes(12).toString('base64url'),
+                email,
+                name,
+                phone,
+                consent_marketing: true,
+                consent_whatsapp: true,
+                source: utm.utm_source || 'growbeyond.cz/webinar',
+                utm,
             });
-            hookOk = res.ok;
-            if (!res.ok) console.error('Webinar webhook failed:', res.status);
+            token = registration.token;
+            stored = true;
+
+            // Osobní join link ze Zoomu. Když Zoom ještě není nakonfigurovaný,
+            // registrace projde a odkaz doplní pozdější synchronizace.
+            if (created && zoomConfigured() && edition.zoom_meeting_id && !registration.zoom_join_url) {
+                try {
+                    const [first, ...rest] = name.split(/\s+/);
+                    const r = await addRegistrant(edition.zoom_meeting_id, {
+                        email,
+                        firstName: first,
+                        lastName: rest.join(' '),
+                    });
+                    await updateRegistration(registration.id, {
+                        zoom_registrant_id: r.registrantId,
+                        zoom_join_url: r.joinUrl,
+                    });
+                } catch (e) {
+                    console.error('Zoom registrant selhal:', e);
+                }
+            }
         } catch (e) {
-            console.error('Webinar webhook error:', e);
+            console.error('Webinar DB zápis selhal:', e);
         }
     }
 
-    if (!plunkOk && !hookOk) {
+    // Plunk drží kontaktní databázi a vokativ, sekvenci řídí náš scheduler.
+    const plunkOk = await plunkEnroll({
+        email,
+        firstName: name,
+        event: PLUNK_EVENT,
+        data: {
+            phone,
+            webinar: '2030',
+            source: 'growbeyond.cz/webinar',
+            registered_at: new Date().toISOString(),
+            ...utm,
+        },
+    });
+
+    if (!stored && !plunkOk) {
         console.error('Webinar registration not stored anywhere', { email });
         return NextResponse.json({ ok: false, error: 'Něco se pokazilo, zkus to prosím znovu' }, { status: 502 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, redirect: token ? `/webinar/dekujeme?t=${token}` : '/webinar/dekujeme' });
 }

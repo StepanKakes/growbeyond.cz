@@ -43,8 +43,14 @@ export const WebinarForm = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim(), utm: getStoredUtm() }),
             });
-            const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string }));
+            const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string }));
             if (res.ok && data?.ok) {
+                // Děkovačka nese token registrace, proto přesměrování a ne jen
+                // inline hláška. Když token nedorazil, necháme aspoň potvrzení.
+                if (data.redirect) {
+                    window.location.assign(data.redirect);
+                    return;
+                }
                 setStatus('done');
                 return;
             }

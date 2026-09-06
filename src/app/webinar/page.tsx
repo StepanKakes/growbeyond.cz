@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { initUtmTracking } from '@/lib/utm';
+import { getStoredUtm, initUtmTracking } from '@/lib/utm';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { WebinarTopBar } from '@/components/webinar/WebinarTopBar';
 import { WebinarHero } from '@/components/webinar/WebinarHero';
@@ -26,6 +26,20 @@ const VIDEO_POSTER = process.env.NEXT_PUBLIC_WEBINAR_VIDEO_POSTER;
 export default function WebinarPage() {
     useEffect(() => {
         initUtmTracking();
+
+        // Návštěvu počítáme jednou za relaci, jinak by první poměr funnelu
+        // (návštěva na registraci) nafoukly obnovené stránky.
+        try {
+            const KEY = 'webinar_view_logged';
+            if (sessionStorage.getItem(KEY)) return;
+            sessionStorage.setItem(KEY, '1');
+            fetch('/api/webinar/view', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                keepalive: true,
+                body: JSON.stringify({ path: '/webinar', sessionId: KEY + Date.now(), utm: getStoredUtm() }),
+            }).catch(() => {});
+        } catch { /* soukromý režim bez sessionStorage */ }
     }, []);
 
     return (
