@@ -208,11 +208,10 @@ body {
   position: relative;
   display: inline-block;
   color: rgb(var(--led-rgb));
-  text-shadow:
-    0 0 0.04em rgba(var(--led-rgb), 0.95),
-    0 0 0.15em rgba(var(--led-rgb), 0.6),
-    0 0 0.4em rgba(var(--led-rgb), 0.35),
-    0 0 0.9em rgba(var(--led-rgb), 0.18);
+  /* Záře vypnutá na Timovo přání (2026-09-06). Původní hodnota:
+     text-shadow: 0 0 0.04em rgba(var(--led-rgb), 0.95), 0 0 0.15em rgba(var(--led-rgb), 0.6),
+                  0 0 0.4em rgba(var(--led-rgb), 0.35), 0 0 0.9em rgba(var(--led-rgb), 0.18); */
+  text-shadow: none;
   animation: led-flicker 7s linear infinite;
 }
 
@@ -266,10 +265,8 @@ body {
 /* Měkká varianta: jen záře, bez vrstev a animací (menší texty, inline slova) */
 .led--soft {
   display: inline;
-  text-shadow:
-    0 0 0.06em rgba(var(--led-rgb), 0.85),
-    0 0 0.25em rgba(var(--led-rgb), 0.45),
-    0 0 0.6em rgba(var(--led-rgb), 0.2);
+  /* Záře vypnutá, původně: 0 0 0.06em / 0.25em / 0.6em rgba(var(--led-rgb), 0.85 / 0.45 / 0.2) */
+  text-shadow: none;
   animation: none;
 }
 
