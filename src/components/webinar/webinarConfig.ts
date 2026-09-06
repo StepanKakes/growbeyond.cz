@@ -2,8 +2,9 @@
 // (BeyondLandingPage → sekce Webinář 2030), Tim si je ladí tady na jednom místě.
 
 export const WEBINAR = {
-    // Zástupné údaje termínu, dokud není webinář naplánovaný.
-    date: '15. 10. 2026',
+    // Zástupné údaje termínu, dokud není webinář naplánovaný. Datum drž v ISO,
+    // zobrazení a den v týdnu se odvozují (viz webinarDate níže).
+    dateISO: '2026-10-15',
     time: '19:00',
     place: 'Online, živě',
     durationMinutes: 75,
@@ -81,3 +82,14 @@ export const WEBINAR = {
         successText: 'Odkaz na živý přenos ti přijde na email.',
     },
 } as const;
+
+/** Datum webináře pro zobrazení: "15. 10. 2026" a den v týdnu "Čtvrtek". */
+export function webinarDate() {
+    const [y, m, d] = WEBINAR.dateISO.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const weekdayRaw = new Intl.DateTimeFormat('cs-CZ', { weekday: 'long' }).format(date);
+    return {
+        display: `${d}. ${m}. ${y}`,
+        weekday: weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1),
+    };
+}

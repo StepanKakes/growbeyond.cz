@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LedText } from './LedText';
 import { WebinarForm } from './WebinarForm';
-import { WEBINAR } from './webinarConfig';
+import { WEBINAR, webinarDate } from './webinarConfig';
 import { REGISTRATION_ID } from './scroll';
 import { LEGAL } from '@/lib/legal';
 
@@ -24,36 +24,47 @@ const Row = ({ children }: { children: React.ReactNode }) => (
     <li className="border-t border-white/10 py-5 md:py-6 first:border-t-0 first:pt-0 last:pb-0">{children}</li>
 );
 
-export const EventDetails = () => (
-    <dl className="mt-8 md:mt-10">
-        {[
-            ['Datum', WEBINAR.date],
-            ['Čas', WEBINAR.time],
-            ['Kde', WEBINAR.place],
-            ['Délka', `${WEBINAR.durationMinutes} minut`],
-            ['Cena', 'Zdarma'],
-        ].map(([k, v]) => (
-            <div key={k} className="flex items-baseline justify-between gap-6 border-t border-white/10 py-3 text-[17px] md:text-lg">
-                <dt className="text-white/50">{k}</dt>
-                <dd className="text-right">{v}</dd>
-            </div>
-        ))}
-    </dl>
+// Údaje o webináři jako typografický pás: datum je největší, ostatní fakta
+// stojí vedle něj oddělená linkami. Na mobilu se pás láme do dvou sloupců.
+const Fact = ({ label, value, className = '', big = false }: { label: string; value: string; className?: string; big?: boolean }) => (
+    <div className={`flex flex-col justify-end gap-2 py-5 md:py-7 ${className}`}>
+        <dt className="text-sm text-white/50">{label}</dt>
+        <dd className={`font-bold tracking-[-0.025em] leading-[1.05] ${big ? 'text-[34px] md:text-[44px]' : 'text-[22px] md:text-[26px]'}`}>{value}</dd>
+    </div>
 );
+
+export const EventDetails = () => {
+    const { display, weekday } = webinarDate();
+    return (
+        <dl className="grid grid-cols-2 border-y border-white/10 md:grid-cols-12">
+            <Fact label={weekday} value={display} big className="col-span-2 md:col-span-4 md:pr-8" />
+            <Fact label="Čas" value={WEBINAR.time} className="border-t border-white/10 md:border-t-0 md:border-l md:col-span-2 md:pl-6 md:pr-4" />
+            <Fact label="Kde" value={WEBINAR.place} className="border-t border-l border-white/10 pl-5 md:border-t-0 md:col-span-2 md:pl-6 md:pr-4" />
+            <Fact label="Délka" value={`${WEBINAR.durationMinutes} minut`} className="border-t border-white/10 md:border-t-0 md:border-l md:col-span-2 md:pl-6 md:pr-4" />
+            <Fact label="Cena" value="Zdarma" className="border-t border-l border-white/10 pl-5 md:border-t-0 md:col-span-2 md:pl-6" />
+        </dl>
+    );
+};
 
 export const RegistrationSection = ({ id, closing = false }: { id?: string; closing?: boolean }) => (
     <section id={id} className="relative z-10 border-t border-white/10 scroll-mt-4">
-        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-24 grid gap-10 md:gap-12 md:grid-cols-12">
-            <div className="md:col-span-5">
-                <h2 className="text-2xl md:text-[32px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.title}</h2>
-                <p className="mt-4 text-[17px] md:text-lg text-white/70 leading-[1.55]">
+        <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-24">
+            <div className="grid gap-4 md:grid-cols-12 md:gap-12">
+                <h2 className="md:col-span-5 text-2xl md:text-[32px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.title}</h2>
+                <p className="md:col-span-6 md:col-start-7 text-[17px] md:text-lg text-white/70 leading-[1.55]">
                     {closing ? WEBINAR.closing.promise : WEBINAR.form.description}
                 </p>
-                <div className="hidden md:block"><EventDetails /></div>
             </div>
-            <div className="md:col-span-6 md:col-start-7">
-                <WebinarForm />
-                <div className="md:hidden"><EventDetails /></div>
+            <div className="mt-8 md:mt-12">
+                <EventDetails />
+            </div>
+            <div className="mt-10 md:mt-14 grid gap-8 md:grid-cols-12 md:gap-12">
+                <p className="md:col-span-5 text-[17px] md:text-lg text-white/70 leading-[1.55]">
+                    Vyplň tři údaje a máš místo. Odkaz na živý přenos a připomínku před začátkem ti pošleme emailem.
+                </p>
+                <div className="md:col-span-6 md:col-start-7">
+                    <WebinarForm />
+                </div>
             </div>
         </div>
     </section>
