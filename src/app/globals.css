@@ -196,22 +196,26 @@ body {
   filter: drop-shadow(0 0 10px rgba(255, 14, 0, 0.35)) drop-shadow(0 0 26px rgba(255, 14, 0, 0.15));
 }
 
-/* Webinář 2030 — svítící text s efektem LED / LCD displeje
-   Vrstvy: základ se září, dvě posunuté barevné kopie (chromatická aberace,
-   blend screen) a tečková mřížka přes glyfy (background-clip: text). */
+/* Webinář 2030 — text jako LCD displej
+   Vrstvy: základ s lehkou září, dvě jemně posunuté barevné kopie (chromatická
+   aberace, blend screen) a pixelová mřížka s RGB subpixely uvnitř glyfů
+   (background-clip: text). Velikost pixelu roste s písmem (--led-px v em). */
 .led {
   --led-rgb: 255, 255, 255;
-  --led-px: 2px;
+  --led-px: clamp(3px, 0.032em, 12px);
   --led-shift: 0.005em;
   --led-ab-a: #ff3b3b;
   --led-ab-b: #38b6ff;
+  --led-sub-r: rgba(255, 70, 70, 0.22);
+  --led-sub-g: rgba(70, 255, 70, 0.16);
+  --led-sub-b: rgba(70, 70, 255, 0.26);
+  --led-gap: rgba(0, 0, 0, 0.62);
   position: relative;
   display: inline-block;
   color: rgb(var(--led-rgb));
-  /* Záře vypnutá na Timovo přání (2026-09-06). Původní hodnota:
-     text-shadow: 0 0 0.04em rgba(var(--led-rgb), 0.95), 0 0 0.15em rgba(var(--led-rgb), 0.6),
-                  0 0 0.4em rgba(var(--led-rgb), 0.35), 0 0 0.9em rgba(var(--led-rgb), 0.18); */
-  text-shadow: none;
+  text-shadow:
+    0 0 0.05em rgba(var(--led-rgb), 0.5),
+    0 0 0.25em rgba(var(--led-rgb), 0.22);
   animation: led-flicker 7s linear infinite;
 }
 
@@ -219,6 +223,10 @@ body {
   --led-rgb: 255, 14, 0;
   --led-ab-a: #ff7a00;
   --led-ab-b: #ff0080;
+  /* u červeného textu svítí jen červený subpixel, zelený a modrý jsou tmavé */
+  --led-sub-r: transparent;
+  --led-sub-g: rgba(0, 0, 0, 0.5);
+  --led-sub-b: rgba(0, 0, 0, 0.5);
 }
 
 .led__layer {
@@ -250,55 +258,23 @@ body {
 }
 
 .led__grid {
-  /* CRT: vodorovné scanlines + jemné RGB proužky, jen uvnitř glyfů */
+  /* pixelová mřížka: RGB subpixely ve sloupcích, tmavá mezera mezi řádky */
   color: transparent;
   -webkit-text-fill-color: transparent;
   background-image:
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.26) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
-  background-size: 100% var(--led-px), 3px 100%;
+    linear-gradient(to bottom, transparent 0 76%, var(--led-gap) 76% 100%),
+    linear-gradient(90deg, var(--led-sub-r) 0 30%, var(--led-sub-g) 30% 61%, var(--led-sub-b) 61% 90%, var(--led-gap) 90% 100%);
+  background-size: 100% var(--led-px), var(--led-px) 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
-/* Měkká varianta: jen záře, bez vrstev a animací (menší texty, inline slova) */
+/* Měkká varianta: základ s lehkou září + pixelová mřížka, bez aberace a animací */
 .led--soft {
-  display: inline;
-  /* Záře vypnutá, původně: 0 0 0.06em / 0.25em / 0.6em rgba(var(--led-rgb), 0.85 / 0.45 / 0.2) */
-  text-shadow: none;
+  display: inline-block;
+  text-shadow: 0 0 0.08em rgba(var(--led-rgb), 0.4);
   animation: none;
-}
-
-/* Obrazovka: panel s rámem, jemnými scanlines a vinětou pro sekce ve vibe displeje */
-.screen {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  background: #0c0c0c;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 0 90px rgba(0, 0, 0, 0.55);
-}
-
-.screen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
-}
-
-.screen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
-}
-
-.screen > * {
-  position: relative;
-  z-index: 1;
 }
 
 /* Zapnutí obrazovky (jednou při načtení), podle CRT ukázky */

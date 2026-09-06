@@ -19,7 +19,12 @@ export const LedText = ({ text, color = 'white', px, className = '', as = 'span'
     const Tag = as;
     const style = px ? ({ ['--led-px' as string]: `${px}px` } as React.CSSProperties) : undefined;
     if (soft) {
-        return <Tag className={`led led--soft ${color === 'red' ? 'led--red' : ''} ${className}`}>{text}</Tag>;
+        return (
+            <Tag className={`led led--soft ${color === 'red' ? 'led--red' : ''} ${className}`} style={style}>
+                {text}
+                <span className="led__layer led__grid" aria-hidden="true">{text}</span>
+            </Tag>
+        );
     }
     return (
         <Tag className={`led ${color === 'red' ? 'led--red' : ''} ${className}`} style={style}>
