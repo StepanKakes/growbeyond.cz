@@ -65,14 +65,16 @@ export const WebinarHero = ({ videoSrc, videoPoster }: { videoSrc?: string; vide
 
                 <motion.p
                     {...reveal(0.5)}
-                    className="mt-6 md:mt-8 max-w-[22ch] md:max-w-[26ch] text-[26px] md:text-[44px] font-bold tracking-[-0.02em] leading-[1.15] md:leading-[1.1]"
+                    className="mt-6 md:mt-8 max-w-[20ch] md:max-w-[30ch] text-[24px] md:text-[40px] font-bold uppercase tracking-[-0.01em] leading-[1.2] md:leading-[1.15]"
                 >
-                    {WEBINAR.hero.headline} <span className="text-brand-red">{WEBINAR.hero.headlineAccent}</span>
+                    {WEBINAR.hero.headline}
+                    <br />
+                    <LedText soft color="red" text={WEBINAR.hero.headlineAccent} className="inline-block" />
                 </motion.p>
 
                 <motion.p
                     {...reveal(0.7)}
-                    className="mt-4 md:mt-5 max-w-[34ch] md:max-w-[44ch] text-[17px] md:text-[21px] text-white/70 leading-[1.5]"
+                    className="mt-5 md:mt-6 max-w-[38ch] md:max-w-[52ch] text-[17px] md:text-[21px] text-white/85 leading-[1.5]"
                 >
                     {WEBINAR.hero.subline}
                 </motion.p>

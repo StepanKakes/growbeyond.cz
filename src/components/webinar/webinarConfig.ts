@@ -1,59 +1,53 @@
-// Obsah landing page webináře 2030. Texty jsou výchozí návrh z Figmy
-// (BeyondLandingPage → sekce Webinář 2030), Tim si je ladí tady na jednom místě.
+// Obsah landing page webináře 2030 podle finálního návrhu ve Figmě
+// (BeyondLandingPage → Export → Webinář 2030 / Mobil - FINAL). Texty se ladí tady.
 
 export const WEBINAR = {
-    // Termín drž v ISO, zobrazení a den v týdnu se odvozují (viz webinarDate níže).
-    // Backend má stejný termín v DB (webinar.editions.starts_at), měň obojí.
-    dateISO: '2026-09-21',
-    time: '17:00',
+    // Zástupné údaje termínu, dokud není webinář naplánovaný. Datum drž v ISO,
+    // zobrazení a den v týdnu se odvozují (viz webinarDate níže).
+    dateISO: '2026-10-15',
+    time: '19:00',
     place: 'Online, živě',
     durationMinutes: 75,
 
+    topBar: {
+        label: 'Uzavření registrace za:',
+        cta: 'Rezervovat místo',
+    },
+
     hero: {
         year: '2030',
-        headline: 'Bude někoho zajímat tvoje firma, když nebude znát',
-        headlineAccent: 'tebe?',
-        subline: 'Webinář zdarma o tom, jak z osobní značky udělat distribuční kanál pro tvůj byznys',
+        headline: 'Jsi profík v tom, co děláš?',
+        headlineAccent: 'A ví o tom dost lidí?',
+        subline: 'Za 75 minut budeš vědět, jak využít tvé zkušenosti a příběh k růstu tvého byznysu pomocí sociálních sítí',
         cta: 'Rezervovat místo zdarma',
-        navCta: 'Rezervovat místo',
         live: 'živě',
     },
 
-    agenda: {
-        title: 'Co se na webináři dozvíš',
-        items: [
-            {
-                title: 'Proč bude v roce 2030 tvoje jméno cennější než logo tvé firmy',
-                text: 'Co se mění v tom, jak si lidé vybírají, komu věří a od koho nakupují',
-            },
-            {
-                title: 'Co AI nezkopíruje',
-                text: 'Obsah, weby i produkty půjdou replikovat stále snáz. Důvěra, identita, reputace a distribuce přes lidi ne',
-            },
-            {
-                title: 'Jak z osobní značky udělat distribuční kanál',
-                text: 'Konkrétní způsob, jak proměnit zkušenosti, znalosti a jméno v stabilní přísun klientů',
-            },
-            {
-                title: 'Čím začít už dnes',
-                text: 'Kroky, které dávají smysl teď, abys v roce 2030 nezačínal od nuly',
-            },
+    statement: {
+        label: '2030',
+        paragraphs: [
+            'AI dnes dokáže replikovat informace, obsah, design i produkty.',
+            'Nedokáže ti přes noc vytvořit jméno, reputaci, příběh, publikum a roky vybudované důvěry.',
         ],
+        closing: '2030 ZAČÍNÁ DNES',
     },
 
-    tebe: {
-        intro: 'V době, kdy dokáže AI vytvořit skoro cokoliv, bude stále těžší zkopírovat jednu věc',
-        word: 'TEBE',
-        explanation:
-            'Tvoje jméno, reputace, zkušenosti, příběhy a publikum. Důvěra, kterou sis vybudoval. To je důvod budovat osobní značku. Ne kvůli sledujícím, ale protože se může stát jedním z nejcennějších distribučních aktiv tvého byznysu',
+    agenda: {
+        title: 'Za 75 minut zjistíš',
+        items: [
+            'Jak najít svou unikátní pozici na již saturovaném trhu',
+            'Jak tvořit obsah, který přitahuje správné lidi a prodává',
+            'Jak vytvořit nabídku, na kterou se těžko říká ne',
+            'Projdeme reálná čísla, zjistíš kolik čeho potřebuješ abys postavil úspěšný byznys',
+        ],
     },
 
     audience: {
         title: 'Pro koho webinář je',
         items: [
-            'Pro podnikatele, kteří chtějí, aby jim zákazníci věřili dřív, než je vůbec osloví',
-            'Pro kouče, konzultanty a experty, kteří prodávají své znalosti a zkušenosti',
-            'Pro každého, kdo staví firmu na vlastním jméně a chce z toho mít dlouhodobý užitek',
+            { lead: 'Podnikatelé', text: 'Pro ty, kteří chtějí využít svůj příběh a zkušenosti k vyškálování podnikání' },
+            { lead: 'Experti', text: 'Pro kouče, konzultanty a experty, kteří nabízí službu online' },
+            { lead: 'Zakladatelé', text: 'Pro každého, kdo staví firmu na vlastní jméno a chce z toho vytěžit maximum' },
         ],
         not: 'Není pro tebe, pokud hledáš triky na rychlé sledující',
     },
@@ -69,8 +63,7 @@ export const WEBINAR = {
 
     closing: {
         title: '2030 ZAČÍNÁ DNES',
-        promise:
-            '75 minut o tom, jak postavit osobní značku, která promění tvoje zkušenosti, znalosti a jméno v distribuční kanál pro tvůj byznys',
+        promise: '75 minut o tom, jak postavit osobní značku, která promění tvé zkušenosti a osobnost v distribuční kanál pro tvůj byznys',
     },
 
     form: {

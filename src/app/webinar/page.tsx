@@ -8,7 +8,7 @@ import { WebinarTopBar } from '@/components/webinar/WebinarTopBar';
 import { WebinarHero } from '@/components/webinar/WebinarHero';
 import {
     AgendaSection,
-    TebeSection,
+    StatementSection,
     AudienceSection,
     HostSection,
     ClosingSection,
@@ -49,8 +49,8 @@ export default function WebinarPage() {
                 <TextureOverlay />
 
                 <WebinarHero videoSrc={VIDEO_SRC} videoPoster={VIDEO_POSTER} />
+                <StatementSection />
                 <AgendaSection />
-                <TebeSection />
                 <AudienceSection />
                 <HostSection />
                 <ClosingSection />
