@@ -11,6 +11,25 @@ declare global {
     }
 }
 
+/**
+ * Měřicí skript Bea.
+ *
+ * Spojuje návštěvu webu s člověkem, který sem přišel ze sledovaného odkazu
+ * z Instagramu nebo z popisku videa. Bez něj se u videa dá spočítat jen
+ * proklik; kolik lidí došlo na stránku, vyplnilo formulář a domluvilo si
+ * hovor, zůstane na nule.
+ *
+ * Je za stejným souhlasem jako Clarity: taky sleduje chování na webu.
+ */
+const loadBeoPixel = () => {
+    if (document.getElementById("beo-pixel")) return;
+    const script = document.createElement("script");
+    script.id = "beo-pixel";
+    script.async = true;
+    script.src = "https://app.growbeyond.cz/pixel/7edab5706973ad9e45.js";
+    document.head.appendChild(script);
+};
+
 const loadClarity = () => {
     if (document.getElementById("clarity-script")) return;
     const script = document.createElement("script");
@@ -33,6 +52,7 @@ export const CookieConsent = () => {
         const consent = localStorage.getItem(CONSENT_KEY);
         if (consent === "accepted") {
             loadClarity();
+            loadBeoPixel();
         } else if (consent !== "rejected") {
             setVisible(true);
         }
@@ -42,6 +62,7 @@ export const CookieConsent = () => {
         localStorage.setItem(CONSENT_KEY, "accepted");
         setVisible(false);
         loadClarity();
+        loadBeoPixel();
         // Oznámí ostatním (např. Meta Pixel na /strategie), že je souhlas udělen
         window.dispatchEvent(new Event("gb-cookie-consent-accepted"));
     };
@@ -57,7 +78,7 @@ export const CookieConsent = () => {
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-[200] bg-[#1A1A1A] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/50">
             <p className="text-white text-sm font-bold mb-2">Cookies 🍪</p>
             <p className="text-gray-400 text-xs leading-relaxed mb-4">
-                Používáme analytické a marketingové cookies (Microsoft Clarity, Meta Pixel), abychom pochopili,
+                Používáme analytické a marketingové cookies (Microsoft Clarity, Meta Pixel, Beo), abychom pochopili,
                 jak web používáš, a mohli ho zlepšovat. Více v{" "}
                 <Link
                     href="/ochrana-osobnich-udaju"
