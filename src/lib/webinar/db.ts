@@ -267,6 +267,27 @@ export async function createApplication(input: {
     return rows[0];
 }
 
+/**
+ * Najde poslední přihlášku podle emailu. Používá se při párování rezervace
+ * z Cal.comu, kde máme k dispozici jen email účastníka.
+ */
+export async function findApplicationByEmail(
+    editionId: string,
+    email: string,
+): Promise<{ id: string; registration_id: string | null; booked_at: string | null } | null> {
+    const rows = await rest<{ id: string; registration_id: string | null; booked_at: string | null }[]>(
+        `applications?select=id,registration_id,booked_at&edition_id=eq.${enc(editionId)}&email=eq.${enc(email)}&order=created_at.desc&limit=1`,
+    );
+    return rows[0] || null;
+}
+
+export async function updateApplication(
+    id: string,
+    patch: { cal_booking_uid?: string; booked_at?: string | null; call_at?: string | null; call_outcome?: string },
+): Promise<void> {
+    await rest(`applications?id=eq.${enc(id)}`, { method: 'PATCH', body: patch });
+}
+
 export async function listApplications(editionId: string) {
     return rest<
         { id: string; email: string; qualified: boolean | null; booked_at: string | null; call_outcome: string | null }[]
