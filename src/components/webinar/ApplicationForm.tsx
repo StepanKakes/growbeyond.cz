@@ -68,13 +68,7 @@ export const ApplicationForm = ({
         }
         return [
             ...identity,
-            {
-                key: 'revenue',
-                kind: 'choice',
-                question: 'Kolik teď měsíčně děláš?',
-                hint: 'Podle toho poznáme, jestli ti umíme pomoct, nebo bys nám jen platil za něco, co ještě nepotřebuješ',
-                options: REVENUE,
-            },
+            { key: 'revenue', kind: 'choice', question: 'Kolik teď měsíčně děláš?', options: REVENUE },
             { key: 'team', kind: 'choice', question: 'Jak jste na tom s týmem?', options: TEAM },
             {
                 key: 'budget',
@@ -236,15 +230,15 @@ export const ApplicationForm = ({
                 </span>
             </div>
 
-            <div className="mt-10 md:mt-14">
-                <h2 className="text-[28px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.1] max-w-[20ch]">
+            <div className="mt-7 md:mt-9">
+                <h2 className="text-[26px] md:text-[38px] font-bold tracking-[-0.03em] leading-[1.12] max-w-[26ch]">
                     {current.question}
                 </h2>
                 {current.hint && (
-                    <p className="mt-4 text-[16px] md:text-[18px] text-white/55 leading-[1.5] max-w-[52ch]">{current.hint}</p>
+                    <p className="mt-3 text-[15px] md:text-[17px] text-white/50 leading-[1.5] max-w-[52ch]">{current.hint}</p>
                 )}
 
-                <div className="mt-8 md:mt-10 max-w-[560px]">
+                <div className="mt-6 md:mt-8 max-w-[560px]">
                     {current.kind === 'choice' && (
                         <div className="flex flex-col gap-2.5">
                             {current.options.map((o, i) => {

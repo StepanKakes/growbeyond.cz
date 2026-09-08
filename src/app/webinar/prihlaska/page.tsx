@@ -20,20 +20,22 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
         <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
             <TextureOverlay />
 
+            {/* Hlavička je záměrně nízká, aby se první otázka vešla na obrazovku
+                bez scrollování. Jinak formát jedné otázky ztrácí smysl. */}
             <section className="relative z-10">
-                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 pt-20 pb-14 md:pt-28 md:pb-16">
-                    <h1 className="text-[30px] md:text-[46px] font-bold tracking-[-0.03em] leading-[1.08] max-w-[22ch]">
+                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 pt-14 md:pt-20">
+                    <h1 className="text-[24px] md:text-[34px] font-bold tracking-[-0.03em] leading-[1.12] max-w-[26ch]">
                         {firstName ? `${firstName}, odpověz` : 'Odpověz'} na pár otázek, ať víme, kde{' '}
                         <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
                     </h1>
-                    <p className="mt-5 max-w-[54ch] text-[17px] md:text-[20px] text-white/60 leading-[1.5]">
-                        Podle odpovědí poznám, jestli ti umíme pomoct. Když ne, řeknu ti to rovnou a nebudeme si krátit čas
+                    <p className="mt-3 max-w-[56ch] text-[16px] md:text-[18px] text-white/55 leading-[1.5]">
+                        Když ti nebudeme umět pomoct, řeknu ti to rovnou a nebudeme si krátit čas
                     </p>
                 </div>
             </section>
 
-            <section className="relative z-10 border-t border-white/10">
-                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 py-12 md:py-16">
+            <section className="relative z-10">
+                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 pt-10 pb-16 md:pt-12 md:pb-20">
                     <ApplicationForm
                         token={t || ''}
                         defaultName={reg?.name || undefined}
