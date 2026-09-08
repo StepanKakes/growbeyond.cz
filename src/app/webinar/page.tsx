@@ -44,8 +44,9 @@ export default function WebinarPage() {
 
     return (
         <SmoothScroll>
+            {/* Mimo main: overflow-x-hidden by jinak zrušil sticky pozici pruhu */}
+            <WebinarTopBar />
             <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
-                <WebinarTopBar />
                 <TextureOverlay />
 
                 <WebinarHero videoSrc={VIDEO_SRC} videoPoster={VIDEO_POSTER} />

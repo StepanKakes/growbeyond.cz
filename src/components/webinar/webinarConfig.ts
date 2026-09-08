@@ -11,7 +11,6 @@ export const WEBINAR = {
 
     topBar: {
         label: 'Uzavření registrace za:',
-        cta: 'Rezervovat místo',
     },
 
     hero: {

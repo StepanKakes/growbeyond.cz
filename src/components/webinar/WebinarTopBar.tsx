@@ -2,10 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { WEBINAR, webinarStart } from './webinarConfig';
-import { openWebinarForm } from './formEvents';
 
-// Červený pruh nahoře: odpočet do uzavření registrace (= začátek webináře)
-// a bílé tlačítko rezervace. Drží při scrollování.
+// Horní pruh s odpočtem do uzavření registrace, jedna ku jedné podle banneru
+// z event.monetise.com: průsvitný červený přechod s vnitřní září, rozmazané
+// pozadí, pulzující tečka, tučný verzálkový popisek a odpočet DD:HH:MM:SS.
+// Na mobilu je odpočet pod popiskem, od tabletu v jednom řádku. Drží nahoře.
+
+const pad = (n: number) => String(n).padStart(2, '0');
 
 function formatCountdown(ms: number) {
     const total = Math.max(0, Math.floor(ms / 1000));
@@ -13,38 +16,31 @@ function formatCountdown(ms: number) {
     const h = Math.floor((total % 86400) / 3600);
     const m = Math.floor((total % 3600) / 60);
     const s = total % 60;
-    if (d > 0) return `${d} d ${h} h ${m} min`;
-    if (h > 0) return `${h} h ${m} min ${s} s`;
-    return `${m} min ${s} s`;
+    return `${pad(d)}:${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
 export const WebinarTopBar = () => {
-    const [remaining, setRemaining] = useState<number | null>(null);
+    const [countdown, setCountdown] = useState('00:00:00:00');
 
     useEffect(() => {
         const start = webinarStart().getTime();
-        const tick = () => setRemaining(start - Date.now());
+        const tick = () => setCountdown(formatCountdown(start - Date.now()));
         tick();
         const id = window.setInterval(tick, 1000);
         return () => window.clearInterval(id);
     }, []);
 
-    const countdown = remaining === null ? '' : remaining > 0 ? formatCountdown(remaining) : 'právě běží';
-
     return (
-        <div className="sticky top-0 z-40 bg-brand-red text-white">
-            <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-3 px-5 md:px-12 h-12 md:h-14 text-[12px] md:text-[15px]">
-                <p className="min-w-0 font-bold uppercase leading-[1.2] tracking-[0.02em]">
-                    {WEBINAR.topBar.label} <span className="whitespace-nowrap normal-case">{countdown}</span>
-                </p>
-                <button
-                    type="button"
-                    onClick={openWebinarForm}
-                    className="shrink-0 h-8 md:h-9 rounded-full bg-white px-4 md:px-5 text-[13px] md:text-sm font-bold text-brand-red transition-colors hover:bg-white/90 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                    <span className="sm:hidden">Rezervovat</span>
-                    <span className="hidden sm:inline">{WEBINAR.topBar.cta}</span>
-                </button>
+        <div className="countdown-bar sticky top-0 z-40 w-full text-white">
+            <div className="flex flex-col items-center justify-center gap-2 px-5 py-3 md:flex-row md:gap-4">
+                <div className="flex items-center gap-2.5">
+                    <span className="countdown-bar__pulse" aria-hidden="true">
+                        <span className="countdown-bar__pulse-ring" />
+                        <span className="countdown-bar__pulse-dot" />
+                    </span>
+                    <p className="text-[12px] md:text-[13px] font-bold uppercase leading-none">{WEBINAR.topBar.label}</p>
+                </div>
+                <p className="text-[14px] md:text-[15px] font-bold leading-none tabular-nums whitespace-nowrap">{countdown}</p>
             </div>
         </div>
     );
