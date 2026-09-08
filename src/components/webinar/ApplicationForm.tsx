@@ -314,10 +314,6 @@ export const ApplicationForm = ({
                         {status === 'submitting' ? 'Odesílám' : isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
                     </button>
 
-                    <span className="hidden text-sm text-white/40 sm:inline">
-                        {current.kind === 'choice' ? 'nebo stiskni písmeno a Enter' : 'nebo stiskni Enter'}
-                    </span>
-
                     <span className="ml-auto flex gap-2">
                         <button
                             type="button"
