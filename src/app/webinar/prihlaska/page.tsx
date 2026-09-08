@@ -14,34 +14,31 @@ export const metadata: Metadata = {
 export default async function ApplicationPage({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
     const { t } = await searchParams;
     const reg = dbConfigured() && t ? await getRegistrationByToken(t).catch(() => null) : null;
+    const firstName = reg?.name?.trim().split(/\s+/)[0];
 
     return (
         <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
             <TextureOverlay />
 
             <section className="relative z-10">
-                <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 pt-24 pb-14 md:pt-36 md:pb-20">
-                    <LedText
-                        as="h1"
-                        text="PŘIHLÁŠKA"
-                        className="block font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(48px,10vw,132px)]"
-                    />
-                    <p className="mt-7 max-w-[52ch] text-[18px] md:text-[22px] text-white/70 leading-[1.5]">
-                        Než se sejdeme, potřebuju vědět, kde jsi. Podle odpovědí poznám, jestli ti umíme pomoct, a když ne,
-                        řeknu ti to rovnou a nebudeme si krátit čas
+                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 pt-20 pb-14 md:pt-28 md:pb-16">
+                    <h1 className="text-[30px] md:text-[46px] font-bold tracking-[-0.03em] leading-[1.08] max-w-[22ch]">
+                        {firstName ? `${firstName}, odpověz` : 'Odpověz'} na pár otázek, ať víme, kde{' '}
+                        <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
+                    </h1>
+                    <p className="mt-5 max-w-[54ch] text-[17px] md:text-[20px] text-white/60 leading-[1.5]">
+                        Podle odpovědí poznám, jestli ti umíme pomoct. Když ne, řeknu ti to rovnou a nebudeme si krátit čas
                     </p>
                 </div>
             </section>
 
             <section className="relative z-10 border-t border-white/10">
-                <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-20">
-                    <div className="max-w-[680px]">
-                        <ApplicationForm
-                            token={t || ''}
-                            defaultName={reg?.name || undefined}
-                            defaultEmail={reg?.email || undefined}
-                        />
-                    </div>
+                <div className="mx-auto w-full max-w-[860px] px-5 md:px-8 py-12 md:py-16">
+                    <ApplicationForm
+                        token={t || ''}
+                        defaultName={reg?.name || undefined}
+                        defaultEmail={reg?.email || undefined}
+                    />
                 </div>
             </section>
         </main>

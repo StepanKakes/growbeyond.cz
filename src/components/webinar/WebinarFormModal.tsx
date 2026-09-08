@@ -60,7 +60,14 @@ export const WebinarFormModal = () => {
                         </svg>
                     </button>
                 </div>
-                <p className="mt-3 text-[17px] text-white/70 leading-[1.55]">{WEBINAR.form.description}</p>
+                {/* Registrace je první ze dvou kroků, druhý je dotazník na děkovačce. */}
+                <div className="mt-5 flex items-center gap-3">
+                    <span className="text-sm text-white/55">Krok 1 ze 2</span>
+                    <span className="flex flex-1 gap-1.5" aria-hidden="true">
+                        <span className="h-[3px] flex-1 rounded-full bg-brand-red" />
+                        <span className="h-[3px] flex-1 rounded-full bg-white/15" />
+                    </span>
+                </div>
                 <div className="mt-7">
                     <WebinarForm />
                 </div>
