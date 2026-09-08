@@ -45,7 +45,9 @@ export const WebinarFormModal = () => {
             <div className="relative z-10 w-full sm:max-w-[560px] max-h-[100dvh] sm:max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[#111111] border border-white/10 px-5 py-6 sm:px-10 sm:py-10">
                 <div className="flex items-start justify-between gap-6">
                     <div>
-                        <p className="text-sm text-white/55">{weekday} {display} v {WEBINAR.time}, {WEBINAR.hero.live}</p>
+                        {/* Registrace je první ze dvou kroků, druhý je dotazník na děkovačce. */}
+                        <p className="text-[22px] sm:text-[26px] font-bold tracking-[-0.02em] leading-[1.1]">Krok 1 ze 2</p>
+                        <p className="mt-3 text-sm text-white/55">{weekday} {display} v {WEBINAR.time}, {WEBINAR.hero.live}</p>
                         <h2 id="webinar-form-title" className="mt-2 text-2xl sm:text-[30px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.title}</h2>
                     </div>
                     <button
@@ -59,14 +61,6 @@ export const WebinarFormModal = () => {
                             <path d="M18 6L6 18M6 6l12 12" />
                         </svg>
                     </button>
-                </div>
-                {/* Registrace je první ze dvou kroků, druhý je dotazník na děkovačce. */}
-                <div className="mt-5 flex items-center gap-3">
-                    <span className="text-sm text-white/55">Krok 1 ze 2</span>
-                    <span className="flex flex-1 gap-1.5" aria-hidden="true">
-                        <span className="h-[3px] flex-1 rounded-full bg-brand-red" />
-                        <span className="h-[3px] flex-1 rounded-full bg-white/15" />
-                    </span>
                 </div>
                 <div className="mt-7">
                     <WebinarForm />
