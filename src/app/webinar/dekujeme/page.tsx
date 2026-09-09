@@ -27,22 +27,24 @@ function googleCalendarUrl(title: string, startISO: string, minutes: number, det
     const start = new Date(startISO);
     const end = new Date(start.getTime() + minutes * 60000);
     const stamp = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
-    const qs = new URLSearchParams({
-        action: 'TEMPLATE',
-        text: title,
-        dates: `${stamp(start)}/${stamp(end)}`,
-        details,
-    });
+    const qs = new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${stamp(start)}/${stamp(end)}`, details });
     return `https://calendar.google.com/calendar/render?${qs}`;
 }
 
+/** Nadpis bloku, drží stejnou velikost jako otázky v dotazníku pod ním. */
+const BlockTitle = ({ children }: { children: React.ReactNode }) => (
+    <h2 className="text-[19px] md:text-[22px] font-bold tracking-[-0.02em] leading-[1.2]">{children}</h2>
+);
+
 const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="flex items-baseline justify-between gap-6 border-b border-white/10 py-4">
+    <div className="flex items-baseline justify-between gap-6 border-b border-white/10 py-3.5">
         <span className="text-sm text-white/50">{label}</span>
-        <span className="text-[18px] md:text-[21px] font-bold text-right">{value}</span>
+        <span className="text-right text-[17px] md:text-[19px] font-bold">{value}</span>
     </div>
 );
 
+// Potvrzení registrace, stejný jazyk jako přihláška: logo, velký nadpis
+// na střed a pod ním obsah v úzkém sloupci.
 export default async function ThankYouPage({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
     const { t } = await searchParams;
 
@@ -53,65 +55,60 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
     // jen bez osobního odkazu a bez dotazníku.
     const startISO = edition?.starts_at || `${WEBINAR.dateISO}T${WEBINAR.time}:00+02:00`;
     const minutes = edition?.duration_minutes || WEBINAR.durationMinutes;
-    const title = edition?.title || 'Webinář 2030';
+    const title = edition?.title || '2030';
     const when = formatWhen(startISO);
     const joinUrl = reg?.zoom_join_url || edition?.zoom_join_url || '';
     const groupUrl = edition?.wa_group_invite_url || '';
-
     const firstName = reg?.name?.trim().split(/\s+/)[0];
 
     return (
         <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
             <TextureOverlay />
 
-            <section className="relative z-10">
-                <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 pt-24 pb-16 md:pt-36 md:pb-24">
-                    <p className="text-[15px] uppercase tracking-[0.14em] text-white/50">
-                        {firstName ? `${firstName}, máš to potvrzené` : 'Máš to potvrzené'}
-                    </p>
-                    <LedText
-                        as="h1"
-                        text="MÁŠ MÍSTO"
-                        className="mt-5 block font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(52px,11vw,148px)]"
-                    />
-                    <p className="mt-7 max-w-[46ch] text-[18px] md:text-[22px] text-white/70 leading-[1.5]">
+            <div className="relative z-10 mx-auto w-full max-w-[820px] px-5 md:px-8">
+                <header className="pt-8 md:pt-10 text-center">
+                    <Link href="/webinar" className="inline-block text-[26px] md:text-[30px] font-serif italic leading-none text-white">
+                        Beyond
+                    </Link>
+                </header>
+
+                <div className="pt-10 md:pt-12 text-center">
+                    <h1 className="mx-auto max-w-[14ch] text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]">
+                        {firstName ? `${firstName}, máš ` : 'Máš '}
+                        <LedText soft color="red" text="místo" className="whitespace-nowrap" />
+                    </h1>
+                    <p className="mx-auto mt-5 max-w-[46ch] text-[17px] md:text-[19px] text-white/60 leading-[1.5]">
                         Sejdeme se {when.day.toLowerCase()} v {when.time}, vysíláme živě {minutes} minut a bude prostor na otázky
                     </p>
                 </div>
-            </section>
 
-            <section className="relative z-10 border-t border-white/10">
-                <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-20 grid gap-12 md:grid-cols-12 md:gap-16">
-                    <div className="md:col-span-5">
-                        <h2 className="text-[32px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">
-                            Ulož si termín
-                        </h2>
-                        <p className="mt-4 text-[17px] text-white/60 leading-[1.55] max-w-[38ch]">
-                            Lidé, co si webinář hodí do kalendáře, na něj dorazí podstatně častěji
+                <div className="mx-auto mt-12 w-full max-w-[560px] pb-24 md:mt-14 md:pb-28">
+                    <section>
+                        <BlockTitle>Ulož si termín</BlockTitle>
+                        <p className="mt-2 text-[15px] md:text-[16px] text-white/50 leading-[1.5]">
+                            Kdo si webinář hodí do kalendáře, dorazí podstatně častěji
                         </p>
-                    </div>
 
-                    <div className="md:col-span-7">
-                        <div className="border-t border-white/10">
+                        <div className="mt-5 border-t border-white/10">
                             <Row label="Datum" value={when.day} />
                             <Row label="Začátek" value={when.time} />
                             <Row label="Délka" value={`${minutes} minut`} />
                             <Row label="Kde" value="Online, živě" />
                         </div>
 
-                        <div className="mt-8 flex flex-wrap gap-3">
+                        <div className="mt-6 flex flex-wrap gap-3">
                             <a
                                 href={googleCalendarUrl(title, startISO, minutes, joinUrl || 'Odkaz pošleme emailem')}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex h-13 items-center rounded-full bg-brand-red px-8 text-base font-bold text-white transition-colors hover:bg-[#d40c00]"
+                                className="inline-flex h-13 items-center rounded-full bg-brand-red px-8 text-base font-bold text-white transition-colors duration-200 hover:bg-[#d40c00]"
                             >
                                 Přidat do Google kalendáře
                             </a>
                             {t && (
                                 <a
                                     href={`/api/webinar/kalendar?t=${encodeURIComponent(t)}`}
-                                    className="inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors hover:border-white"
+                                    className="inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors duration-200 hover:border-white"
                                 >
                                     Stáhnout do kalendáře
                                 </a>
@@ -119,7 +116,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                         </div>
 
                         {joinUrl && (
-                            <p className="mt-8 text-[17px] text-white/60 leading-[1.55]">
+                            <p className="mt-6 text-[16px] text-white/55 leading-[1.55]">
                                 Tvůj odkaz na vysílání{' '}
                                 <a href={joinUrl} className="text-white underline underline-offset-[3px]">
                                     otevřít
@@ -128,61 +125,47 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                                 Pošlu ti ho ještě mailem i před začátkem, takže si ho nemusíš hlídat
                             </p>
                         )}
-                    </div>
-                </div>
-            </section>
+                    </section>
 
-            {groupUrl && (
-                <section className="relative z-10 border-t border-white/10">
-                    <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-20 grid gap-12 md:grid-cols-12 md:gap-16">
-                        <div className="md:col-span-5">
-                            <h2 className="text-[32px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">
-                                Skupina k webináři
-                            </h2>
-                        </div>
-                        <div className="md:col-span-7">
-                            <p className="text-[18px] md:text-[21px] text-white/70 leading-[1.5] max-w-[46ch]">
+                    {groupUrl && (
+                        <section className="mt-14 border-t border-white/10 pt-10">
+                            <BlockTitle>Skupina k webináři</BlockTitle>
+                            <p className="mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
                                 Do webináře tam dávám videa a věci, co se do vysílání nevejdou. Píšeme tam jen já a tým, takže tě to nezavalí
                             </p>
                             <a
                                 href={groupUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-8 inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors hover:border-white"
+                                className="mt-6 inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors duration-200 hover:border-white"
                             >
                                 Přidat se do skupiny
                             </a>
-                        </div>
-                    </div>
-                </section>
-            )}
+                        </section>
+                    )}
 
-            {reg && !reg.qualified_at && (
-                <section className="relative z-10 border-t border-white/10">
-                    <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-14 md:py-20 grid gap-12 md:grid-cols-12 md:gap-16">
-                        <div className="md:col-span-5">
-                            <h2 className="text-[32px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">
-                                Dvě otázky, ať to sedne
-                            </h2>
-                            <p className="mt-4 text-[17px] text-white/60 leading-[1.55] max-w-[38ch]">
-                                Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Zabere to půl minuty
-                            </p>
-                        </div>
-                        <div className="md:col-span-7">
-                            <QualifyForm token={reg.token} />
-                        </div>
-                    </div>
-                </section>
-            )}
+                    {reg && !reg.qualified_at && (
+                        <section className="mt-14 border-t border-white/10 pt-10">
+                            <p className="text-sm text-white/45">Krok 2 ze 2</p>
+                            <div className="mt-4">
+                                <BlockTitle>Dvě otázky, ať webinář sedne i tobě</BlockTitle>
+                                <p className="mt-2 max-w-[46ch] text-[15px] md:text-[16px] text-white/50 leading-[1.5]">
+                                    Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Zabere to půl minuty
+                                </p>
+                            </div>
+                            <div className="mt-8">
+                                <QualifyForm token={reg.token} />
+                            </div>
+                        </section>
+                    )}
+                </div>
 
-            <footer className="relative z-10 border-t border-white/10">
-                <div className="mx-auto w-full max-w-[1200px] px-5 md:px-12 py-10 flex flex-wrap items-center justify-between gap-4 text-sm text-white/45">
-                    <span>Beyond</span>
-                    <Link href="/webinar" className="hover:text-white">
+                <footer className="border-t border-white/10 py-8 text-center text-sm text-white/40">
+                    <Link href="/webinar" className="transition-colors duration-200 hover:text-white">
                         Zpět na stránku webináře
                     </Link>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </main>
     );
 }

@@ -38,7 +38,7 @@ export type Registration = {
     source: string | null;
     utm: Record<string, string>;
     qual_revenue: string | null;
-    qual_team: string | null;
+    qual_stuck: string | null;
     qual_score: number | null;
     qualified_at: string | null;
     calendar_added_at: string | null;

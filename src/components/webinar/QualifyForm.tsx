@@ -1,86 +1,109 @@
 "use client";
 
 import React, { useState } from 'react';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 
-// Dotazník na děkovačce. Nepovinný, ale odpovědi dají týmu vědět, komu se
-// vyplatí napsat osobně, a po webináři slouží jako první vrstva kvalifikace.
+// Dotazník na děkovačce, druhý ze dvou kroků registrace. Nepovinný, ale
+// odpovědi řeknou, o čem s tím člověkem mluvit, a týmu, komu se vyplatí
+// napsat osobně ještě před webinářem.
+//
+// Otázky drží stejný jazyk jako přihláška po webináři, aby na sebe
+// odpovědi navazovaly a daly se porovnat před a po.
 
 type Choice = { value: string; label: string };
 
-const REVENUE: Choice[] = [
-    { value: 'do-50', label: 'Do 50 tisíc měsíčně' },
-    { value: '50-150', label: '50 až 150 tisíc měsíčně' },
-    { value: '150-500', label: '150 až 500 tisíc měsíčně' },
-    { value: 'nad-500', label: 'Nad 500 tisíc měsíčně' },
+// Každá odpověď odpovídá jedné části webináře, takže je z ní vidět,
+// co tomu člověku sedne.
+const STUCK: Choice[] = [
+    { value: 'znamost', label: 'Jsem dobrý v tom, co dělám, ale ví o mně málo lidí' },
+    { value: 'kapacita', label: 'Mám dost lidí, ale nestíhám to' },
+    { value: 'obsah', label: 'Tvořím obsah, ale nepřitahuje správné lidi' },
+    { value: 'nabidka', label: 'Mám co nabídnout, ale těžko se to prodává' },
+    { value: 'nevim', label: 'Nevím, právě to chci zjistit' },
 ];
 
-const TEAM: Choice[] = [
-    { value: 'sam', label: 'Dělám na tom sám' },
-    { value: '1-3', label: 'Jsme 1 až 3 lidi' },
-    { value: 'vic', label: 'Máme víc než 3 lidi' },
+const REVENUE: Choice[] = [
+    { value: 'rozjezd', label: 'Ještě to nemám rozjeté' },
+    { value: 'do-100', label: 'Do 100 tisíc měsíčně' },
+    { value: '100-300', label: '100 až 300 tisíc měsíčně' },
+    { value: '300-1m', label: '300 tisíc až milion měsíčně' },
+    { value: 'nad-1m', label: 'Přes milion měsíčně' },
 ];
+
+const LETTERS = 'ABCDE';
+
+const itemV = {
+    hidden: { opacity: 0, y: 10, filter: 'blur(4px)' },
+    visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: 'spring' as const, duration: 0.34, bounce: 0 } },
+};
+
+const groupV = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.045 } },
+};
 
 const Group = ({
-    legend,
-    name,
+    question,
     options,
     value,
     onChange,
 }: {
-    legend: string;
-    name: string;
+    question: string;
     options: Choice[];
     value: string;
     onChange: (v: string) => void;
 }) => (
-    <fieldset className="border-0 p-0 m-0">
-        <legend className="text-sm text-white/50 mb-3">{legend}</legend>
-        <div className="border-t border-white/10">
-            {options.map(o => {
+    <motion.fieldset variants={groupV} className="m-0 border-0 p-0">
+        <motion.legend variants={itemV} className="mb-4 text-[19px] md:text-[22px] font-bold tracking-[-0.02em] leading-[1.2]">
+            {question}
+        </motion.legend>
+        <div className="flex flex-col gap-2">
+            {options.map((o, i) => {
                 const active = value === o.value;
                 return (
-                    <label
+                    <motion.button
                         key={o.value}
-                        className={`flex cursor-pointer items-center gap-4 border-b border-white/10 py-4 text-[17px] md:text-[19px] transition-colors ${
-                            active ? 'text-white' : 'text-white/65 hover:text-white'
+                        variants={itemV}
+                        type="button"
+                        onClick={() => onChange(o.value)}
+                        aria-pressed={active}
+                        whileTap={{ scale: 0.985 }}
+                        className={`flex w-full items-center gap-4 rounded-xl border px-4 py-3.5 text-left text-[16px] md:text-[18px] transition-[color,border-color] duration-200 ${
+                            active ? 'border-brand-red text-white' : 'border-white/15 text-white/70 hover:border-white/40 hover:text-white'
                         }`}
                     >
-                        <input
-                            type="radio"
-                            name={name}
-                            value={o.value}
-                            checked={active}
-                            onChange={() => onChange(o.value)}
-                            className="sr-only"
-                        />
                         <span
                             aria-hidden="true"
-                            className={`h-[18px] w-[18px] shrink-0 rounded-full border transition-colors ${
-                                active ? 'border-brand-red bg-brand-red' : 'border-white/30'
+                            className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border text-[13px] font-bold transition-[color,border-color,background-color] duration-200 ${
+                                active ? 'border-brand-red bg-brand-red text-white' : 'border-white/25 text-white/55'
                             }`}
-                        />
+                        >
+                            {LETTERS[i]}
+                        </span>
                         {o.label}
-                    </label>
+                    </motion.button>
                 );
             })}
         </div>
-    </fieldset>
+    </motion.fieldset>
 );
 
 export const QualifyForm = ({ token }: { token: string }) => {
+    const [stuck, setStuck] = useState('');
     const [revenue, setRevenue] = useState('');
-    const [team, setTeam] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
+
+    const ready = Boolean(stuck && revenue);
 
     const submit = async (ev: React.FormEvent) => {
         ev.preventDefault();
-        if (status === 'submitting' || !revenue || !team) return;
+        if (status === 'submitting' || !ready) return;
         setStatus('submitting');
         try {
             const res = await fetch('/api/webinar/kvalifikace', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, revenue, team }),
+                body: JSON.stringify({ token, stuck, revenue }),
             });
             setStatus(res.ok ? 'done' : 'error');
         } catch {
@@ -88,33 +111,63 @@ export const QualifyForm = ({ token }: { token: string }) => {
         }
     };
 
-    if (status === 'done') {
-        return (
-            <p className="text-[18px] md:text-[21px] text-white/70 leading-[1.5]" role="status">
-                Díky, mám to. Uvidíme se na webináři
-            </p>
-        );
-    }
-
     return (
-        <form onSubmit={submit} className="flex flex-col gap-10">
-            <Group legend="Kolik teď děláš" name="revenue" options={REVENUE} value={revenue} onChange={setRevenue} />
-            <Group legend="Jak jste na tom s týmem" name="team" options={TEAM} value={team} onChange={setTeam} />
+        <MotionConfig reducedMotion="user">
+            <AnimatePresence mode="wait" initial={false}>
+                {status === 'done' ? (
+                    <motion.p
+                        key="done"
+                        initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        transition={{ type: 'spring', duration: 0.34, bounce: 0 }}
+                        className="text-[18px] md:text-[21px] text-white/70 leading-[1.5]"
+                        role="status"
+                    >
+                        Díky, mám to. Uvidíme se na webináři
+                    </motion.p>
+                ) : (
+                    <motion.form
+                        key="form"
+                        onSubmit={submit}
+                        variants={groupV}
+                        initial="hidden"
+                        animate="visible"
+                        exit={{ opacity: 0, y: -12, filter: 'blur(4px)', transition: { duration: 0.15, ease: 'easeIn' } }}
+                        className="flex flex-col gap-10"
+                    >
+                        <Group question="Kde teď nejvíc cítíš, že ses zasekl?" options={STUCK} value={stuck} onChange={setStuck} />
+                        <Group question="Kolik ti dnes byznys měsíčně vydělává?" options={REVENUE} value={revenue} onChange={setRevenue} />
 
-            <div className="flex flex-wrap items-center gap-4">
-                <button
-                    type="submit"
-                    disabled={status === 'submitting' || !revenue || !team}
-                    className="h-13 rounded-full bg-brand-red px-8 text-base font-bold text-white transition-colors hover:bg-[#d40c00] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    {status === 'submitting' ? 'Ukládám' : 'Odeslat'}
-                </button>
-                {status === 'error' && (
-                    <p className="text-sm text-brand-red" role="alert">
-                        Nepovedlo se to uložit, zkus to prosím znovu
-                    </p>
+                        <motion.div variants={itemV} className="flex flex-wrap items-center gap-4">
+                            <motion.button
+                                type="submit"
+                                disabled={!ready || status === 'submitting'}
+                                whileTap={{ scale: 0.96 }}
+                                className="relative h-13 overflow-hidden rounded-full bg-brand-red px-9 text-base font-bold text-white transition-colors duration-200 hover:bg-[#d40c00] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <span className="invisible" aria-hidden="true">Odeslat</span>
+                                <AnimatePresence mode="popLayout" initial={false}>
+                                    <motion.span
+                                        key={status === 'submitting' ? 'sending' : 'idle'}
+                                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                                        exit={{ opacity: 0, filter: 'blur(4px)' }}
+                                        transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
+                                        className="absolute inset-0 grid place-items-center"
+                                    >
+                                        {status === 'submitting' ? 'Ukládám' : 'Odeslat'}
+                                    </motion.span>
+                                </AnimatePresence>
+                            </motion.button>
+                            {status === 'error' && (
+                                <p className="text-sm text-brand-red" role="alert">
+                                    Nepovedlo se to uložit, zkus to prosím znovu
+                                </p>
+                            )}
+                        </motion.div>
+                    </motion.form>
                 )}
-            </div>
-        </form>
+            </AnimatePresence>
+        </MotionConfig>
     );
 };
