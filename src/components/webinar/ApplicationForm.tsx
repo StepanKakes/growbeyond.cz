@@ -190,6 +190,20 @@ export const ApplicationForm = ({
         setIndex(i => Math.max(0, i - 1));
     }, []);
 
+    /**
+     * Výběr možnosti rovnou posune na další otázku. Bez toho by u otázek
+     * s pěti možnostmi zůstalo tlačítko pod ohybem a člověk by musel
+     * scrollovat. U poslední otázky se neposouvá, odeslání musí být vědomé.
+     */
+    const choose = useCallback(
+        (key: string, val: string) => {
+            setAnswers(a => ({ ...a, [key]: val }));
+            setError('');
+            if (!isLast) setTimeout(() => setIndex(i => i + 1), 260);
+        },
+        [isLast],
+    );
+
     // Klávesnice: písmeno vybere možnost, Enter potvrdí, šipky listují.
     useEffect(() => {
         if (status === 'submitting' || status === 'rejected') return;
@@ -206,8 +220,7 @@ export const ApplicationForm = ({
                 const i = LETTERS.indexOf(e.key.toUpperCase());
                 if (i >= 0 && i < current.options.length) {
                     e.preventDefault();
-                    setAnswers(a => ({ ...a, [current.key]: current.options[i].value }));
-                    setError('');
+                    choose(current.key, current.options[i].value);
                     return;
                 }
             }
@@ -216,7 +229,7 @@ export const ApplicationForm = ({
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [current, goNext, goBack, status]);
+    }, [current, goNext, goBack, choose, status]);
 
     // Po přechodu na textovou otázku rovnou kurzor do pole.
     useEffect(() => {
@@ -275,10 +288,7 @@ export const ApplicationForm = ({
                                     <button
                                         key={o.value}
                                         type="button"
-                                        onClick={() => {
-                                            setAnswers(a => ({ ...a, [current.key]: o.value }));
-                                            setError('');
-                                        }}
+                                        onClick={() => choose(current.key, o.value)}
                                         aria-pressed={active}
                                         className={`flex w-full items-center gap-4 rounded-xl border px-4 py-4 text-left text-[17px] md:text-[19px] transition-colors ${
                                             active
@@ -333,14 +343,16 @@ export const ApplicationForm = ({
                 </div>
 
                 <div className="mt-8 flex flex-wrap items-center gap-5">
-                    <button
-                        type="button"
-                        onClick={goNext}
-                        disabled={status === 'submitting'}
-                        className="h-13 rounded-full bg-brand-red px-9 text-base font-bold text-white transition-colors hover:bg-[#d40c00] disabled:cursor-wait disabled:opacity-60"
-                    >
-                        {status === 'submitting' ? 'Odesílám' : isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
-                    </button>
+                    {(current.kind !== 'choice' || isLast) && (
+                        <button
+                            type="button"
+                            onClick={goNext}
+                            disabled={status === 'submitting'}
+                            className="h-13 rounded-full bg-brand-red px-9 text-base font-bold text-white transition-colors hover:bg-[#d40c00] disabled:cursor-wait disabled:opacity-60"
+                        >
+                            {status === 'submitting' ? 'Odesílám' : isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
+                        </button>
+                    )}
 
                     {/* Jen zpět. Šipka dopředu by dělala to samé co tlačítko vedle. */}
                     {index > 0 && (
