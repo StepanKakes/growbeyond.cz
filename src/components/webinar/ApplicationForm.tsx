@@ -6,38 +6,51 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 //
 // Proč postupně a ne jeden dlouhý formulář: dlouhý formulář se očima vyhodnotí
 // jako práce a člověk ho zavře. Jedna otázka na obrazovce drží tempo a dovolí
-// se ptát i na nepříjemné věci, jako je rozpočet.
+// se ptát i na nepříjemné věci, jako je rozpočet nebo kdo rozhoduje o penězích.
 //
-// Pořadí otázek jde od lehkých přes zajímavé k citlivým a kontakt je až na
-// konci, kdy už člověk do odpovědí investoval čas. Na jméno se neptáme vůbec,
-// u lidí z mailu ho známe a u ostatních ho zjistíme na hovoru.
+// Pořadí jde od lehkých otázek přes diagnostické k citlivým. Na jméno se
+// neptáme vůbec a email jen tehdy, když člověk přijde bez tokenu z mailu.
 //
-// Ovládání je i z klávesnice, výběr písmenem a potvrzení Enterem.
+// Ovládání je i z klávesnice, výběr písmenem, potvrzení Enterem.
 
 type Choice = { value: string; label: string };
 
 type Question =
     | { key: string; kind: 'choice'; question: string; hint?: string; options: Choice[] }
-    | { key: string; kind: 'text'; question: string; hint?: string; placeholder: string; inputType: 'text' | 'email' }
-    | { key: string; kind: 'longtext'; question: string; hint?: string; placeholder: string; optional: true };
+    | { key: string; kind: 'text'; question: string; hint?: string; placeholder: string; inputType: 'text' | 'email' };
 
-const PROFESSION: Choice[] = [
-    { value: 'expert', label: 'Kouč, konzultant nebo expert' },
-    { value: 'firma', label: 'Majitel firmy se službami' },
-    { value: 'produkt', label: 'Prodávám produkty nebo mám e-shop' },
-    { value: 'tvurce', label: 'Tvůrce obsahu' },
-    { value: 'zacinam', label: 'Teprve začínám' },
+const YEARS: Choice[] = [
+    { value: 'do-1', label: 'Méně než rok' },
+    { value: '1-3', label: '1 až 3 roky' },
+    { value: '3-5', label: '3 až 5 let' },
+    { value: 'nad-5', label: 'Víc než 5 let' },
 ];
 
 const REVENUE: Choice[] = [
-    { value: 'do-50', label: 'Do 50 tisíc měsíčně' },
-    { value: '50-150', label: '50 až 150 tisíc měsíčně' },
-    { value: '150-500', label: '150 až 500 tisíc měsíčně' },
-    { value: 'nad-500', label: 'Nad 500 tisíc měsíčně' },
+    { value: 'do-100', label: 'Méně než 100 tisíc' },
+    { value: '100-300', label: '100 až 300 tisíc' },
+    { value: '300-1m', label: '300 tisíc až 1 milion' },
+    { value: '1-3m', label: '1 až 3 miliony' },
+    { value: 'nad-3m', label: 'Víc než 3 miliony' },
 ];
 
-// Distribuce a obsah, tedy přesně to, o čem webinář je. Do skóre skoro
-// nevstupují, jejich hodnota je v kontextu pro hovor.
+const TEAM: Choice[] = [
+    { value: 'sam', label: 'Jsem na to sám' },
+    { value: '2-5', label: '2 až 5 lidí' },
+    { value: '6-10', label: '6 až 10 lidí' },
+    { value: 'nad-10', label: 'Víc než 10 lidí' },
+];
+
+// Diagnostická otázka. Neskóruje, ale Timovi řekne, o čem hovor bude.
+const STUCK: Choice[] = [
+    { value: 'marketing', label: 'Marketing a získávání klientů' },
+    { value: 'obchod', label: 'Obchod a uzavírání' },
+    { value: 'tym', label: 'Tým a lidi' },
+    { value: 'ja', label: 'Já sám a moje role ve firmě' },
+    { value: 'nevim', label: 'Nevím, právě to chci zjistit' },
+];
+
+// Distribuce, tedy přesně to, o čem webinář je. Taky jen kontext.
 const LEADS: Choice[] = [
     { value: 'doporuceni', label: 'Z doporučení' },
     { value: 'reklama', label: 'Z placené reklamy' },
@@ -46,11 +59,11 @@ const LEADS: Choice[] = [
     { value: 'nemam', label: 'Nemám stabilní zdroj' },
 ];
 
-const CONTENT: Choice[] = [
-    { value: 'netvorim', label: 'Netvořím skoro nic' },
-    { value: 'nepravidelne', label: 'Tvořím nepravidelně' },
-    { value: 'bez-vysledku', label: 'Tvořím pravidelně, ale klienty to nenosí' },
-    { value: 'funguje', label: 'Tvořím pravidelně a funguje mi to' },
+// Nejtvrdší kvalifikátor. Kdo o penězích nerozhoduje, nemá hovor smysl.
+const DECISION: Choice[] = [
+    { value: 'ja', label: 'Já' },
+    { value: 'ja-partner', label: 'Já společně s partnerem nebo společníkem' },
+    { value: 'nekdo-jiny', label: 'Někdo jiný' },
 ];
 
 const BUDGET: Choice[] = [
@@ -61,10 +74,11 @@ const BUDGET: Choice[] = [
 ];
 
 const WHEN: Choice[] = [
-    { value: 'hned', label: 'Chci začít hned' },
-    { value: 'mesic', label: 'Během měsíce' },
-    { value: 'ctvrtleti', label: 'Někdy do čtvrt roku' },
-    { value: 'rozhlizim', label: 'Zatím se jen rozhlížím' },
+    { value: 'hned', label: 'Hned' },
+    { value: 'mesic', label: 'Během následujícího měsíce' },
+    { value: 'ctvrtleti', label: 'Během tří měsíců' },
+    { value: 'pozdeji', label: 'Někdy později' },
+    { value: 'ujasnit', label: 'Nejdřív si to chci ujasnit' },
 ];
 
 const LETTERS = 'ABCDEFGH';
@@ -81,33 +95,32 @@ export const ApplicationForm = ({
 }) => {
     const questions = useMemo<Question[]>(() => {
         const list: Question[] = [
-            { key: 'profession', kind: 'choice', question: 'Čím se živíš?', options: PROFESSION },
-            { key: 'revenue', kind: 'choice', question: 'Kolik teď měsíčně děláš?', options: REVENUE },
+            { key: 'years', kind: 'choice', question: 'Jak dlouho už podnikáš?', options: YEARS },
+            { key: 'revenue', kind: 'choice', question: 'Jaký zhruba děláš měsíční obrat?', options: REVENUE },
+            { key: 'team', kind: 'choice', question: 'Kolik lidí dnes pracuje v tvém týmu?', options: TEAM },
             {
-                key: 'leads',
+                key: 'stuck',
                 kind: 'choice',
-                question: 'Odkud ti dnes chodí klienti?',
-                hint: 'Vyber to, odkud jich přijde nejvíc',
-                options: LEADS,
+                question: 'Kde teď nejvíc cítíš, že ses zasekl?',
+                options: STUCK,
             },
-            { key: 'content', kind: 'choice', question: 'Jak jsi na tom s obsahem?', options: CONTENT },
-            {
-                key: 'blocker',
-                kind: 'longtext',
-                question: 'Co tě teď nejvíc brzdí?',
-                hint: 'Nepovinné, ale díky tomu se na hovoru nebudeme půl hodiny rozkoukávat',
-                placeholder: 'Napiš to vlastními slovy',
-                optional: true,
-            },
+            { key: 'leads', kind: 'choice', question: 'Odkud ti dnes chodí klienti?', hint: 'Vyber to, odkud jich přijde nejvíc', options: LEADS },
+            { key: 'decision', kind: 'choice', question: 'Kdo u vás rozhoduje o větších investicích do růstu?', options: DECISION },
             { key: 'budget', kind: 'choice', question: 'Kolik jsi připraven do růstu investovat?', options: BUDGET },
-            { key: 'when', kind: 'choice', question: 'Kdy s tím chceš začít?', options: WHEN },
+            {
+                key: 'when',
+                kind: 'choice',
+                question: 'Kdybys věděl, co tě dnes skutečně brzdí, jak rychle bys to chtěl začít řešit?',
+                options: WHEN,
+            },
         ];
-        // Email chceme až na konci a jen tehdy, když ho ještě neznáme.
+        // Email chceme jen tehdy, když ho neznáme z registrace.
         if (!defaultEmail) {
             list.push({
                 key: 'email',
                 kind: 'text',
-                question: 'Kam ti mám poslat potvrzení?',
+                question: 'Na jaký email ses registroval?',
+                hint: 'Ať tvoje odpovědi umíme spojit s registrací na webinář',
                 placeholder: 'tvuj@email.cz',
                 inputType: 'email',
             });
@@ -122,20 +135,18 @@ export const ApplicationForm = ({
     });
     const [error, setError] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'rejected' | 'error'>('idle');
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const current = questions[index];
     const value = answers[current?.key] || '';
     const isLast = index === questions.length - 1;
 
     const answered = current
-        ? current.kind === 'longtext'
-            ? true
-            : current.kind === 'text'
-              ? current.inputType === 'email'
-                  ? EMAIL_RE.test(value.trim())
-                  : value.trim().length > 1
-              : Boolean(value)
+        ? current.kind === 'text'
+            ? current.inputType === 'email'
+                ? EMAIL_RE.test(value.trim())
+                : value.trim().length > 1
+            : Boolean(value)
         : false;
 
     const submit = useCallback(
@@ -168,13 +179,7 @@ export const ApplicationForm = ({
     const goNext = useCallback(() => {
         if (!current) return;
         if (!answered) {
-            setError(
-                current.kind === 'choice'
-                    ? 'Vyber jednu z možností'
-                    : current.kind === 'text' && current.inputType === 'email'
-                      ? 'Zkontroluj prosím email'
-                      : 'Doplň prosím odpověď',
-            );
+            setError(current.kind === 'choice' ? 'Vyber jednu z možností' : 'Zkontroluj prosím email');
             return;
         }
         setError('');
@@ -211,7 +216,7 @@ export const ApplicationForm = ({
             if (!current) return;
             const typing = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
 
-            if (e.key === 'Enter' && (!typing || current.kind !== 'longtext' || e.metaKey || e.ctrlKey)) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 goNext();
                 return;
@@ -233,7 +238,7 @@ export const ApplicationForm = ({
 
     // Po přechodu na textovou otázku rovnou kurzor do pole.
     useEffect(() => {
-        if (current && current.kind !== 'choice') inputRef.current?.focus();
+        if (current && current.kind === 'text') inputRef.current?.focus();
     }, [index, current]);
 
     if (status === 'rejected') {
@@ -272,16 +277,16 @@ export const ApplicationForm = ({
             </div>
 
             <div className="mt-7 md:mt-9">
-                <h2 className="text-[26px] md:text-[38px] font-bold tracking-[-0.03em] leading-[1.12] max-w-[26ch]">
+                <h2 className="text-[24px] md:text-[34px] font-bold tracking-[-0.03em] leading-[1.14] max-w-[28ch]">
                     {current.question}
                 </h2>
                 {current.hint && (
                     <p className="mt-3 text-[15px] md:text-[17px] text-white/50 leading-[1.5] max-w-[52ch]">{current.hint}</p>
                 )}
 
-                <div className="mt-6 md:mt-8">
-                    {current.kind === 'choice' && (
-                        <div className="flex flex-col gap-2.5">
+                <div className="mt-6 md:mt-7">
+                    {current.kind === 'choice' ? (
+                        <div className="flex flex-col gap-2">
                             {current.options.map((o, i) => {
                                 const active = value === o.value;
                                 return (
@@ -290,7 +295,7 @@ export const ApplicationForm = ({
                                         type="button"
                                         onClick={() => choose(current.key, o.value)}
                                         aria-pressed={active}
-                                        className={`flex w-full items-center gap-4 rounded-xl border px-4 py-4 text-left text-[17px] md:text-[19px] transition-colors ${
+                                        className={`flex w-full items-center gap-4 rounded-xl border px-4 py-3.5 text-left text-[16px] md:text-[18px] transition-colors ${
                                             active
                                                 ? 'border-brand-red text-white'
                                                 : 'border-white/15 text-white/70 hover:border-white/40 hover:text-white'
@@ -309,14 +314,12 @@ export const ApplicationForm = ({
                                 );
                             })}
                         </div>
-                    )}
-
-                    {current.kind === 'text' && (
+                    ) : (
                         <input
-                            ref={inputRef as React.RefObject<HTMLInputElement>}
+                            ref={inputRef}
                             type={current.inputType}
-                            inputMode={current.inputType === 'email' ? 'email' : undefined}
-                            autoComplete={current.inputType === 'email' ? 'email' : 'name'}
+                            inputMode="email"
+                            autoComplete="email"
                             placeholder={current.placeholder}
                             value={value}
                             onChange={e => {
@@ -326,23 +329,9 @@ export const ApplicationForm = ({
                             className="h-14 w-full rounded-xl border border-white/20 bg-transparent px-4 text-[19px] text-white placeholder:text-white/35 transition-colors hover:border-white/40 focus:outline-none focus-visible:border-white"
                         />
                     )}
-
-                    {current.kind === 'longtext' && (
-                        <textarea
-                            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                            rows={4}
-                            placeholder={current.placeholder}
-                            value={value}
-                            onChange={e => {
-                                setAnswers(a => ({ ...a, [current.key]: e.target.value }));
-                                setError('');
-                            }}
-                            className="w-full rounded-xl border border-white/20 bg-transparent p-4 text-[19px] text-white placeholder:text-white/35 transition-colors hover:border-white/40 focus:outline-none focus-visible:border-white"
-                        />
-                    )}
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-5">
+                <div className="mt-7 flex flex-wrap items-center gap-5">
                     {(current.kind !== 'choice' || isLast) && (
                         <button
                             type="button"
@@ -354,7 +343,6 @@ export const ApplicationForm = ({
                         </button>
                     )}
 
-                    {/* Jen zpět. Šipka dopředu by dělala to samé co tlačítko vedle. */}
                     {index > 0 && (
                         <button
                             type="button"

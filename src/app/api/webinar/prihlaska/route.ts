@@ -6,56 +6,68 @@ export const runtime = 'nodejs';
 // Přihláška na hovor po webináři. Kdo projde kvalifikací, dostane odkaz
 // rovnou do kalendáře, kdo neprojde, zůstává v sekvenci bez hovoru.
 //
-// Do skóre vstupuje jen to, co vypovídá o tom, jestli má hovor smysl:
-// čím se člověk živí, kolik dělá, kolik chce investovat a kdy chce začít.
-// Odpovědi na zdroj klientů a obsah se ukládají jako kontext pro hovor,
-// skóre neovlivňují, protože ani jedna z nich není sama o sobě dobrá
-// nebo špatná.
+// Skóruje jen to, co vypovídá o tom, jestli má hovor smysl: jak dlouho
+// člověk podniká, kolik dělá, jak velký má tým, jestli o penězích rozhoduje
+// sám, kolik chce investovat a jak rychle. Odpovědi na to, kde se zasekl
+// a odkud mu chodí klienti, se ukládají jako kontext pro hovor, ale
+// neskórují, protože ani jedna z nich není sama o sobě dobrá nebo špatná.
 
 const CAL_LINK = process.env.WEBINAR_CAL_LINK || 'https://cal.com/creationwithtim/webinar-2030-hovor';
 
-const PROFESSION_SCORE: Record<string, number> = { expert: 20, firma: 20, produkt: 10, tvurce: 10, zacinam: 0 };
-const REVENUE_SCORE: Record<string, number> = { 'do-50': 5, '50-150': 25, '150-500': 40, 'nad-500': 50 };
+const YEARS_SCORE: Record<string, number> = { 'do-1': 0, '1-3': 10, '3-5': 15, 'nad-5': 15 };
+const REVENUE_SCORE: Record<string, number> = { 'do-100': 5, '100-300': 20, '300-1m': 35, '1-3m': 45, 'nad-3m': 50 };
+const TEAM_SCORE: Record<string, number> = { sam: 5, '2-5': 15, '6-10': 20, 'nad-10': 20 };
+const DECISION_SCORE: Record<string, number> = { ja: 25, 'ja-partner': 20, 'nekdo-jiny': 0 };
 const BUDGET_SCORE: Record<string, number> = { nic: 0, 'do-20': 10, '20-50': 25, 'nad-50': 35 };
-const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 8, rozhlizim: 0 };
+const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 10, pozdeji: 0, ujasnit: 5 };
 
 // Kontextové odpovědi, ukládají se, ale neskórují.
+const STUCK = new Set(['marketing', 'obchod', 'tym', 'ja', 'nevim']);
 const LEADS = new Set(['doporuceni', 'reklama', 'obsah', 'oslovuju', 'nemam']);
-const CONTENT = new Set(['netvorim', 'nepravidelne', 'bez-vysledku', 'funguje']);
 
-/** Hranice, od které pouštíme člověka do kalendáře. Maximum je 130. */
-const QUALIFY_AT = Number(process.env.WEBINAR_QUALIFY_SCORE || 55);
+/** Hranice, od které pouštíme člověka do kalendáře. Maximum je 170. */
+const QUALIFY_AT = Number(process.env.WEBINAR_QUALIFY_SCORE || 75);
 
 export async function POST(req: Request) {
     const body = (await req.json().catch(() => ({}))) as Record<string, string>;
 
     const token = String(body.token || '').trim();
-    const { profession, revenue, budget, when, leads, content } = body;
-    const blocker = String(body.blocker || '').trim().slice(0, 2000);
+    const { years, revenue, team, stuck, leads, decision, budget, when } = body;
 
     const valid =
-        profession in PROFESSION_SCORE &&
+        years in YEARS_SCORE &&
         revenue in REVENUE_SCORE &&
+        team in TEAM_SCORE &&
+        decision in DECISION_SCORE &&
         budget in BUDGET_SCORE &&
         when in WHEN_SCORE &&
-        LEADS.has(leads) &&
-        CONTENT.has(content);
+        STUCK.has(stuck) &&
+        LEADS.has(leads);
     if (!valid) return NextResponse.json({ ok: false }, { status: 400 });
 
     try {
         const edition = await getEdition();
         if (!edition) return NextResponse.json({ ok: false }, { status: 500 });
 
-        // Jméno a email bereme z registrace, na jméno se v přihlášce neptáme.
+        // Jméno i email bereme z registrace, na jméno se v přihlášce neptáme.
+        // Email z formuláře přijde jen tehdy, když člověk přišel bez tokenu.
         const reg = token ? await getRegistrationByToken(token) : null;
         const email = String(body.email || reg?.email || '').trim().toLowerCase();
         const name = reg?.name || '';
         if (!/\S+@\S+\.\S+/.test(email)) return NextResponse.json({ ok: false }, { status: 400 });
 
         const score =
-            PROFESSION_SCORE[profession] + REVENUE_SCORE[revenue] + BUDGET_SCORE[budget] + WHEN_SCORE[when];
-        // Kdo nechce investovat nic nebo se jen rozhlíží, nejde na hovor bez ohledu na skóre.
-        const qualified = score >= QUALIFY_AT && budget !== 'nic' && when !== 'rozhlizim';
+            YEARS_SCORE[years] +
+            REVENUE_SCORE[revenue] +
+            TEAM_SCORE[team] +
+            DECISION_SCORE[decision] +
+            BUDGET_SCORE[budget] +
+            WHEN_SCORE[when];
+
+        // Tvrdé diskvalifikace bez ohledu na skóre: kdo o penězích nerozhoduje,
+        // kdo nechce investovat nic a kdo to chce řešit někdy později.
+        const qualified =
+            score >= QUALIFY_AT && decision !== 'nekdo-jiny' && budget !== 'nic' && when !== 'pozdeji';
 
         await createApplication({
             edition_id: edition.id,
@@ -63,7 +75,7 @@ export async function POST(req: Request) {
             email,
             name: name || undefined,
             phone: reg?.phone ?? null,
-            answers: { profession, revenue, leads, content, budget, when, blocker },
+            answers: { years, revenue, team, stuck, leads, decision, budget, when },
             score,
             qualified,
         });
