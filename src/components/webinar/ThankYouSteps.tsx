@@ -94,28 +94,21 @@ export const ThankYouSteps = (d: ThankYouData) => {
                         >
                             {hello}máš <LedText soft color="red" text="místo" className="whitespace-nowrap" />
                         </motion.h1>
-                        <motion.p
-                            variants={itemV}
-                            className="mx-auto mt-5 max-w-[46ch] text-center text-[17px] md:text-[19px] text-white/60 leading-[1.5]"
-                        >
-                            Sejdeme se {d.dayLabel.toLowerCase()} v {d.timeLabel}, vysíláme živě {d.minutes} minut a bude prostor na otázky
-                        </motion.p>
-
-                        <div className="mx-auto mt-12 w-full max-w-[560px] md:mt-14">
+                        <div className="mx-auto mt-12 w-full max-w-[560px] text-center md:mt-14">
                             {/* Skupina je priorita, proto stojí první. Odkaz na
                                 vysílání tu není schválně, chodí mailem i WhatsAppem
                                 a na téhle stránce by lidi odvedl od skupiny. */}
                             {d.groupUrl && (
                                 <motion.section variants={itemV}>
                                     <BlockTitle>Přidej se do skupiny</BlockTitle>
-                                    <p className="mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
-                                        Do webináře tam dávám videa a věci, co se do vysílání nevejdou. Píšeme tam jen já a tým, takže tě to nezavalí
+                                    <p className="mx-auto mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
+                                        Budu tam dávat důležitá upozornění a věci, které se nikam jinam nedostanou. Píšeme tam jen já a tým, takže tě to nezavalí
                                     </p>
                                     <a
                                         href={d.groupUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="mt-6 inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
+                                        className="mx-auto mt-6 inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
                                     >
                                         <WhatsAppLogo />
                                         Vstoupit do skupiny
@@ -126,7 +119,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                             <motion.section variants={itemV} className={d.groupUrl ? 'mt-14 border-t border-white/10 pt-10' : ''}>
                                 <BlockTitle>Ulož si termín</BlockTitle>
 
-                                <div className="mt-5">
+                                <div className="mt-5 text-left">
                                     <EventCard
                                         weekday={d.weekday}
                                         dayMonth={d.dayMonth}
@@ -135,7 +128,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                     />
                                 </div>
 
-                                <div className="mt-6 flex flex-wrap gap-3">
+                                <div className="mt-6 flex flex-wrap justify-center gap-3">
                                     <a
                                         href={d.googleUrl}
                                         target="_blank"
