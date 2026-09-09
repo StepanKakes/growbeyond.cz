@@ -202,7 +202,7 @@ body {
    (background-clip: text). Velikost pixelu roste s písmem (--led-px v em). */
 .led {
   --led-rgb: 255, 255, 255;
-  --led-px: clamp(2px, 0.016em, 5px);
+  --led-px: clamp(3px, 0.016em, 5px);
   --led-shift: 0.005em;
   --led-ab-a: #ff3b3b;
   --led-ab-b: #38b6ff;
@@ -261,10 +261,24 @@ body {
   /* pixelová mřížka: RGB subpixely ve sloupcích, tmavá mezera mezi řádky */
   color: transparent;
   -webkit-text-fill-color: transparent;
+  /* Mezera mezi pixely je zadaná v pixelech, ne v procentech rozteče.
+     S procenty vycházela u menšího písma na půl pixelu a prohlížeč ji
+     rozmazal do rovnoměrné šedi, takže mřížka zmizela a text vypadal
+     plný. Takhle je linka vždy přesně 1 px. Subpixely se u nejmenší
+     rozteče slijí do barevného nádechu, ale mřížka drží. */
   background-image:
-    linear-gradient(to bottom, transparent 0 76%, var(--led-gap) 76% 100%),
-    linear-gradient(90deg, var(--led-sub-r) 0 30%, var(--led-sub-g) 30% 61%, var(--led-sub-b) 61% 90%, var(--led-gap) 90% 100%);
-  background-size: 100% var(--led-px), var(--led-px) 100%;
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--led-px) - 1px),
+      var(--led-gap) calc(var(--led-px) - 1px) var(--led-px)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--led-sub-r) 0 calc((var(--led-px) - 1px) / 3),
+      var(--led-sub-g) calc((var(--led-px) - 1px) / 3) calc((var(--led-px) - 1px) / 3 * 2),
+      var(--led-sub-b) calc((var(--led-px) - 1px) / 3 * 2) calc(var(--led-px) - 1px),
+      var(--led-gap) calc(var(--led-px) - 1px) var(--led-px)
+    );
   -webkit-background-clip: text;
   background-clip: text;
   opacity: 0.95;
