@@ -46,7 +46,7 @@ const REVENUE: Choice[] = [
 // webináře, takže je z ní vidět, co tomu člověku sedne a o čem bude hovor.
 const STUCK: Choice[] = [
     { value: 'znamost', label: 'Jsem dobrý v tom, co dělám, ale ví o mně málo lidí' },
-    { value: 'odliseni', label: 'Nevím, čím se odlišit od ostatních' },
+    { value: 'kapacita', label: 'Mám dost lidí, ale nestíhám to' },
     { value: 'obsah', label: 'Tvořím obsah, ale nepřitahuje správné lidi' },
     { value: 'nabidka', label: 'Mám co nabídnout, ale těžko se to prodává' },
     { value: 'nevim', label: 'Nevím, právě to chci zjistit' },

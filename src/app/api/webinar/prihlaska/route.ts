@@ -20,7 +20,7 @@ const BUDGET_SCORE: Record<string, number> = { nic: 0, 'do-20': 10, '20-50': 25,
 const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 10, pozdeji: 0, ujasnit: 5 };
 
 // Kontextové odpovědi, ukládají se, ale neskórují.
-const STUCK = new Set(['znamost', 'odliseni', 'obsah', 'nabidka', 'nevim']);
+const STUCK = new Set(['znamost', 'kapacita', 'obsah', 'nabidka', 'nevim']);
 const LEADS = new Set(['doporuceni', 'reklama', 'obsah', 'oslovuju', 'nemam']);
 
 /** Hranice, od které pouštíme člověka do kalendáře. Maximum je 125. */
