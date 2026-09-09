@@ -15,12 +15,12 @@ export const runtime = 'nodejs';
 const CAL_LINK = process.env.WEBINAR_CAL_LINK || 'https://cal.com/creationwithtim/webinar-2030-hovor';
 
 const YEARS_SCORE: Record<string, number> = { 'do-1': 0, '1-3': 10, '3-5': 15, 'nad-5': 15 };
-const REVENUE_SCORE: Record<string, number> = { 'do-100': 5, '100-300': 20, '300-1m': 35, '1-3m': 45, 'nad-3m': 50 };
+const REVENUE_SCORE: Record<string, number> = { rozjezd: 0, 'do-100': 10, '100-300': 25, '300-1m': 40, 'nad-1m': 50 };
 const BUDGET_SCORE: Record<string, number> = { nic: 0, 'do-20': 10, '20-50': 25, 'nad-50': 35 };
 const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 10, pozdeji: 0, ujasnit: 5 };
 
 // Kontextové odpovědi, ukládají se, ale neskórují.
-const STUCK = new Set(['marketing', 'obchod', 'tym', 'ja', 'nevim']);
+const STUCK = new Set(['znamost', 'odliseni', 'obsah', 'nabidka', 'nevim']);
 const LEADS = new Set(['doporuceni', 'reklama', 'obsah', 'oslovuju', 'nemam']);
 
 /** Hranice, od které pouštíme člověka do kalendáře. Maximum je 125. */
