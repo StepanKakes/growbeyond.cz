@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
+import { EventCard, GoogleCalendarIcon } from './EventCard';
 import { QualifyForm } from './QualifyForm';
 
 // Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
@@ -17,6 +18,9 @@ export type ThankYouData = {
     alreadyQualified: boolean;
     firstName: string | null;
     dayLabel: string;
+    weekday: string;
+    dayMonth: string;
+    year: string;
     timeLabel: string;
     minutes: number;
     joinUrl: string;
@@ -38,13 +42,6 @@ const stepV = {
 
 const BlockTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-[19px] md:text-[22px] font-bold tracking-[-0.02em] leading-[1.2]">{children}</h2>
-);
-
-const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="flex items-baseline justify-between gap-6 border-b border-white/10 py-3.5">
-        <span className="text-sm text-white/50">{label}</span>
-        <span className="text-right text-[17px] md:text-[19px] font-bold">{value}</span>
-    </div>
 );
 
 export const ThankYouSteps = (d: ThankYouData) => {
@@ -112,20 +109,26 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                     Kdo si webinář hodí do kalendáře, dorazí podstatně častěji
                                 </p>
 
-                                <div className="mt-5 border-t border-white/10">
-                                    <Row label="Datum" value={d.dayLabel} />
-                                    <Row label="Začátek" value={d.timeLabel} />
-                                    <Row label="Délka" value={`${d.minutes} minut`} />
-                                    <Row label="Kde" value="Online, živě" />
+                                <div className="mt-6">
+                                    <EventCard
+                                        weekday={d.weekday}
+                                        dayMonth={d.dayMonth}
+                                        year={d.year}
+                                        time={d.timeLabel}
+                                        minutes={d.minutes}
+                                    />
                                 </div>
 
                                 <div className="mt-6 flex flex-wrap gap-3">
+                                    {/* Bílé tlačítko s barevnou ikonou, ať je hned jasné, že to
+                                        vede do Googlu, ne někam k nám */}
                                     <a
                                         href={d.googleUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex h-13 items-center rounded-full bg-brand-red px-8 text-base font-bold text-white transition-colors duration-200 hover:bg-[#d40c00]"
+                                        className="inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
                                     >
+                                        <GoogleCalendarIcon />
                                         Přidat do Google kalendáře
                                     </a>
                                     {d.icsUrl && (

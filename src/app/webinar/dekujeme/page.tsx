@@ -16,9 +16,17 @@ const TZ = 'Europe/Prague';
 
 function formatWhen(startISO: string) {
     const start = new Date(startISO);
-    const day = new Intl.DateTimeFormat('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ }).format(start);
-    const time = new Intl.DateTimeFormat('cs-CZ', { hour: '2-digit', minute: '2-digit', timeZone: TZ }).format(start);
-    return { day: day.charAt(0).toUpperCase() + day.slice(1), time };
+    const f = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('cs-CZ', { ...opts, timeZone: TZ }).format(start);
+    const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
+    // Datum na displeji je číselné a dvoumístné, ať drží řádek jako na tabuli.
+    const [d2, m2] = f({ day: '2-digit', month: '2-digit' }).split('.').map(v => v.trim());
+    return {
+        day: cap(f({ weekday: 'long', day: 'numeric', month: 'long' })),
+        weekday: cap(f({ weekday: 'long' })),
+        dayMonth: `${d2}.${m2}.`,
+        year: f({ year: 'numeric' }),
+        time: f({ hour: '2-digit', minute: '2-digit' }),
+    };
 }
 
 /** Odkaz do Google kalendáře. Časy v UTC bez oddělovačů, jak Google chce. */
@@ -63,6 +71,9 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                         alreadyQualified={Boolean(reg?.qualified_at)}
                         firstName={reg?.name?.trim().split(/\s+/)[0] ?? null}
                         dayLabel={when.day}
+                        weekday={when.weekday}
+                        dayMonth={when.dayMonth}
+                        year={when.year}
                         timeLabel={when.time}
                         minutes={minutes}
                         joinUrl={joinUrl}
