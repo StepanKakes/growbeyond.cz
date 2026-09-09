@@ -102,7 +102,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                 <motion.section variants={itemV}>
                                     <BlockTitle>Přidej se do skupiny</BlockTitle>
                                     <p className="mx-auto mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
-                                        Budu tam dávat důležitá upozornění a věci, které se nikam jinam nedostanou. Píšeme tam jen já a tým, takže tě to nezavalí
+                                        Budu tam dávat důležitá upozornění a věci, které se nikam jinam nedostanou
                                     </p>
                                     <a
                                         href={d.groupUrl}
