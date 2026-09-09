@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 //
 // Proč postupně a ne jeden dlouhý formulář: dlouhý formulář se očima vyhodnotí
 // jako práce a člověk ho zavře. Jedna otázka na obrazovce drží tempo a dovolí
-// se ptát i na nepříjemné věci, jako je rozpočet nebo kdo rozhoduje o penězích.
+// se ptát i na nepříjemné věci, jako je rozpočet.
 //
 // Pořadí jde od lehkých otázek přes diagnostické k citlivým. Na jméno se
 // neptáme vůbec a email jen tehdy, když člověk přijde bez tokenu z mailu.
@@ -34,13 +34,6 @@ const REVENUE: Choice[] = [
     { value: 'nad-3m', label: 'Víc než 3 miliony' },
 ];
 
-const TEAM: Choice[] = [
-    { value: 'sam', label: 'Jsem na to sám' },
-    { value: '2-5', label: '2 až 5 lidí' },
-    { value: '6-10', label: '6 až 10 lidí' },
-    { value: 'nad-10', label: 'Víc než 10 lidí' },
-];
-
 // Diagnostická otázka. Neskóruje, ale Timovi řekne, o čem hovor bude.
 const STUCK: Choice[] = [
     { value: 'marketing', label: 'Marketing a získávání klientů' },
@@ -57,13 +50,6 @@ const LEADS: Choice[] = [
     { value: 'obsah', label: 'Z obsahu na sítích' },
     { value: 'oslovuju', label: 'Oslovuju si je sám' },
     { value: 'nemam', label: 'Nemám stabilní zdroj' },
-];
-
-// Nejtvrdší kvalifikátor. Kdo o penězích nerozhoduje, nemá hovor smysl.
-const DECISION: Choice[] = [
-    { value: 'ja', label: 'Já' },
-    { value: 'ja-partner', label: 'Já společně s partnerem nebo společníkem' },
-    { value: 'nekdo-jiny', label: 'Někdo jiný' },
 ];
 
 const BUDGET: Choice[] = [
@@ -97,7 +83,6 @@ export const ApplicationForm = ({
         const list: Question[] = [
             { key: 'years', kind: 'choice', question: 'Jak dlouho už podnikáš?', options: YEARS },
             { key: 'revenue', kind: 'choice', question: 'Jaký zhruba děláš měsíční obrat?', options: REVENUE },
-            { key: 'team', kind: 'choice', question: 'Kolik lidí dnes pracuje v tvém týmu?', options: TEAM },
             {
                 key: 'stuck',
                 kind: 'choice',
@@ -105,7 +90,6 @@ export const ApplicationForm = ({
                 options: STUCK,
             },
             { key: 'leads', kind: 'choice', question: 'Odkud ti dnes chodí klienti?', hint: 'Vyber to, odkud jich přijde nejvíc', options: LEADS },
-            { key: 'decision', kind: 'choice', question: 'Kdo u vás rozhoduje o větších investicích do růstu?', options: DECISION },
             { key: 'budget', kind: 'choice', question: 'Kolik jsi připraven do růstu investovat?', options: BUDGET },
             {
                 key: 'when',
