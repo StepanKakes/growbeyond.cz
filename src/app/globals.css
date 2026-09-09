@@ -282,6 +282,13 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   opacity: 0.95;
+  /* Háčky a čárky přesahují nad řádek, kam mřížka nedosáhla, takže se
+     kreslily plné. Vrstva proto sahá kus nad text i pod něj a odsazením
+     se text vrací na původní místo. */
+  top: -0.45em;
+  bottom: -0.15em;
+  padding-top: 0.45em;
+  padding-bottom: 0.15em;
 }
 
 /* Měkká varianta: základ s lehkou září + pixelová mřížka, bez aberace a animací */
