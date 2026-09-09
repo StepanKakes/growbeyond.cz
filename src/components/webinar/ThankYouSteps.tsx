@@ -51,6 +51,13 @@ export const ThankYouSteps = (d: ThankYouData) => {
     const [done, setDone] = useState(d.alreadyQualified || !d.token);
     const hello = d.firstName ? `${d.firstName}, ` : '';
 
+    // Dotazník je delší než obrazovka, takže po odeslání zůstane stránka
+    // odrolovaná dole a potvrzení by začalo někde uprostřed.
+    const finish = () => {
+        setDone(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     return (
         <MotionConfig reducedMotion="user">
             <AnimatePresence mode="wait" initial={false}>
@@ -73,10 +80,10 @@ export const ThankYouSteps = (d: ThankYouData) => {
                         </motion.p>
 
                         <motion.div variants={itemV} className="mx-auto mt-12 w-full max-w-[560px] md:mt-14">
-                            <QualifyForm token={d.token as string} onDone={() => setDone(true)} />
+                            <QualifyForm token={d.token as string} onDone={finish} />
                             <button
                                 type="button"
-                                onClick={() => setDone(true)}
+                                onClick={finish}
                                 className="mt-8 min-h-10 text-sm text-white/40 underline underline-offset-4 transition-colors duration-200 hover:text-white"
                             >
                                 Přeskočit a jít rovnou na termín
