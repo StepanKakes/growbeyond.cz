@@ -88,7 +88,7 @@ const Group = ({
     </motion.fieldset>
 );
 
-export const QualifyForm = ({ token }: { token: string }) => {
+export const QualifyForm = ({ token, onDone }: { token: string; onDone: () => void }) => {
     const [stuck, setStuck] = useState('');
     const [revenue, setRevenue] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
@@ -105,7 +105,13 @@ export const QualifyForm = ({ token }: { token: string }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, stuck, revenue }),
             });
-            setStatus(res.ok ? 'done' : 'error');
+            if (!res.ok) {
+                setStatus('error');
+                return;
+            }
+            // Potvrzení ukazuje až další krok, tady jen předáme řízení dál.
+            setStatus('done');
+            onDone();
         } catch {
             setStatus('error');
         }
@@ -113,32 +119,17 @@ export const QualifyForm = ({ token }: { token: string }) => {
 
     return (
         <MotionConfig reducedMotion="user">
-            <AnimatePresence mode="wait" initial={false}>
-                {status === 'done' ? (
-                    <motion.p
-                        key="done"
-                        initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        transition={{ type: 'spring', duration: 0.34, bounce: 0 }}
-                        className="text-[18px] md:text-[21px] text-white/70 leading-[1.5]"
-                        role="status"
-                    >
-                        Díky, mám to. Uvidíme se na webináři
-                    </motion.p>
-                ) : (
-                    <motion.form
-                        key="form"
-                        onSubmit={submit}
-                        variants={groupV}
-                        initial="hidden"
-                        animate="visible"
-                        exit={{ opacity: 0, y: -12, filter: 'blur(4px)', transition: { duration: 0.15, ease: 'easeIn' } }}
-                        className="flex flex-col gap-10"
-                    >
-                        <Group question="Kde teď nejvíc cítíš, že ses zasekl?" options={STUCK} value={stuck} onChange={setStuck} />
-                        <Group question="Kolik ti dnes byznys měsíčně vydělává?" options={REVENUE} value={revenue} onChange={setRevenue} />
+            <motion.form
+                onSubmit={submit}
+                variants={groupV}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-col gap-10"
+            >
+                <Group question="Kde teď nejvíc cítíš, že ses zasekl?" options={STUCK} value={stuck} onChange={setStuck} />
+                <Group question="Kolik ti dnes byznys měsíčně vydělává?" options={REVENUE} value={revenue} onChange={setRevenue} />
 
-                        <motion.div variants={itemV} className="flex flex-wrap items-center gap-4">
+                <motion.div variants={itemV} className="flex flex-wrap items-center gap-4">
                             <motion.button
                                 type="submit"
                                 disabled={!ready || status === 'submitting'}
@@ -165,9 +156,7 @@ export const QualifyForm = ({ token }: { token: string }) => {
                                 </p>
                             )}
                         </motion.div>
-                    </motion.form>
-                )}
-            </AnimatePresence>
+            </motion.form>
         </MotionConfig>
     );
 };
