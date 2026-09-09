@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
-import { EventCard, GoogleLogo, WhatsAppLogo } from './EventCard';
+import { EventCard, GoogleCalendarLogo, WhatsAppLogo } from './EventCard';
 import { QualifyForm } from './QualifyForm';
 
 // Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
@@ -135,7 +135,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                         rel="noopener noreferrer"
                                         className="inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
                                     >
-                                        <GoogleLogo />
+                                        <GoogleCalendarLogo />
                                         Přidat do Google kalendáře
                                     </a>
                                     {d.icsUrl && (
