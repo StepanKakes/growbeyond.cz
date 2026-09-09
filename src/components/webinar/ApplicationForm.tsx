@@ -8,8 +8,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 // jako práce a člověk ho zavře. Jedna otázka na obrazovce drží tempo a dovolí
 // se ptát i na nepříjemné věci, jako je rozpočet.
 //
-// Ovládání je i z klávesnice, výběr písmenem a potvrzení Enterem, protože kdo
-// vyplňuje z počítače, projde to takhle výrazně rychleji.
+// Pořadí otázek jde od lehkých přes zajímavé k citlivým a kontakt je až na
+// konci, kdy už člověk do odpovědí investoval čas. Na jméno se neptáme vůbec,
+// u lidí z mailu ho známe a u ostatních ho zjistíme na hovoru.
+//
+// Ovládání je i z klávesnice, výběr písmenem a potvrzení Enterem.
 
 type Choice = { value: string; label: string };
 
@@ -18,6 +21,14 @@ type Question =
     | { key: string; kind: 'text'; question: string; hint?: string; placeholder: string; inputType: 'text' | 'email' }
     | { key: string; kind: 'longtext'; question: string; hint?: string; placeholder: string; optional: true };
 
+const PROFESSION: Choice[] = [
+    { value: 'expert', label: 'Kouč, konzultant nebo expert' },
+    { value: 'firma', label: 'Majitel firmy se službami' },
+    { value: 'produkt', label: 'Prodávám produkty nebo mám e-shop' },
+    { value: 'tvurce', label: 'Tvůrce obsahu' },
+    { value: 'zacinam', label: 'Teprve začínám' },
+];
+
 const REVENUE: Choice[] = [
     { value: 'do-50', label: 'Do 50 tisíc měsíčně' },
     { value: '50-150', label: '50 až 150 tisíc měsíčně' },
@@ -25,10 +36,21 @@ const REVENUE: Choice[] = [
     { value: 'nad-500', label: 'Nad 500 tisíc měsíčně' },
 ];
 
-const TEAM: Choice[] = [
-    { value: 'sam', label: 'Dělám na tom sám' },
-    { value: '1-3', label: 'Jsme 1 až 3 lidi' },
-    { value: 'vic', label: 'Máme víc než 3 lidi' },
+// Distribuce a obsah, tedy přesně to, o čem webinář je. Do skóre skoro
+// nevstupují, jejich hodnota je v kontextu pro hovor.
+const LEADS: Choice[] = [
+    { value: 'doporuceni', label: 'Z doporučení' },
+    { value: 'reklama', label: 'Z placené reklamy' },
+    { value: 'obsah', label: 'Z obsahu na sítích' },
+    { value: 'oslovuju', label: 'Oslovuju si je sám' },
+    { value: 'nemam', label: 'Nemám stabilní zdroj' },
+];
+
+const CONTENT: Choice[] = [
+    { value: 'netvorim', label: 'Netvořím skoro nic' },
+    { value: 'nepravidelne', label: 'Tvořím nepravidelně' },
+    { value: 'bez-vysledku', label: 'Tvořím pravidelně, ale klienty to nenosí' },
+    { value: 'funguje', label: 'Tvořím pravidelně a funguje mi to' },
 ];
 
 const BUDGET: Choice[] = [
@@ -57,27 +79,18 @@ export const ApplicationForm = ({
     defaultName?: string;
     defaultEmail?: string;
 }) => {
-    // Kdo přišel z mailu, má jméno i email známé, tak se na ně neptáme znovu.
     const questions = useMemo<Question[]>(() => {
-        const identity: Question[] = [];
-        if (!defaultName) {
-            identity.push({ key: 'name', kind: 'text', question: 'Jak ti máme říkat?', placeholder: 'Jméno a příjmení', inputType: 'text' });
-        }
-        if (!defaultEmail) {
-            identity.push({ key: 'email', kind: 'text', question: 'Kam ti máme poslat potvrzení?', placeholder: 'tvuj@email.cz', inputType: 'email' });
-        }
-        return [
-            ...identity,
+        const list: Question[] = [
+            { key: 'profession', kind: 'choice', question: 'Čím se živíš?', options: PROFESSION },
             { key: 'revenue', kind: 'choice', question: 'Kolik teď měsíčně děláš?', options: REVENUE },
-            { key: 'team', kind: 'choice', question: 'Jak jste na tom s týmem?', options: TEAM },
             {
-                key: 'budget',
+                key: 'leads',
                 kind: 'choice',
-                question: 'Kolik jsi připraven do růstu investovat?',
-                hint: 'Ptáme se rovnou, ať nikdo z nás nezjistí až na hovoru, že se míjíme',
-                options: BUDGET,
+                question: 'Odkud ti dnes chodí klienti?',
+                hint: 'Vyber to, odkud jich přijde nejvíc',
+                options: LEADS,
             },
-            { key: 'when', kind: 'choice', question: 'Kdy s tím chceš začít?', options: WHEN },
+            { key: 'content', kind: 'choice', question: 'Jak jsi na tom s obsahem?', options: CONTENT },
             {
                 key: 'blocker',
                 kind: 'longtext',
@@ -86,8 +99,21 @@ export const ApplicationForm = ({
                 placeholder: 'Napiš to vlastními slovy',
                 optional: true,
             },
+            { key: 'budget', kind: 'choice', question: 'Kolik jsi připraven do růstu investovat?', options: BUDGET },
+            { key: 'when', kind: 'choice', question: 'Kdy s tím chceš začít?', options: WHEN },
         ];
-    }, [defaultName, defaultEmail]);
+        // Email chceme až na konci a jen tehdy, když ho ještě neznáme.
+        if (!defaultEmail) {
+            list.push({
+                key: 'email',
+                kind: 'text',
+                question: 'Kam ti mám poslat potvrzení?',
+                placeholder: 'tvuj@email.cz',
+                inputType: 'email',
+            });
+        }
+        return list;
+    }, [defaultEmail]);
 
     const [index, setIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({
