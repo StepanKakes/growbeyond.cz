@@ -31,7 +31,7 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
                 </header>
 
                 <div className="pt-14 md:pt-20 text-center">
-                    <h1 className="mx-auto max-w-[20ch] text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]">
+                    <h1 className="mx-auto max-w-[14ch] text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]">
                         {firstName ? `${firstName}, řekni mi, kde ` : 'Řekni mi, kde '}
                         <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
                     </h1>

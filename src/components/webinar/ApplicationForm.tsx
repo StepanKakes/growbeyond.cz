@@ -214,7 +214,9 @@ export const ApplicationForm = ({
     if (!current) return null;
 
     return (
-        <div className="w-full">
+        // Blok drží stejnou osu jako nadpis stránky nad ním, obsah uvnitř
+        // zůstává vlevo, protože možnosti se tak čtou rychleji.
+        <div className="mx-auto w-full max-w-[560px]">
             {/* Postup, ať člověk ví, kolik toho zbývá */}
             <div className="flex items-center gap-4">
                 <span className="text-sm text-white/50 tabular-nums">
@@ -238,7 +240,7 @@ export const ApplicationForm = ({
                     <p className="mt-3 text-[15px] md:text-[17px] text-white/50 leading-[1.5] max-w-[52ch]">{current.hint}</p>
                 )}
 
-                <div className="mt-6 md:mt-8 max-w-[560px]">
+                <div className="mt-6 md:mt-8">
                     {current.kind === 'choice' && (
                         <div className="flex flex-col gap-2.5">
                             {current.options.map((o, i) => {
@@ -314,30 +316,16 @@ export const ApplicationForm = ({
                         {status === 'submitting' ? 'Odesílám' : isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
                     </button>
 
-                    <span className="ml-auto flex gap-2">
+                    {/* Jen zpět. Šipka dopředu by dělala to samé co tlačítko vedle. */}
+                    {index > 0 && (
                         <button
                             type="button"
                             onClick={goBack}
-                            disabled={index === 0}
-                            aria-label="Předchozí otázka"
-                            className="grid h-10 w-10 place-items-center rounded-lg border border-white/20 text-white/70 transition-colors hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/20"
+                            className="text-sm text-white/45 underline underline-offset-4 transition-colors hover:text-white"
                         >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M18 15l-6-6-6 6" />
-                            </svg>
+                            Zpět
                         </button>
-                        <button
-                            type="button"
-                            onClick={goNext}
-                            disabled={isLast}
-                            aria-label="Další otázka"
-                            className="grid h-10 w-10 place-items-center rounded-lg border border-white/20 text-white/70 transition-colors hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/20"
-                        >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M6 9l6 6 6-6" />
-                            </svg>
-                        </button>
-                    </span>
+                    )}
                 </div>
 
                 {error && (
