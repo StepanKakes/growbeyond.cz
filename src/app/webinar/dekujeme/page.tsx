@@ -24,7 +24,6 @@ function formatWhen(startISO: string) {
         day: cap(f({ weekday: 'long', day: 'numeric', month: 'long' })),
         weekday: cap(f({ weekday: 'long' })),
         dayMonth: `${d2}.${m2}.`,
-        year: f({ year: 'numeric' }),
         time: f({ hour: '2-digit', minute: '2-digit' }),
     };
 }
@@ -73,7 +72,6 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                         dayLabel={when.day}
                         weekday={when.weekday}
                         dayMonth={when.dayMonth}
-                        year={when.year}
                         timeLabel={when.time}
                         minutes={minutes}
                         joinUrl={joinUrl}

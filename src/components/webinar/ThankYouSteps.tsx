@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
-import { EventCard, GoogleCalendarIcon } from './EventCard';
+import { EventCard, GoogleLogo, WhatsAppLogo } from './EventCard';
 import { QualifyForm } from './QualifyForm';
 
 // Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
@@ -20,7 +20,6 @@ export type ThankYouData = {
     dayLabel: string;
     weekday: string;
     dayMonth: string;
-    year: string;
     timeLabel: string;
     minutes: number;
     joinUrl: string;
@@ -103,59 +102,12 @@ export const ThankYouSteps = (d: ThankYouData) => {
                         </motion.p>
 
                         <div className="mx-auto mt-12 w-full max-w-[560px] md:mt-14">
-                            <motion.section variants={itemV}>
-                                <BlockTitle>Ulož si termín</BlockTitle>
-                                <p className="mt-2 text-[15px] md:text-[16px] text-white/50 leading-[1.5]">
-                                    Kdo si webinář hodí do kalendáře, dorazí podstatně častěji
-                                </p>
-
-                                <div className="mt-6">
-                                    <EventCard
-                                        weekday={d.weekday}
-                                        dayMonth={d.dayMonth}
-                                        year={d.year}
-                                        time={d.timeLabel}
-                                        minutes={d.minutes}
-                                    />
-                                </div>
-
-                                <div className="mt-6 flex flex-wrap gap-3">
-                                    {/* Bílé tlačítko s barevnou ikonou, ať je hned jasné, že to
-                                        vede do Googlu, ne někam k nám */}
-                                    <a
-                                        href={d.googleUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
-                                    >
-                                        <GoogleCalendarIcon />
-                                        Přidat do Google kalendáře
-                                    </a>
-                                    {d.icsUrl && (
-                                        <a
-                                            href={d.icsUrl}
-                                            className="inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors duration-200 hover:border-white"
-                                        >
-                                            Stáhnout do kalendáře
-                                        </a>
-                                    )}
-                                </div>
-
-                                {d.joinUrl && (
-                                    <p className="mt-6 text-[16px] text-white/55 leading-[1.55]">
-                                        Tvůj odkaz na vysílání{' '}
-                                        <a href={d.joinUrl} className="text-white underline underline-offset-[3px]">
-                                            otevřít
-                                        </a>
-                                        <br />
-                                        Pošlu ti ho ještě mailem i před začátkem, takže si ho nemusíš hlídat
-                                    </p>
-                                )}
-                            </motion.section>
-
+                            {/* Skupina je priorita, proto stojí první. Odkaz na
+                                vysílání tu není schválně, chodí mailem i WhatsAppem
+                                a na téhle stránce by lidi odvedl od skupiny. */}
                             {d.groupUrl && (
-                                <motion.section variants={itemV} className="mt-14 border-t border-white/10 pt-10">
-                                    <BlockTitle>Skupina k webináři</BlockTitle>
+                                <motion.section variants={itemV}>
+                                    <BlockTitle>Přidej se do skupiny</BlockTitle>
                                     <p className="mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
                                         Do webináře tam dávám videa a věci, co se do vysílání nevejdou. Píšeme tam jen já a tým, takže tě to nezavalí
                                     </p>
@@ -163,12 +115,46 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                         href={d.groupUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="mt-6 inline-flex h-13 items-center rounded-full border border-white/25 px-8 text-base font-bold text-white transition-colors duration-200 hover:border-white"
+                                        className="mt-6 inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
                                     >
-                                        Přidat se do skupiny
+                                        <WhatsAppLogo />
+                                        Vstoupit do skupiny
                                     </a>
                                 </motion.section>
                             )}
+
+                            <motion.section variants={itemV} className={d.groupUrl ? 'mt-14 border-t border-white/10 pt-10' : ''}>
+                                <BlockTitle>Ulož si termín</BlockTitle>
+
+                                <div className="mt-5">
+                                    <EventCard
+                                        weekday={d.weekday}
+                                        dayMonth={d.dayMonth}
+                                        time={d.timeLabel}
+                                        minutes={d.minutes}
+                                    />
+                                </div>
+
+                                <div className="mt-6 flex flex-wrap gap-3">
+                                    <a
+                                        href={d.googleUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex h-13 items-center gap-3 rounded-full bg-white px-7 text-[15px] font-bold text-[#1f1f1f] transition-colors duration-200 hover:bg-white/90"
+                                    >
+                                        <GoogleLogo />
+                                        Přidat do Google kalendáře
+                                    </a>
+                                    {d.icsUrl && (
+                                        <a
+                                            href={d.icsUrl}
+                                            className="inline-flex h-13 items-center rounded-full border border-white/25 px-7 text-[15px] font-bold text-white transition-colors duration-200 hover:border-white"
+                                        >
+                                            Stáhnout do kalendáře
+                                        </a>
+                                    )}
+                                </div>
+                            </motion.section>
                         </div>
                     </motion.div>
                 )}
