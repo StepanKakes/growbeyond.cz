@@ -125,7 +125,8 @@ export const ApplicationForm = ({
             {
                 key: 'when',
                 kind: 'choice',
-                question: 'Kdybys věděl, co tě dnes skutečně brzdí, jak rychle bys to chtěl začít řešit?',
+                question: 'Jak rychle bys to chtěl začít řešit?',
+                hint: 'Kdybys na webináři zjistil, co tvůj růst dnes skutečně brzdí',
                 options: WHEN,
             },
         ];
