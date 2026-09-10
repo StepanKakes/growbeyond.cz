@@ -15,6 +15,7 @@
 // Pravidla textů: česky, žádná emoji, žádné pomlčky, věty bez tečky na konci.
 
 import type { Edition, Registration } from './db';
+import { EMAIL_TEXTY, WA_TEXTY } from './texty';
 
 export type StepContext = {
     edition: Edition;
@@ -54,6 +55,65 @@ export type Step = {
     when?: (c: StepContext) => boolean;
 };
 
+/**
+ * Doplní do textu zástupné značky. Když neznáme jméno, zmizí i čárka za ním
+ * a věta se začne velkým písmenem, takže z "{jmeno}, zítra" vznikne "Zítra".
+ */
+function render(text: string, c: StepContext): string {
+    const vals: Record<string, string> = {
+        jmeno: c.vocative,
+        nazev: c.edition.title,
+        termin: c.whenLabel,
+        cas: c.timeLabel,
+        delka: String(c.edition.duration_minutes),
+        odkaz: c.joinUrl,
+        skupina: c.groupUrl,
+        stranka: c.pageUrl,
+        prihlaska: c.applyUrl,
+        zaznam: c.edition.replay_url || '',
+    };
+    let out = text;
+    for (const [k, v] of Object.entries(vals)) out = out.split(`{${k}}`).join(v);
+    return out
+        .replace(/ +,/g, ',')
+        .replace(/^,\s*/, '')
+        .replace(/^(\p{Ll})/u, m => m.toUpperCase())
+        .trim();
+}
+
+/** Varianty WhatsApp zprávy jako funkce, aby seděly do plánu kroků. */
+const wa = (texty: readonly string[]) => texty.map(t => (c: StepContext) => render(t, c));
+
+/**
+ * Z prostého textu udělá tělo mailu. Prázdný řádek dělí odstavce,
+ * [tlačítko: popis -> odkaz] je červené tlačítko a [odkaz: popis -> odkaz]
+ * je běžný odkaz. Odstavec, ve kterém zůstala nevyplněná značka, vypadne
+ * celý, takže se nikomu nepošle věta s prázdným odkazem.
+ */
+function emailBody(text: string, c: StepContext): string {
+    const html = text
+        .split(/\n\s*\n/)
+        .map(par => {
+            const filled = render(par, c);
+            // v odstavci zbyla značka, pro kterou nemáme hodnotu
+            if (/\{[a-z]+\}/.test(filled) || /-> *\]/.test(filled)) return '';
+
+            const btn = filled.match(/^\[tlačítko: (.+?) -> (.+?)\]$/);
+            if (btn) {
+                return `<p><a href="${btn[2]}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">${btn[1]}</a></p>`;
+            }
+            const lines = filled.split('\n').map(l => {
+                const link = l.match(/^\[odkaz: (.+?) -> (.+?)\]$/);
+                return link ? `<a href="${link[2]}">${link[1]}</a>` : l;
+            });
+            return `<p>${lines.join('<br>')}</p>`;
+        })
+        .filter(Boolean)
+        .join('\n');
+
+    return emailLayout(html, c);
+}
+
 /* ------------------------------------------------------------------ emaily */
 
 const emailLayout = (bodyHtml: string, c: StepContext) => `
@@ -67,8 +127,6 @@ Webinář ${c.edition.title}, ${c.whenLabel}<br>
 </p>
 </div>`.trim();
 
-const hello = (c: StepContext) => (c.vocative ? `Ahoj ${c.vocative},` : 'Ahoj,');
-
 /* -------------------------------------------------------------- plán kroků */
 
 export const STEPS: Step[] = [
@@ -78,17 +136,8 @@ export const STEPS: Step[] = [
         channel: 'email',
         anchor: 'registration',
         offsetMinutes: 0,
-        subject: c => `Máš místo na webináři ${c.edition.title}`,
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>máš rezervované místo na webináři <strong>${c.edition.title}</strong>, vysíláme živě ${c.whenLabel}</p>
-<p><a href="${c.joinUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Odkaz na živé vysílání</a></p>
-<p>Ulož si ho, pošlu ti ho ještě několikrát, ale ať ho máš po ruce</p>
-${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>, kam do té doby dávám videa a věci, co se na webinář nevejdou. Píšu tam jen já a tým, takže tě to nezavalí<br><a href="${c.groupUrl}">Přidej se do skupiny</a></p>` : ''}
-<p>Ať z toho vytěžíš co nejvíc, mrkni na svoji stránku a odpověz mi na dvě otázky, podle nich poskládám obsah tak, aby seděl lidem, co přijdou<br><a href="${c.pageUrl}">Otevřít moji stránku</a></p>`,
-                c,
-            ),
+        subject: c => render(EMAIL_TEXTY.potvrzeni.predmet, c),
+        body: c => emailBody(EMAIL_TEXTY.potvrzeni.telo, c),
     },
     {
         key: 'confirm-wa',
@@ -97,20 +146,7 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         offsetMinutes: 2,
         // U WhatsAppu se vždy použije některá z variant, body je jen fallback.
         body: () => '',
-        variants: [
-            c =>
-                `${c.vocative ? `Ahoj ${c.vocative}` : 'Ahoj'}, tady Tim, díky za přihlášku na webinář ${c.edition.title}, vysíláme ${c.whenLabel}` +
-                (c.groupUrl ? `\n\nDo té doby dávám videa a materiály do skupiny, píšu tam jen já a tým\n${c.groupUrl}` : '') +
-                `\n\nOdkaz na vysílání máš i v mailu, přidám ho znovu před startem`,
-            c =>
-                `${c.vocative ? `Ahoj ${c.vocative}` : 'Ahoj'}, Tim z Beyond, mám tvoji rezervaci na ${c.edition.title}, jdeme živě ${c.whenLabel}` +
-                (c.groupUrl ? `\n\nMezitím posílám věci do skupiny k webináři, ať máš kontext dopředu\n${c.groupUrl}` : '') +
-                `\n\nPřed startem ti připomenu, ať to nezmeškáš`,
-            c =>
-                `${c.vocative ? `Ahoj ${c.vocative}` : 'Ahoj'}, tady Tim, potvrzuju ti místo na webináři ${c.edition.title}, ${c.whenLabel}` +
-                (c.groupUrl ? `\n\nKe skupině, kde do té doby sdílím materiály, se přidáš tady\n${c.groupUrl}` : '') +
-                `\n\nOzvu se ještě před začátkem`,
-        ],
+        variants: wa(WA_TEXTY.potvrzeni),
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone),
     },
 
@@ -125,11 +161,7 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         channel: 'whatsapp',
         offsetMinutes: -24 * 60,
         body: () => '',
-        variants: [
-            c => `${c.vocative ? `${c.vocative}, ` : ''}zítra v ${c.timeLabel} jdeme živě, odkaz máš v mailu i tady\n${c.joinUrl}`,
-            c => `Připomínka, zítra ${c.timeLabel} začínáme, tady je odkaz na vysílání\n${c.joinUrl}`,
-            c => `${c.vocative ? `${c.vocative}, ` : ''}zítra se vidíme, start v ${c.timeLabel}\n${c.joinUrl}`,
-        ],
+        variants: wa(WA_TEXTY.denPred),
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
     },
     {
@@ -137,11 +169,7 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         channel: 'whatsapp',
         offsetMinutes: -180,
         body: () => '',
-        variants: [
-            c => `Za tři hodiny startujeme, odkaz\n${c.joinUrl}`,
-            c => `${c.vocative ? `${c.vocative}, ` : ''}za tři hodiny jdeme na to\n${c.joinUrl}`,
-            c => `Dnes v ${c.timeLabel}, zbývají tři hodiny\n${c.joinUrl}`,
-        ],
+        variants: wa(WA_TEXTY.triHodiny),
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
     },
     {
@@ -151,11 +179,7 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         channel: 'whatsapp',
         offsetMinutes: -12,
         body: () => '',
-        variants: [
-            c => `Jdeme na to, za chvíli začínám\n${c.joinUrl}`,
-            c => `${c.vocative ? `${c.vocative}, ` : ''}za chvilku startujeme\n${c.joinUrl}`,
-            c => `Už to bude, přidej se\n${c.joinUrl}`,
-        ],
+        variants: wa(WA_TEXTY.tesnePred),
         when: c => c.reg.consent_whatsapp && Boolean(c.reg.phone) && c.reg.wa_status !== 'opted_out',
     },
 
@@ -167,30 +191,16 @@ ${c.groupUrl ? `<p>Založil jsem k webináři <strong>WhatsApp skupinu</strong>,
         key: 'post-attended',
         channel: 'email',
         offsetMinutes: 0, // dopočítá se z délky webináře, viz stepDueAt
-        subject: () => 'Díky, že jsi byl, a co dál',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>díky, že sis udělal čas</p>
-<p>Jak jsem na konci říkal, pro ty, co s tím chtějí něco udělat, máme volné termíny na osobní hovor. Projdeme, kde jsi teď, co ti v distribuci chybí a jestli ti umíme pomoct</p>
-<p>Není to prodejní hovor na sílu, když to nedává smysl, řeknu to rovnou</p>
-<p><a href="${c.applyUrl}" style="display:inline-block;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Vyplnit přihlášku</a></p>`,
-                c,
-            ),
+        subject: () => EMAIL_TEXTY.poWebinariUcastnik.predmet,
+        body: c => emailBody(EMAIL_TEXTY.poWebinariUcastnik.telo, c),
         when: c => c.reg.attended === true && Boolean(c.reg.attendance_synced_at),
     },
     {
         key: 'post-noshow',
         channel: 'email',
         offsetMinutes: 0,
-        subject: () => 'Nestihl jsi to, mám pro tebe záznam',
-        body: c =>
-            emailLayout(
-                `<p>${hello(c)}</p>
-<p>nedorazil jsi, což chápu, život se stane</p>
-<p>${c.edition.replay_url ? `Záznam ti nechám dostupný pár dní, potom ho stahuju<br><a href="${c.edition.replay_url}" style="display:inline-block;margin-top:10px;background:#e30d00;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Pustit záznam</a>` : 'Záznam připravuju, pošlu ti ho, jakmile bude hotový'}</p>`,
-                c,
-            ),
+        subject: () => EMAIL_TEXTY.poWebinariNedorazil.predmet,
+        body: c => emailBody(EMAIL_TEXTY.poWebinariNedorazil.telo, c),
         when: c => c.reg.attended === false && Boolean(c.reg.attendance_synced_at),
     },
 ];
