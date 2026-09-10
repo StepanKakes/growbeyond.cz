@@ -9,7 +9,8 @@
 //   {termin}   "v pondělí 21. 9. v 17:00"
 //   {cas}      "17:00"
 //   {delka}    "75"
-//   {odkaz}    osobní odkaz na vysílání ze Zoomu
+//   {odkaz}    osobní odkaz na vysílání ze Zoomu. Posílá se schválně až
+//              ve zprávě těsně před startem, aby dřív nezapadl
 //   {skupina}  odkaz do WhatsApp skupiny
 //   {stranka}  osobní stránka s termínem a kalendářem
 //   {prihlaska} odkaz na přihlášku na hovor
@@ -24,8 +25,7 @@
 export const WA_TEXTY = {
     /* ------------------------------------------------------------------
        1. POTVRZENÍ, dvě minuty po registraci
-       První zpráva, kterou od nás člověk dostane. Na konec se automaticky
-       přidá věta o odhlášení, tu neměň, drží nás mimo problémy.
+       První zpráva, kterou od nás člověk dostane.
     ------------------------------------------------------------------ */
     potvrzeni: [
         `Ahoj {jmeno}, zdravím, jsi přihlášený na náš webinář {nazev}, {termin}.
@@ -65,7 +65,7 @@ Tim`,
     denPred: [
         `Ahoj {jmeno}, zítra už se vidíme! Webinář {nazev} startuje v {cas}.
 
-Tady je tvůj odkaz na vysílání: {odkaz}
+Odkaz na vysílání ti pošlu těsně před začátkem, ať ho máš po ruce.
 
 Doporučuju připojit se z počítače, budeš si chtít dělat poznámky.
 
@@ -73,15 +73,13 @@ Tim`,
 
         `Ahoj {jmeno}, jen připomínám, že zítra v {cas} jdeme živě.
 
-Odkaz na vysílání máš tady: {odkaz}
-
-Ulož si ho, ať ho zítra nemusíš hledat.
+Odkaz ti hodím sem chvíli před startem, nemusíš ho nikde hledat.
 
 Tim`,
 
         `Ahoj {jmeno}, zítra to vypukne. Začínáme v {cas}.
 
-Tvůj odkaz na vysílání: {odkaz}
+Odkaz na vysílání dostaneš ode mě těsně předtím.
 
 Těším se na tebe!
 
@@ -94,19 +92,19 @@ Tim`,
     triHodiny: [
         `Ahoj {jmeno}, za tři hodiny to vypukne, v {cas} jdeme živě.
 
-Tady je tvůj odkaz: {odkaz}
+Odkaz ti pošlu sem, chvíli než začneme.
 
 Tim`,
 
         `Ahoj {jmeno}, dneska v {cas} se vidíme, zbývají tři hodiny.
 
-Odkaz na vysílání: {odkaz}
+Odkaz na vysílání ode mě dostaneš těsně před startem.
 
 Tim`,
 
         `Ahoj {jmeno}, už jen tři hodiny a začínáme.
 
-Připoj se tady: {odkaz}
+Odkaz posílám na poslední chvíli, ať ti nezapadne.
 
 Tim`,
     ],
@@ -136,9 +134,6 @@ Odkaz: {odkaz}
 Tim`,
     ],
 };
-
-/** Věta na konci první zprávy. Bez ní bychom neměli jak odhlásit. */
-export const WA_ODHLASENI = 'Kdyby ti zprávy nesedly, napiš stop a už nic nepošlu';
 
 /* ====================================================================
    EMAILY, které posílá náš systém

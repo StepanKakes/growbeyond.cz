@@ -84,10 +84,10 @@ export function pickVariant(seed: string, count: number): number {
     return h % count;
 }
 
-/** Text, kterým člověk odhlásí další WhatsApp zprávy. */
-export const OPT_OUT_HINT = 'Kdyby ti zprávy nesedly, napiš stop a už nic nepošlu';
-
-/** Pozná v příchozí zprávě žádost o odhlášení. */
+/**
+ * Pozná v příchozí zprávě žádost o odhlášení. O možnosti se ve zprávách
+ * nepíše, ale kdo napíše stop, vypadne ze všech dalších.
+ */
 export function isOptOut(text: string): boolean {
     return /^\s*(stop|nezajima|nezajímá|odhlas|odhlaš|nechci|unsubscribe)\b/i.test(text.trim());
 }

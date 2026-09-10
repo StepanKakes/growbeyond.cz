@@ -14,7 +14,7 @@ import {
     type Registration,
 } from './db';
 import { STEPS, stepDueAt, stepMissed, type Step, type StepContext } from './schedule';
-import { OPT_OUT_HINT, pickVariant, sendText, sessionWorking, sleep, WA_DAILY_CAP } from './waha';
+import { pickVariant, sendText, sessionWorking, sleep, WA_DAILY_CAP } from './waha';
 
 const SITE = process.env.NEXT_PUBLIC_BASE_URL || 'https://growbeyond.cz';
 
@@ -193,8 +193,10 @@ export async function runScheduler(opts: { dryRun?: boolean } = {}): Promise<Run
 
                 const variants = job.step.variants || [job.step.body];
                 const variant = pickVariant(job.reg.id, variants.length);
+                // První zpráva do nové konverzace je pro WhatsApp ta citlivá,
+                // proto se za ní čeká déle než za ostatními.
                 const isFirstContact = job.step.key === 'confirm-wa';
-                const text = variants[variant](job.ctx) + (isFirstContact ? `\n\n${OPT_OUT_HINT}` : '');
+                const text = variants[variant](job.ctx);
 
                 const res = await sendText(job.reg.phone, text);
                 await finishStep(job.reg.id, job.step.key, {
