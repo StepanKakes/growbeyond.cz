@@ -70,7 +70,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                         </motion.h1>
                         <motion.p
                             variants={itemV}
-                            className="mx-auto mt-5 max-w-[46ch] text-center text-[17px] md:text-[19px] text-white/60 leading-[1.5]"
+                            className="mx-auto mt-5 max-w-[48ch] text-center text-[18px] md:text-[21px] text-white/75 leading-[1.5]"
                         >
                             Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Zabere to půl minuty
                         </motion.p>
@@ -101,7 +101,7 @@ export const ThankYouSteps = (d: ThankYouData) => {
                             {d.groupUrl && (
                                 <motion.section variants={itemV}>
                                     <BlockTitle>Přidej se do skupiny</BlockTitle>
-                                    <p className="mx-auto mt-2 max-w-[46ch] text-[16px] md:text-[17px] text-white/55 leading-[1.55]">
+                                    <p className="mx-auto mt-3 max-w-[48ch] text-[17px] md:text-[19px] text-white/70 leading-[1.5]">
                                         Budu tam dávat důležitá upozornění a věci, které se nikam jinam nedostanou
                                     </p>
                                     <a

@@ -63,7 +63,7 @@ export const AudienceSection = () => (
                 </li>
             ))}
         </ol>
-        <p className="mt-8 md:mt-10 text-[18px] md:text-[21px] text-white/50 leading-[1.5]">{WEBINAR.audience.not}</p>
+        <p className="mt-8 md:mt-10 text-[18px] md:text-[21px] text-white/70 leading-[1.5]">{WEBINAR.audience.not}</p>
     </Shell>
 );
 

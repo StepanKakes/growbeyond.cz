@@ -47,7 +47,7 @@ export const WebinarFormModal = () => {
                     <div>
                         {/* Registrace je první ze dvou kroků, druhý je dotazník na děkovačce. */}
                         <p className="text-[22px] sm:text-[26px] font-bold tracking-[-0.02em] leading-[1.1]">Krok 1 ze 2</p>
-                        <p className="mt-3 text-sm text-white/55">{weekday} {display} v {WEBINAR.time}, {WEBINAR.hero.live}</p>
+                        <p className="mt-3 text-[15px] text-white/70">{weekday} {display} v {WEBINAR.time}, {WEBINAR.hero.live}</p>
                         <h2 id="webinar-form-title" className="mt-2 text-2xl sm:text-[30px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.title}</h2>
                     </div>
                     <button

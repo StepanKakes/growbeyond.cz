@@ -35,7 +35,7 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
                         {firstName ? `${firstName}, řekni mi, kde ` : 'Řekni mi, kde '}
                         <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
                     </h1>
-                    <p className="mx-auto mt-5 max-w-[46ch] text-[17px] md:text-[19px] text-white/60 leading-[1.5]">
+                    <p className="mx-auto mt-5 max-w-[48ch] text-[18px] md:text-[21px] text-white/75 leading-[1.5]">
                         Pár otázek, ať na hovoru neztrácíme čas rozkoukáváním. Když ti nebudeme umět pomoct, řeknu ti to rovnou
                     </p>
                 </div>

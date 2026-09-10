@@ -326,7 +326,7 @@ export const ApplicationForm = ({
                                     {current.question}
                                 </motion.h2>
                                 {current.hint && (
-                                    <motion.p variants={itemV} className="mt-3 max-w-[52ch] text-[15px] md:text-[17px] text-white/50 leading-[1.5] text-pretty">
+                                    <motion.p variants={itemV} className="mt-3 max-w-[52ch] text-[16px] md:text-[18px] text-white/65 leading-[1.5] text-pretty">
                                         {current.hint}
                                     </motion.p>
                                 )}

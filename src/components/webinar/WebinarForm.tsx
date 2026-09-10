@@ -2,6 +2,7 @@
 
 import React, { useId, useState } from 'react';
 import { getStoredUtm } from '@/lib/utm';
+import { PhoneField } from './PhoneField';
 import { WEBINAR } from './webinarConfig';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -12,7 +13,6 @@ type Errors = { name?: string; email?: string; phone?: string; form?: string };
 const FIELDS: { key: keyof Omit<Errors, 'form'>; label: string; placeholder: string; type: string; autoComplete: string; inputMode?: 'email' | 'tel' }[] = [
     { key: 'name', label: 'Jméno', placeholder: 'Jan Novák', type: 'text', autoComplete: 'name' },
     { key: 'email', label: 'Email', placeholder: 'jan@firma.cz', type: 'email', autoComplete: 'email', inputMode: 'email' },
-    { key: 'phone', label: 'Telefon', placeholder: '+420 777 123 456', type: 'tel', autoComplete: 'tel', inputMode: 'tel' },
 ];
 
 export const WebinarForm = () => {
@@ -25,7 +25,7 @@ export const WebinarForm = () => {
         const e: Errors = {};
         if (values.name.trim().length < 2) e.name = 'Doplň prosím jméno';
         if (!EMAIL_RE.test(values.email.trim())) e.email = 'Email nevypadá správně, zkontroluj ho prosím';
-        if (!phoneOk(values.phone)) e.phone = 'Telefon zadej včetně předvolby, například +420 777 123 456';
+        if (!phoneOk(values.phone)) e.phone = 'Zkontroluj prosím telefonní číslo';
         return e;
     };
 
@@ -67,7 +67,7 @@ export const WebinarForm = () => {
         return (
             <div className="w-full max-w-[480px]" role="status" aria-live="polite">
                 <h3 className="text-2xl md:text-[28px] font-bold tracking-[-0.02em] leading-[1.15]">{WEBINAR.form.successTitle}</h3>
-                <p className="mt-3 text-white/70 text-[17px] md:text-lg leading-[1.55]">
+                <p className="mt-3 text-white/80 text-[18px] md:text-[21px] leading-[1.5]">
                     {WEBINAR.form.successText} <span className="text-white">{values.email.trim()}</span>
                 </p>
             </div>
@@ -103,6 +103,21 @@ export const WebinarForm = () => {
                     </div>
                 );
             })}
+
+            <div className="flex flex-col gap-2">
+                <label htmlFor={`${uid}-phone`} className="text-sm text-white/70">Telefon</label>
+                <PhoneField
+                    id={`${uid}-phone`}
+                    value={values.phone}
+                    onChange={v => {
+                        setValues(p => ({ ...p, phone: v }));
+                        if (errors.phone) setErrors(p => ({ ...p, phone: undefined }));
+                    }}
+                    invalid={Boolean(errors.phone)}
+                    describedBy={errors.phone ? `${uid}-phone-error` : undefined}
+                />
+                {errors.phone && <p id={`${uid}-phone-error`} className="text-sm text-brand-red">{errors.phone}</p>}
+            </div>
 
             <button
                 type="submit"
