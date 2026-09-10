@@ -28,33 +28,39 @@ export const WA_TEXTY = {
        První zpráva, kterou od nás člověk dostane.
     ------------------------------------------------------------------ */
     potvrzeni: [
-        `Ahoj {jmeno}, zdravím, jsi přihlášený na náš webinář {nazev}, {termin}.
+        `Ahoj {jmeno}, jsi přihlášený na náš webinář {nazev}, {termin}.
 
-Mezitím se nezapomeň přidat do naší skupiny, kde budu sdílet veškeré informace navíc a záznam webináře: {skupina}
+Dvě důležité věci před začátkem:
 
-Taky si webinář přidej do kalendáře ať na něj nezapomeneš: {stranka}
+Přidej si webinář do kalendáře ať to nepropásneš: {stranka}
 
-Budu se na tebe těšit!
+Připoj se do naší skupiny, kde budu sdílet veškeré informace navíc a záznam z webináře: {skupina}
 
-Tim`,
-
-        `Ahoj {jmeno}, tady Tim, máme tvoji registraci na webinář {nazev}, {termin}.
-
-Přidej se do naší skupiny, budu tam dávat všechno navíc i záznam z webináře: {skupina}
-
-A hoď si termín do kalendáře, ať ti neuteče: {stranka}
-
-Těším se na tebe!
+To je všechno, budu se na tebe těšit!
 
 Tim`,
 
-        `Ahoj {jmeno}, díky za přihlášku na webinář {nazev}. Vysíláme {termin}.
+        `Ahoj {jmeno}, máš rezervované místo na našem webináři {nazev}, {termin}.
 
-Ve skupině budu sdílet informace navíc a po webináři tam dám i záznam, přidej se: {skupina}
+Ještě dvě věci, než začneme:
 
-Ať na termín nezapomeneš, ulož si ho do kalendáře: {stranka}
+Přidej si webinář do kalendáře ať ti neuteče: {stranka}
 
-Budu se těšit!
+Připoj se do naší skupiny, kde budu sdílet veškeré informace navíc a záznam z webináře: {skupina}
+
+A to je vše, budu se na tebe těšit!
+
+Tim`,
+
+        `Ahoj {jmeno}, tvoje registrace na webinář {nazev} je hotová, vysíláme {termin}.
+
+Dvě věci, ať z toho vytěžíš maximum:
+
+Přidej si webinář do kalendáře ať to nepropásneš: {stranka}
+
+Připoj se do naší skupiny, kde budu sdílet veškeré informace navíc a záznam z webináře: {skupina}
+
+To je vše, budu se na tebe těšit!
 
 Tim`,
     ],
@@ -63,25 +69,27 @@ Tim`,
        2. DEN PŘED, přesně 24 hodin před začátkem
     ------------------------------------------------------------------ */
     denPred: [
-        `Ahoj {jmeno}, zítra už se vidíme! Webinář {nazev} startuje v {cas}.
+        `Ahoj {jmeno}, už zítra se vidíme! Webinář {nazev} startuje v {cas}.
 
-Odkaz na vysílání ti pošlu těsně před začátkem, ať ho máš po ruce.
+Odkaz na vysílání ti pošlu těsně před začátkem.
 
-Doporučuju připojit se z počítače, budeš si chtít dělat poznámky.
-
-Tim`,
-
-        `Ahoj {jmeno}, jen připomínám, že zítra v {cas} jdeme živě.
-
-Odkaz ti hodím sem chvíli před startem, nemusíš ho nikde hledat.
+Doporučuju se připojit z počítače a mít po ruce volný sešit, bude se ti hodit.
 
 Tim`,
 
-        `Ahoj {jmeno}, zítra to vypukne. Začínáme v {cas}.
+        `Ahoj {jmeno}, zítra už jdeme na to! Webinář {nazev} začíná v {cas}.
 
-Odkaz na vysílání dostaneš ode mě těsně předtím.
+Odkaz na vysílání ti pošlu sem, těsně předtím.
 
-Těším se na tebe!
+Doporučuju se připojit z počítače a mít po ruce volný sešit, bude se ti hodit.
+
+Tim`,
+
+        `Ahoj {jmeno}, už zítra se vidíme! {nazev} startuje v {cas}.
+
+Odkaz na vysílání ode mě dostaneš krátce před začátkem.
+
+Doporučuju se připojit z počítače a mít po ruce volný sešit, bude se ti hodit.
 
 Tim`,
     ],
@@ -90,46 +98,46 @@ Tim`,
        3. TŘI HODINY PŘED
     ------------------------------------------------------------------ */
     triHodiny: [
-        `Ahoj {jmeno}, za tři hodiny to vypukne, v {cas} jdeme živě.
+        `Ahoj {jmeno}, už za tři hodiny to vypukne, v {cas} začínáme živě.
 
-Odkaz ti pošlu sem, chvíli než začneme.
-
-Tim`,
-
-        `Ahoj {jmeno}, dneska v {cas} se vidíme, zbývají tři hodiny.
-
-Odkaz na vysílání ode mě dostaneš těsně před startem.
+Odkaz ti pošlu sem do chatu, pár minut předtím, než začneme.
 
 Tim`,
 
-        `Ahoj {jmeno}, už jen tři hodiny a začínáme.
+        `Ahoj {jmeno}, zbývají tři hodiny, v {cas} jdeme živě.
 
-Odkaz posílám na poslední chvíli, ať ti nezapadne.
+Odkaz ti pošlu sem do chatu, pár minut předtím, než začneme.
+
+Tim`,
+
+        `Ahoj {jmeno}, už za tři hodiny začínáme, vysíláme od {cas}.
+
+Odkaz ti sem hodím pár minut předtím, než to spustíme.
 
 Tim`,
     ],
 
     /* ------------------------------------------------------------------
        4. TĚSNĚ PŘED STARTEM, odchází zhruba dvanáct minut předem
-       Posílá se s předstihem, aby dávka doběhla ještě před začátkem,
-       proto text neslibuje přesný počet minut.
+       Jediná zpráva s odkazem na vysílání. Posílá se s předstihem, aby
+       dávka doběhla ještě před začátkem.
     ------------------------------------------------------------------ */
     tesnePred: [
-        `Ahoj {jmeno}, za chvilku začínáme! Připoj se, ať ti nic neuteče.
+        `Ahoj {jmeno}, je to tu, začínáme! Připoj se, ať ti nic neuteče.
 
-Odkaz na vysílání: {odkaz}
-
-Tim`,
-
-        `Ahoj {jmeno}, jdeme na to, za chvíli spouštím vysílání.
-
-Tady se připojíš: {odkaz}
+Odkaz na webinář: {odkaz}
 
 Tim`,
 
-        `Ahoj {jmeno}, už to bude, sejdeme se ve vysílání.
+        `Ahoj {jmeno}, jdeme na to, začínáme! Připoj se, ať ti nic neuteče.
 
-Odkaz: {odkaz}
+Odkaz na webinář: {odkaz}
+
+Tim`,
+
+        `Ahoj {jmeno}, je to tu, za chvíli spouštím! Připoj se, ať ti nic neuteče.
+
+Odkaz na webinář: {odkaz}
 
 Tim`,
     ],
