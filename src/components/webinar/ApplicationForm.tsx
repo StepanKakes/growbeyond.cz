@@ -72,7 +72,6 @@ const WHEN: Choice[] = [
     { value: 'hned', label: 'Hned' },
     { value: 'mesic', label: 'Během následujícího měsíce' },
     { value: 'ctvrtleti', label: 'Během tří měsíců' },
-    { value: 'pozdeji', label: 'Někdy později' },
     { value: 'ujasnit', label: 'Nejdřív si to chci ujasnit' },
 ];
 

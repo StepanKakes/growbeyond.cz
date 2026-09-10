@@ -17,7 +17,7 @@ const CAL_LINK = process.env.WEBINAR_CAL_LINK || 'https://cal.com/creationwithti
 const YEARS_SCORE: Record<string, number> = { 'do-1': 0, '1-3': 10, '3-5': 15, 'nad-5': 15 };
 const REVENUE_SCORE: Record<string, number> = { rozjezd: 0, 'do-100': 10, '100-300': 25, '300-1m': 40, 'nad-1m': 50 };
 const BUDGET_SCORE: Record<string, number> = { nic: 0, 'do-20': 10, '20-50': 25, 'nad-50': 35 };
-const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 10, pozdeji: 0, ujasnit: 5 };
+const WHEN_SCORE: Record<string, number> = { hned: 25, mesic: 18, ctvrtleti: 10, ujasnit: 5 };
 
 // Kontextové odpovědi, ukládají se, ale neskórují.
 const STUCK = new Set(['znamost', 'kapacita', 'obsah', 'nabidka', 'nevim']);
@@ -54,9 +54,8 @@ export async function POST(req: Request) {
 
         const score = YEARS_SCORE[years] + REVENUE_SCORE[revenue] + BUDGET_SCORE[budget] + WHEN_SCORE[when];
 
-        // Tvrdé diskvalifikace bez ohledu na skóre: kdo nechce investovat nic
-        // a kdo to chce řešit někdy později.
-        const qualified = score >= QUALIFY_AT && budget !== 'nic' && when !== 'pozdeji';
+        // Tvrdá diskvalifikace bez ohledu na skóre: kdo nechce investovat nic.
+        const qualified = score >= QUALIFY_AT && budget !== 'nic';
 
         await createApplication({
             edition_id: edition.id,
