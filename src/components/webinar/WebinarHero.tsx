@@ -25,25 +25,21 @@ export const PrimaryButton = ({ children, className = '' }: { children: React.Re
 );
 
 // Informace o termínu vedle videa: tři fakta velkým písmem pod sebou, pak akce.
-const EventPanel = () => {
-    const { display } = webinarDate();
-    const facts: { value: string; accent?: boolean }[] = [
-        { value: display },
-        { value: WEBINAR.time },
-        { value: WEBINAR.hero.live, accent: true },
-    ];
+/**
+ * Termín a výzva pod videem. Dřív to byl úzký sloupec vedle videa, který se
+ * roztahoval na jeho výšku, takže mezi třemi údaji zůstaly velké díry.
+ * Vodorovný pás drží údaje pohromadě a nechá video celou šířku.
+ */
+const EventStrip = () => {
+    const { short } = webinarDate();
     return (
-        <div className="flex h-full flex-col justify-between rounded-xl border border-white/10 bg-[#111111] px-6 py-6 md:px-8 md:py-8 text-left">
-            <ul>
-                {facts.map((f, i) => (
-                    <li key={f.value} className={`py-4 md:py-5 ${i > 0 ? 'border-t border-white/10' : 'pt-0'}`}>
-                        <span className={`block text-[34px] md:text-[40px] font-bold tracking-[-0.03em] leading-none ${f.accent ? 'text-brand-red' : ''}`}>{f.value}</span>
-                    </li>
-                ))}
-            </ul>
-            <div className="mt-6 md:mt-8">
-                <PrimaryButton className="w-full">{WEBINAR.hero.cta}</PrimaryButton>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-white/10 pt-6 md:mt-8 md:pt-7">
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-left">
+                <span className="text-[26px] md:text-[34px] font-bold tracking-[-0.03em] leading-none">{short}</span>
+                <span className="text-[26px] md:text-[34px] font-bold tracking-[-0.03em] leading-none tabular-nums">{WEBINAR.time}</span>
+                <span className="text-[19px] md:text-[22px] font-bold leading-none text-brand-red">{WEBINAR.hero.live}</span>
             </div>
+            <PrimaryButton className="w-full sm:w-auto">{WEBINAR.hero.cta}</PrimaryButton>
         </div>
     );
 };
@@ -80,13 +76,9 @@ export const WebinarHero = ({ videoSrc, videoPoster }: { videoSrc?: string; vide
                 </motion.p>
             </div>
 
-            <motion.div {...reveal(0.9)} className="mt-10 md:mt-14 grid gap-4 md:grid-cols-12 md:gap-6 md:items-stretch">
-                <div className="md:col-span-8">
-                    <WebinarVideo src={videoSrc} poster={videoPoster} />
-                </div>
-                <div className="md:col-span-4">
-                    <EventPanel />
-                </div>
+            <motion.div {...reveal(0.9)} className="mt-10 md:mt-14">
+                <WebinarVideo src={videoSrc} poster={videoPoster} />
+                <EventStrip />
             </motion.div>
         </header>
     );

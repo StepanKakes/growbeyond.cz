@@ -2,10 +2,11 @@
 // (BeyondLandingPage → Export → Webinář 2030 / Mobil - FINAL). Texty se ladí tady.
 
 export const WEBINAR = {
-    // Zástupné údaje termínu, dokud není webinář naplánovaný. Datum drž v ISO,
-    // zobrazení a den v týdnu se odvozují (viz webinarDate níže).
-    dateISO: '2026-10-15',
-    time: '19:00',
+    // Termín drž v ISO, zobrazení a den v týdnu se odvozují (viz webinarDate).
+    // Stejný termín je i v databázi (webinar.editions.starts_at), v Zoom
+    // meetingu a v naplánovaných kampaních, měň všechno najednou.
+    dateISO: '2026-09-21',
+    time: '17:00',
     place: 'Online, živě',
     durationMinutes: 75,
 
@@ -80,9 +81,12 @@ export function webinarDate() {
     const [y, m, d] = WEBINAR.dateISO.split('-').map(Number);
     const date = new Date(y, m - 1, d);
     const weekdayRaw = new Intl.DateTimeFormat('cs-CZ', { weekday: 'long' }).format(date);
+    const weekday = weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1);
     return {
         display: `${d}. ${m}. ${y}`,
-        weekday: weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1),
+        /** Bez roku, pro pás pod videem: "Pondělí 21. 9." */
+        short: `${weekday} ${d}. ${m}.`,
+        weekday,
     };
 }
 
