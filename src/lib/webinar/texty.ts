@@ -204,6 +204,67 @@ Záznam ti nechám dostupný pár dní, potom ho stahuju
 };
 
 /* ====================================================================
+   ZPRÁVY DO WHATSAPP SKUPINY
+
+   Stroj tu dělá jen časování, tedy upomínky a odkazy. Obsah, videa
+   a myšlenky, posílá tým ručně, protože právě ta nepravidelnost je
+   důvod, proč skupina funguje líp než hromadný mail.
+
+   Pozor: kdo vstoupí do skupiny později, starší zprávy neuvidí, tak to
+   WhatsApp má. Každá zpráva proto musí dávat smysl sama o sobě a nesmí
+   navazovat na předchozí.
+==================================================================== */
+
+export const SKUPINA_TEXTY: { klic: string; offsetMinut: number; popis: string; text: string }[] = [
+    {
+        klic: 'g-den-pred',
+        offsetMinut: -24 * 60,
+        popis: 'Den před webinářem v 17:00',
+        text: `Zítra je den D, webinář {nazev} startuje v {cas}.
+
+Odkaz na vysílání dostanete v mailu i sem do skupiny, těsně před začátkem.
+
+Doporučuju se připojit z počítače a mít po ruce něco na psaní.`,
+    },
+    {
+        klic: 'g-rano',
+        offsetMinut: -8 * 60,
+        popis: 'V den webináře ráno',
+        text: `Dnes v {cas} jdeme živě.
+
+Vezměte si papír, budeme dělat jedno cvičení, po kterém budete vědět, co vám v distribuci chybí.`,
+    },
+    {
+        klic: 'g-hodina',
+        offsetMinut: -60,
+        popis: 'Hodinu před startem',
+        text: `Za hodinu začínáme. Odkaz sem hodím pár minut před startem.`,
+    },
+    {
+        klic: 'g-start',
+        offsetMinut: -10,
+        popis: 'Deset minut před startem, jediná zpráva s odkazem',
+        text: `Jdeme na to, za chvíli spouštím vysílání.
+
+Odkaz na webinář: {odkaz}`,
+    },
+    {
+        klic: 'g-po-konci',
+        offsetMinut: 90,
+        popis: 'Po konci vysílání',
+        text: `Díky všem, kdo dorazili.
+
+Kdo si chce projít, co dál, ať mi napíše, nebo si rovnou vyberte termín na hovor: {prihlaska}`,
+    },
+    {
+        klic: 'g-zaznam',
+        offsetMinut: 20 * 60,
+        popis: 'Den po webináři dopoledne, jen když je vyplněný záznam',
+        text: `Záznam webináře je venku, nechám ho tu pár dní: {zaznam}`,
+    },
+];
+
+/* ====================================================================
    KDY CO ODCHÁZÍ, celý plán pohromadě
 
    HNED PO REGISTRACI      email  potvrzení registrace

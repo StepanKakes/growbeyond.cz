@@ -15,7 +15,7 @@
 // Pravidla textů: česky, žádná emoji, žádné pomlčky, věty bez tečky na konci.
 
 import type { Edition, Registration } from './db';
-import { EMAIL_TEXTY, WA_TEXTY } from './texty';
+import { EMAIL_TEXTY, SKUPINA_TEXTY, WA_TEXTY } from './texty';
 
 export type StepContext = {
     edition: Edition;
@@ -233,4 +233,39 @@ export function stepMissed(step: Step, edition: Edition, reg: Registration): boo
     const registered = new Date(reg.created_at);
     // Pár minut tolerance, ať se neztratí krok u člověka, co přišel těsně před ním.
     return registered.getTime() > due.getTime() + 60000;
+}
+
+/* --------------------------------------------------------------- skupina */
+
+export type GroupStep = { klic: string; popis: string; due: Date; text: string };
+
+/**
+ * Skupinové zprávy, které mají teď odejít. Nepatří žádné registraci, proto
+ * si značky doplňují z edice samy. Odkaz na vysílání je společný, ve skupině
+ * nemá smysl osobní, a na přihlášku se odkazuje bez tokenu.
+ */
+export function dueGroupSteps(edition: Edition, site: string, now = Date.now()): GroupStep[] {
+    const start = new Date(edition.starts_at).getTime();
+    const timeLabel = new Intl.DateTimeFormat('cs-CZ', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: edition.timezone || 'Europe/Prague',
+    }).format(new Date(start));
+
+    const vals: Record<string, string> = {
+        nazev: edition.title,
+        cas: timeLabel,
+        odkaz: edition.zoom_join_url || `${site}/webinar`,
+        prihlaska: `${site}/webinar/prihlaska`,
+        zaznam: edition.replay_url || '',
+    };
+
+    return SKUPINA_TEXTY.filter(z => start + z.offsetMinut * 60000 <= now)
+        .map(z => {
+            let text = z.text;
+            for (const [k, v] of Object.entries(vals)) text = text.split(`{${k}}`).join(v);
+            return { klic: z.klic, popis: z.popis, due: new Date(start + z.offsetMinut * 60000), text };
+        })
+        // zpráva, které chybí hodnota (typicky záznam), se nepošle
+        .filter(z => !/\{[a-z]+\}/.test(z.text));
 }

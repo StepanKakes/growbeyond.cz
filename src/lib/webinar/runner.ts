@@ -4,16 +4,19 @@
 
 import { czVocative, plunkSendEmail } from '@/lib/plunk';
 import {
+    claimGroupStep,
     claimStep,
     countWhatsAppSentToday,
+    finishGroupStep,
     finishStep,
     getEdition,
+    listDoneGroupSteps,
     listDoneSteps,
     listRegistrations,
     type Edition,
     type Registration,
 } from './db';
-import { STEPS, stepDueAt, stepMissed, type Step, type StepContext } from './schedule';
+import { dueGroupSteps, STEPS, stepDueAt, stepMissed, type Step, type StepContext } from './schedule';
 import { pickVariant, sendText, sessionWorking, sleep, WA_DAILY_CAP } from './waha';
 
 const SITE = process.env.NEXT_PUBLIC_BASE_URL || 'https://growbeyond.cz';
@@ -62,10 +65,36 @@ export type RunSummary = {
     reason?: string;
     emailsSent: number;
     waSent: number;
+    groupSent: number;
     skipped: number;
     failed: number;
     pendingAfterRun: number;
 };
+
+/**
+ * Zprávy do WhatsApp skupiny. Na rozdíl od osobních zpráv jde o jeden chat,
+ * takže tu nehrozí, že by to WhatsApp vyhodnotil jako hromadné rozesílání,
+ * a nepočítají se do denního stropu.
+ */
+async function runGroup(edition: Edition, summary: RunSummary): Promise<void> {
+    if (!edition.wa_group_chat_id) return;
+
+    const done = await listDoneGroupSteps(edition.id);
+    const due = dueGroupSteps(edition, SITE).filter(z => !done.has(z.klic));
+    if (!due.length) return;
+
+    for (const z of due) {
+        if (!(await claimGroupStep(edition.id, z.klic))) continue;
+        const res = await sendText(edition.wa_group_chat_id, z.text);
+        await finishGroupStep(edition.id, z.klic, {
+            status: res.ok ? 'sent' : 'failed',
+            ...(res.ok ? {} : { error: res.error.slice(0, 400) }),
+        });
+        if (res.ok) summary.groupSent++;
+        else summary.failed++;
+        await sleep(2000);
+    }
+}
 
 type Job = { reg: Registration; step: Step; ctx: StepContext; due: Date };
 
@@ -117,7 +146,7 @@ export async function sendStepNow(reg: Registration, edition: Edition, stepKey: 
 }
 
 export async function runScheduler(opts: { dryRun?: boolean } = {}): Promise<RunSummary> {
-    const summary: RunSummary = { ok: true, emailsSent: 0, waSent: 0, skipped: 0, failed: 0, pendingAfterRun: 0 };
+    const summary: RunSummary = { ok: true, emailsSent: 0, waSent: 0, groupSent: 0, skipped: 0, failed: 0, pendingAfterRun: 0 };
     const startedAt = Date.now();
 
     const edition = await getEdition();
@@ -199,11 +228,17 @@ export async function runScheduler(opts: { dryRun?: boolean } = {}): Promise<Run
     }
 
     /* ---------------------------------------------------------- WhatsApp */
+    if (!waJobs.length && edition.wa_group_chat_id) {
+        if (await sessionWorking()) await runGroup(edition, summary);
+    }
+
     if (waJobs.length) {
         const working = await sessionWorking();
         if (!working) {
             summary.reason = 'WAHA session neběží, WhatsApp přeskočen';
         } else {
+            await runGroup(edition, summary);
+
             const sentToday = await countWhatsAppSentToday();
             let budgetLeft = Math.max(0, WA_DAILY_CAP - sentToday);
 

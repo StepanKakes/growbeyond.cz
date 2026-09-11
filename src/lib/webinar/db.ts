@@ -239,6 +239,43 @@ export async function countWhatsAppSentToday(): Promise<number> {
     return rows.length;
 }
 
+/**
+ * Zamluví skupinovou zprávu. Unikátní dvojice edice a kroku zajistí, že
+ * se do skupiny nepošle dvakrát, i kdyby běžely dva crony najednou.
+ */
+export async function claimGroupStep(editionId: string, stepKey: string): Promise<boolean> {
+    try {
+        await rest('group_log', {
+            method: 'POST',
+            body: { edition_id: editionId, step_key: stepKey, status: 'sending' },
+            prefer: 'return=minimal',
+        });
+        return true;
+    } catch (e) {
+        if (e instanceof Error && /23505|duplicate key/i.test(e.message)) return false;
+        throw e;
+    }
+}
+
+export async function finishGroupStep(
+    editionId: string,
+    stepKey: string,
+    patch: { status: 'sent' | 'failed' | 'skipped'; error?: string },
+): Promise<void> {
+    await rest(`group_log?edition_id=eq.${enc(editionId)}&step_key=eq.${enc(stepKey)}`, {
+        method: 'PATCH',
+        body: { ...patch, sent_at: patch.status === 'sent' ? new Date().toISOString() : null },
+    });
+}
+
+/** Klíče skupinových zpráv, které už proběhly nebo běží. */
+export async function listDoneGroupSteps(editionId: string): Promise<Set<string>> {
+    const rows = await rest<{ step_key: string }[]>(
+        `group_log?select=step_key&edition_id=eq.${enc(editionId)}&status=in.(sending,sent,skipped)&limit=200`,
+    );
+    return new Set(rows.map(r => r.step_key));
+}
+
 export async function logPageView(input: {
     edition_id?: string;
     path: string;
