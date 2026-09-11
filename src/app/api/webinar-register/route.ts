@@ -5,6 +5,7 @@ import { plunkEnroll } from '@/lib/plunk';
 import { UTM_KEYS } from '@/lib/utm';
 import { dbConfigured, getEdition, updateRegistration, upsertRegistration } from '@/lib/webinar/db';
 import { addRegistrant, zoomConfigured } from '@/lib/webinar/zoom';
+import { sendStepNow } from '@/lib/webinar/runner';
 
 export const runtime = 'nodejs';
 
@@ -95,9 +96,19 @@ export async function POST(req: Request) {
                         zoom_join_url: r.joinUrl,
                     });
                     joinUrl = r.joinUrl;
+                    registration.zoom_join_url = r.joinUrl;
                 } catch (e) {
                     console.error('Zoom registrant selhal:', e);
                 }
+            }
+
+            // Potvrzení posíláme rovnou, ne až na nejbližší běh cronu.
+            // Přes cron by přišlo se zpožděním až minutu, což je u potvrzení
+            // registrace znát. Krok se zamluví, takže ho cron nepošle znovu.
+            if (created) {
+                void sendStepNow(registration, edition, 'confirm-email').catch(e =>
+                    console.error('Okamžité potvrzení selhalo, zkusí to cron:', e),
+                );
             }
         } catch (e) {
             console.error('Webinar DB zápis selhal:', e);

@@ -84,6 +84,38 @@ async function markSkipped(reg: Registration, step: Step, due: Date): Promise<vo
     if (claimed) await finishStep(reg.id, step.key, { status: 'skipped' });
 }
 
+/**
+ * Odešle jeden krok okamžitě, mimo cyklus cronu. Používá se u potvrzení
+ * registrace, které má přijít hned, ne až na nejbližší minutu. Krok se
+ * přitom zamluví stejně jako v cronu, takže ho scheduler znovu nepošle.
+ */
+export async function sendStepNow(reg: Registration, edition: Edition, stepKey: string): Promise<boolean> {
+    const step = STEPS.find(s => s.key === stepKey);
+    if (!step || step.channel !== 'email') return false;
+
+    const ctx = buildContext(edition, reg);
+    if (step.when && !step.when(ctx)) return false;
+
+    const claimed = await claimStep({
+        registration_id: reg.id,
+        step_key: step.key,
+        channel: 'email',
+        scheduled_for: new Date().toISOString(),
+    });
+    if (!claimed) return false;
+
+    const ok = await plunkSendEmail({
+        to: reg.email,
+        subject: step.subject?.(ctx) || edition.title,
+        body: step.body(ctx),
+    });
+    await finishStep(reg.id, step.key, {
+        status: ok ? 'sent' : 'failed',
+        ...(ok ? {} : { error: 'Plunk odmítl zprávu' }),
+    });
+    return ok;
+}
+
 export async function runScheduler(opts: { dryRun?: boolean } = {}): Promise<RunSummary> {
     const summary: RunSummary = { ok: true, emailsSent: 0, waSent: 0, skipped: 0, failed: 0, pendingAfterRun: 0 };
     const startedAt = Date.now();
