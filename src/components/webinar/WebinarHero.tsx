@@ -26,14 +26,15 @@ export const PrimaryButton = ({ children, className = '' }: { children: React.Re
 
 // Informace o termínu vedle videa: tři fakta velkým písmem pod sebou, pak akce.
 /**
- * Termín a výzva pod videem jako displej, stejným jazykem jako svítící 2030
- * nad ním. Dřív to byl úzký sloupec vedle videa, který se roztahoval na jeho
- * výšku, takže mezi třemi údaji zůstaly velké prázdné díry.
+ * Termín a výzva pod videem. Žádná karta ani rámeček, jen linka a typografie,
+ * svítí akorát datum a čas, stejným jazykem jako 2030 nad tím. Dřív to byl
+ * úzký sloupec vedle videa, který se roztahoval na jeho výšku, takže mezi
+ * třemi údaji zůstaly velké prázdné díry.
  */
 const EventStrip = () => {
     const { weekday, numeric } = webinarDate();
     return (
-        <div className="screen mt-6 px-5 py-5 md:mt-8 md:px-7 md:py-6">
+        <div className="mt-6 border-t border-white/10 pt-6 md:mt-8 md:pt-7">
             <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
                 <div className="flex flex-wrap items-end gap-x-9 gap-y-5 text-left">
                     <div>
