@@ -26,20 +26,44 @@ export const PrimaryButton = ({ children, className = '' }: { children: React.Re
 
 // Informace o termínu vedle videa: tři fakta velkým písmem pod sebou, pak akce.
 /**
- * Termín a výzva pod videem. Dřív to byl úzký sloupec vedle videa, který se
- * roztahoval na jeho výšku, takže mezi třemi údaji zůstaly velké díry.
- * Vodorovný pás drží údaje pohromadě a nechá video celou šířku.
+ * Termín a výzva pod videem jako displej, stejným jazykem jako svítící 2030
+ * nad ním. Dřív to byl úzký sloupec vedle videa, který se roztahoval na jeho
+ * výšku, takže mezi třemi údaji zůstaly velké prázdné díry.
  */
 const EventStrip = () => {
-    const { short } = webinarDate();
+    const { weekday, numeric } = webinarDate();
     return (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-white/10 pt-6 md:mt-8 md:pt-7">
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-left">
-                <span className="text-[26px] md:text-[34px] font-bold tracking-[-0.03em] leading-none">{short}</span>
-                <span className="text-[26px] md:text-[34px] font-bold tracking-[-0.03em] leading-none tabular-nums">{WEBINAR.time}</span>
-                <span className="text-[19px] md:text-[22px] font-bold leading-none text-brand-red">{WEBINAR.hero.live}</span>
+        <div className="screen mt-6 px-5 py-5 md:mt-8 md:px-7 md:py-6">
+            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
+                <div className="flex flex-wrap items-end gap-x-9 gap-y-5 text-left">
+                    <div>
+                        <div className="text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-white/45">{weekday}</div>
+                        <LedText
+                            soft
+                            color="red"
+                            text={numeric}
+                            className="mt-1.5 block text-[34px] md:text-[46px] font-bold leading-[0.95] tracking-[-0.03em] tabular-nums"
+                        />
+                    </div>
+                    <div>
+                        <div className="text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-white/45">Začátek</div>
+                        <LedText
+                            soft
+                            color="red"
+                            text={WEBINAR.time}
+                            className="mt-1.5 block text-[34px] md:text-[46px] font-bold leading-[0.95] tracking-[-0.03em] tabular-nums"
+                        />
+                    </div>
+                    <div className="pb-1.5">
+                        <div className="text-[11px] md:text-[12px] uppercase tracking-[0.18em] text-white/45">Kde</div>
+                        <div className="mt-1.5 text-[17px] md:text-[19px] font-bold leading-none">
+                            Online, <span className="text-brand-red">{WEBINAR.hero.live}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <PrimaryButton className="w-full sm:w-auto">{WEBINAR.hero.cta}</PrimaryButton>
             </div>
-            <PrimaryButton className="w-full sm:w-auto">{WEBINAR.hero.cta}</PrimaryButton>
         </div>
     );
 };

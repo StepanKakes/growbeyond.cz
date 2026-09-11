@@ -79,20 +79,34 @@ export const WEBINAR = {
 /** Datum webináře pro zobrazení: "15. 10. 2026" a den v týdnu "Čtvrtek". */
 export function webinarDate() {
     const [y, m, d] = WEBINAR.dateISO.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
-    const weekdayRaw = new Intl.DateTimeFormat('cs-CZ', { weekday: 'long' }).format(date);
+    const date = new Date(Date.UTC(y, m - 1, d, 12));
+    const weekdayRaw = new Intl.DateTimeFormat('cs-CZ', { weekday: 'long', timeZone: 'Europe/Prague' }).format(date);
     const weekday = weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1);
     return {
         display: `${d}. ${m}. ${y}`,
         /** Bez roku, pro pás pod videem: "Pondělí 21. 9." */
         short: `${weekday} ${d}. ${m}.`,
+        /** Dvoumístné a číselné, pro displej: "21.09." */
+        numeric: `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`,
         weekday,
     };
 }
 
-/** Začátek webináře jako Date v místním čase prohlížeče (pro odpočet). */
-export function webinarStart() {
+/**
+ * Začátek webináře jako okamžik v čase. Termín je zadaný v pražském čase,
+ * takže se k němu dopočítá pražský posun pro ten konkrétní den, jinak by
+ * odpočet ukazoval nesmysl každému, kdo má prohlížeč v jiné zóně.
+ */
+export function webinarStart(): Date {
     const [y, m, d] = WEBINAR.dateISO.split('-').map(Number);
-    const [hh, mm] = WEBINAR.time.split(':').map(Number);
-    return new Date(y, m - 1, d, hh, mm, 0, 0);
+    const probe = new Date(Date.UTC(y, m - 1, d, 12));
+    const name = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Prague',
+        timeZoneName: 'longOffset',
+    })
+        .formatToParts(probe)
+        .find(part => part.type === 'timeZoneName')?.value;
+    // "GMT+02:00" v létě, "GMT+01:00" v zimě
+    const offset = name?.replace('GMT', '') || '+01:00';
+    return new Date(`${WEBINAR.dateISO}T${WEBINAR.time}:00${offset}`);
 }
