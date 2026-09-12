@@ -1,12 +1,11 @@
 // Plán zpráv webinářového funnelu, ta část, kterou nezvládne Plunk.
 //
 // Dělba práce:
-//   Plunk kampaně  = hodnotové maily a upomínky, naplánované na pevné časy
-//                    a cílené na segment "Webinář 2030 registrovaní". Text
-//                    si Tim upravuje přímo v Plunku, bez nasazení.
-//   tenhle soubor  = všechno ostatní, tedy WhatsApp (Plunk ho neumí),
-//                    potvrzení hned po registraci (nese osobní token)
-//                    a větve po webináři (závisí na tom, kdo přišel).
+//   Plunk          = potvrzení registrace (workflow na událost) a hodnotové
+//                    maily s upomínkami (naplánované kampaně na segment).
+//                    Text si Tim upravuje přímo v Plunku, bez nasazení.
+//   tenhle soubor  = WhatsApp, ten Plunk neumí, a větve po webináři,
+//                    které závisí na tom, kdo skutečně přišel.
 //
 // Kroky jsou časované relativně ke startu webináře, ne od registrace, protože
 // "tři hodiny před" je pro všechny stejný okamžik. Kdo se přihlásí až po čase
@@ -131,14 +130,7 @@ Webinář ${c.edition.title}, ${c.whenLabel}<br>
 
 export const STEPS: Step[] = [
     // ---------- hned po registraci ----------
-    {
-        key: 'confirm-email',
-        channel: 'email',
-        anchor: 'registration',
-        offsetMinutes: 0,
-        subject: c => render(EMAIL_TEXTY.potvrzeni.predmet, c),
-        body: c => emailBody(EMAIL_TEXTY.potvrzeni.telo, c),
-    },
+    // Potvrzovací mail posílá Plunk workflow na událost webinar-2030-registrace.
     {
         key: 'confirm-wa',
         channel: 'whatsapp',

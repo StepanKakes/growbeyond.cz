@@ -145,31 +145,13 @@ Tim`,
 
 /* ====================================================================
    EMAILY, které posílá náš systém
-   Zbylých deset mailů (hodnota a upomínky) žije v Plunku jako kampaně,
-   ty se upravují tam.
+
+   Jsou tu jen ty dva po webináři, protože závisí na tom, kdo přišel,
+   a to Plunk neví. Potvrzení registrace i hodnotové maily s upomínkami
+   žijí v Plunku, ty se upravují tam.
 ==================================================================== */
 
 export const EMAIL_TEXTY = {
-    /* ------------------------------------------------------------------
-       POTVRZENÍ REGISTRACE, odchází hned po přihlášení
-    ------------------------------------------------------------------ */
-    potvrzeni: {
-        predmet: `Máš místo na webináři {nazev}`,
-        telo: `Ahoj {jmeno},
-
-máš rezervované místo na webináři {nazev}, vysíláme živě {termin}
-
-[tlačítko: Odkaz na živé vysílání -> {odkaz}]
-
-Ulož si ho, pošlu ti ho ještě několikrát, ale ať ho máš po ruce
-
-Založil jsem k webináři WhatsApp skupinu, kam do té doby dávám videa a věci, co se na webinář nevejdou. Píšu tam jen já a tým, takže tě to nezavalí
-[odkaz: Přidej se do skupiny -> {skupina}]
-
-Ať z toho vytěžíš co nejvíc, mrkni na svoji stránku a odpověz mi na dvě otázky, podle nich poskládám obsah tak, aby seděl lidem, co přijdou
-[odkaz: Otevřít moji stránku -> {stranka}]`,
-    },
-
     /* ------------------------------------------------------------------
        PO WEBINÁŘI, ÚČASTNÍKŮM, půl hodiny po konci
     ------------------------------------------------------------------ */

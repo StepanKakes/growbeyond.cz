@@ -5,7 +5,6 @@ import { plunkEnroll } from '@/lib/plunk';
 import { UTM_KEYS } from '@/lib/utm';
 import { dbConfigured, getEdition, updateRegistration, upsertRegistration } from '@/lib/webinar/db';
 import { addRegistrant, zoomConfigured } from '@/lib/webinar/zoom';
-import { sendStepNow } from '@/lib/webinar/runner';
 
 export const runtime = 'nodejs';
 
@@ -101,23 +100,15 @@ export async function POST(req: Request) {
                     console.error('Zoom registrant selhal:', e);
                 }
             }
-
-            // Potvrzení posíláme rovnou, ne až na nejbližší běh cronu.
-            // Přes cron by přišlo se zpožděním až minutu, což je u potvrzení
-            // registrace znát. Krok se zamluví, takže ho cron nepošle znovu.
-            if (created) {
-                void sendStepNow(registration, edition, 'confirm-email').catch(e =>
-                    console.error('Okamžité potvrzení selhalo, zkusí to cron:', e),
-                );
-            }
         } catch (e) {
             console.error('Webinar DB zápis selhal:', e);
         }
     }
 
-    // Plunk drží kontakty a rozesílá naplánované kampaně. Osobní odkazy proto
-    // musí být v datech kontaktu, kampaň je vezme jako {{ webinar_join_url }}
-    // a {{ webinar_page_url }}.
+    // Plunk drží kontakty a rozesílá maily. Událost webinar-2030-registrace
+    // navíc spouští workflow s potvrzením, takže tenhle zápis je zároveň to,
+    // co potvrzovací mail odešle. Osobní odkazy proto musí být v datech
+    // kontaktu, šablona je vezme jako {{ webinar_page_url }} a spol.
     const site = process.env.NEXT_PUBLIC_BASE_URL || 'https://growbeyond.cz';
     const pageUrl = token ? `${site}/webinar/dekujeme?t=${token}` : `${site}/webinar`;
 
