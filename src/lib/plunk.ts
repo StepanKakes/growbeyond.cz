@@ -6,6 +6,17 @@ import { vokativ } from 'vokativ';
 
 const PLUNK_API_URL = process.env.PLUNK_API_URL || 'https://next-api.useplunk.com';
 
+/**
+ * Celé oslovení do jedné hodnoty, aby ho šablona jen vypsala.
+ * Kdo nemá použitelné jméno, dostane "Ahoj," bez mezery navíc. Dřív šablony
+ * skládaly "Ahoj {{ vokativ }}," a u kontaktů bez jména z toho vznikalo
+ * "Ahoj ," s mezerou před čárkou.
+ */
+export function czGreeting(firstNameRaw?: string): string {
+    const v = czVocative(firstNameRaw);
+    return v ? `Ahoj ${v},` : 'Ahoj,';
+}
+
 /** Z křestního jména (bere první slovo) udělá kapitalizovaný český vokativ. */
 export function czVocative(firstNameRaw?: string): string | undefined {
     const first = firstNameRaw?.trim().split(/\s+/)[0];
@@ -63,6 +74,7 @@ export async function plunkEnroll({ email, firstName, event, data }: EnrollInput
     if (first) contactData.firstName = first;
     if (firstName?.trim()) contactData.fullName = firstName.trim();
     if (vok) contactData.vokativ = vok;
+    contactData.osloveni = czGreeting(firstName);
 
     try {
         const cRes = await fetch(`${PLUNK_API_URL}/contacts`, {
