@@ -29,7 +29,7 @@ export type StepContext = {
     groupUrl: string;
     /** Odkaz na přihlášku po webináři. */
     applyUrl: string;
-    /** Termín ve tvaru "v pondělí 21. 9. v 17:00". */
+    /** Termín ve tvaru "v úterý 29. 9. v 17:00". */
     whenLabel: string;
     /** Samotný čas, "17:00". */
     timeLabel: string;

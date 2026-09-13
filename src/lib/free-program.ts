@@ -121,25 +121,38 @@ const headers = () => ({
 
 export const isValidPageId = (id: string) => /^[0-9a-fA-F-]{32,36}$/.test(id);
 
-// IG in-app browser otvírá URL tlačítka ve svém webview. Tenhle interstitial
-// vyskakuje do systémového prohlížeče: Android přes intent:// (auto redirect
-// funguje), iOS přes x-safari- scheme, který ale IG webview pouští JEN z přímého
-// kliknutí uživatele, takže na iOS ukazujeme tlačítko místo auto redirectu.
-// ?br=1 brání nekonečné smyčce interstitialu, kdyby breakout selhal.
+// IG in-app browser otvírá URL tlačítka ve svém webview.
+// Android: intent:// spolehlivě vyskočí do systémového prohlížeče, takže tam
+// interstitial dává smysl (auto redirect + tlačítko + časovaný návrat do webview,
+// kdyby intent selhal).
+// iOS: Meta webview blokuje x-safari- i ostatní custom schemes, klepnutí na
+// tlačítko tedy nikam nevedlo a interstitial byl slepá ulička. Na iOS proto
+// jdeme rovnou dál ve webview: stránky programu tam fungují, sledování videa
+// dedupuje server a identita sedí v URL, nic se neztratí. Kdo chce Safari, má
+// v liště Instagramu položku Otevřít v externím prohlížeči.
+// ?br=1 brání nekonečné smyčce interstitialu, kdyby breakout na Androidu selhal.
 export function igBrowserBreakout(ua: string | null, pathname: string, search: string): Response | null {
-    if (!/instagram/i.test(ua || '')) return null;
+    const agent = ua || '';
+    if (!/instagram/i.test(agent)) return null;
+    if (/iphone|ipad|ipod/i.test(agent)) return null;
+
     const params = new URLSearchParams(search);
     if (params.get('br') === '1') return null;
 
-    const target = `${PROGRAM_ORIGIN}${pathname}${search ? `?${params.toString()}` : ''}`;
+    const query = params.toString();
     params.set('br', '1');
     const fallback = `${PROGRAM_ORIGIN}${pathname}?${params.toString()}`;
     const host = PROGRAM_ORIGIN.replace('https://', '');
-    const intent = `intent://${host}${pathname}${search ? `?${new URLSearchParams(search).toString()}` : ''}#Intent;scheme=https;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
-    const ios = /iphone|ipad|ipod/i.test(ua || '');
-    const primary = ios ? `x-safari-${target}` : intent;
+    const intent = `intent://${host}${pathname}${query ? `?${query}` : ''}#Intent;scheme=https;S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
 
-    const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>3denní rentgen</title><style>body{background:#111;color:#fff;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;display:flex;min-height:100dvh;align-items:center;justify-content:center;margin:0;text-align:center;padding:24px}main{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:340px}h1{margin:0;font-size:20px;line-height:1.4}.btn{display:inline-block;color:#fff;background:#FF0E00;padding:16px 32px;border-radius:999px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:.02em}p{margin:0;color:rgba(255,255,255,.55);font-size:13px;line-height:1.6}.alt{color:rgba(255,255,255,.45);font-size:13px;text-decoration:underline}</style></head><body><main><h1>Program se otevírá v&nbsp;prohlížeči</h1><a class="btn" href="${primary}">Otevřít v prohlížeči</a><p>Kdyby tlačítko nereagovalo, klepni vpravo nahoře na tři tečky a vyber Otevřít v&nbsp;externím prohlížeči.</p><a class="alt" href="${fallback}">Pokračovat tady v Instagramu</a>${ios ? '' : `<script>try{location.href=${JSON.stringify(intent)};}catch(e){}</script>`}</main></body></html>`;
+    // Když se intent nechytí, webview zůstane viditelné a po chvíli si stránku
+    // otevřeme rovnou tady, aby uživatel nikdy nezůstal stát na interstitialu.
+    const script = `<script>try{location.href=${JSON.stringify(intent)};}catch(e){}setTimeout(function(){if(!document.hidden){location.replace(${JSON.stringify(fallback)});}},2500);</script>`;
+
+    // hodnoty jdou z URLSearchParams (percent-encoded), stačí ošetřit oddělovač &
+    const attr = (url: string) => url.replace(/&/g, '&amp;');
+
+    const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>3denní rentgen</title><style>body{background:#111;color:#fff;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;display:flex;min-height:100dvh;align-items:center;justify-content:center;margin:0;text-align:center;padding:24px}main{display:flex;flex-direction:column;align-items:center;gap:18px;max-width:340px}h1{margin:0;font-size:20px;line-height:1.4}.btn{display:inline-block;color:#fff;background:#FF0E00;padding:16px 32px;border-radius:999px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:.02em}p{margin:0;color:rgba(255,255,255,.55);font-size:13px;line-height:1.6}.alt{color:rgba(255,255,255,.45);font-size:13px;text-decoration:underline}</style></head><body><main><h1>Program se otevírá v&nbsp;prohlížeči</h1><a class="btn" href="${attr(intent)}">Otevřít v prohlížeči</a><p>Kdyby tlačítko nereagovalo, klepni vpravo nahoře na tři tečky a vyber Otevřít v&nbsp;externím prohlížeči.</p><a class="alt" href="${attr(fallback)}">Pokračovat tady v Instagramu</a>${script}</main></body></html>`;
 
     return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },

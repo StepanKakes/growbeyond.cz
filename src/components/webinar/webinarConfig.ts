@@ -5,7 +5,7 @@ export const WEBINAR = {
     // Termín drž v ISO, zobrazení a den v týdnu se odvozují (viz webinarDate).
     // Stejný termín je i v databázi (webinar.editions.starts_at), v Zoom
     // meetingu a v naplánovaných kampaních, měň všechno najednou.
-    dateISO: '2026-09-21',
+    dateISO: '2026-09-29',
     time: '17:00',
     place: 'Online, živě',
     durationMinutes: 75,
@@ -84,7 +84,7 @@ export function webinarDate() {
     const weekday = weekdayRaw.charAt(0).toUpperCase() + weekdayRaw.slice(1);
     return {
         display: `${d}. ${m}. ${y}`,
-        /** Bez roku, pro pás pod videem: "Pondělí 21. 9." */
+        /** Bez roku, pro pás pod videem: "Úterý 29. 9." */
         short: `${weekday} ${d}. ${m}.`,
         /** Dvoumístné a číselné, pro displej: "21.09." */
         numeric: `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`,

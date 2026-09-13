@@ -6,7 +6,7 @@
 //   {jmeno}    oslovení v pátém pádu, například "Time". Když jméno neznáme,
 //              zmizí i mezera za ním, takže věta začne velkým písmenem
 //   {nazev}    název webináře, teď "2030"
-//   {termin}   "v pondělí 21. 9. v 17:00"
+//   {termin}   "v úterý 29. 9. v 17:00"
 //   {cas}      "17:00"
 //   {delka}    "75"
 //   {odkaz}    osobní odkaz na vysílání ze Zoomu. Posílá se schválně až
