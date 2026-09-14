@@ -1,24 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import React from 'react';
+import { motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
 import { EventCard, GoogleCalendarLogo, WhatsAppLogo } from './EventCard';
-import { ApplicationForm } from './ApplicationForm';
 import { czVocative } from '@/lib/vokativ';
 
-// Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
-// potvrzení s termínem a kalendářem. Kdyby přišlo obojí naráz, dotazník
-// by nikdo nevyplnil, protože odkaz na vysílání je zajímavější.
+// Potvrzení registrace: skupina a termín. Otázky se ptají o krok dřív na
+// /webinar/prihlaska, sem se člověk dostane až za nimi.
 //
-// Kdo dotazník vyplnil dřív a vrátí se na stránku, dostane rovnou
-// potvrzení. Přeskočit jde taky, nemá cenu držet někoho násilím.
+// Skupina stojí první schválně, je to jediné místo, kde se dá s lidmi mluvit
+// průběžně. Odkaz na vysílání tu není, chodí mailem a WhatsAppem.
 
 export type ThankYouData = {
-    token: string | null;
-    alreadyQualified: boolean;
     firstName: string | null;
-    email: string | null;
     dayLabel: string;
     weekday: string;
     dayMonth: string;
@@ -46,61 +41,16 @@ const BlockTitle = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const ThankYouSteps = (d: ThankYouData) => {
-    const [done, setDone] = useState(d.alreadyQualified || !d.token);
     // Oslovení musí být v pátém pádu, jinak stránka volá "Pavel, máš místo".
     const vocative = czVocative(d.firstName);
     const hello = vocative ? `${vocative}, ` : '';
 
-    // Dotazník je delší než obrazovka, takže po odeslání zůstane stránka
-    // odrolovaná dole a potvrzení by začalo někde uprostřed.
-    const finish = () => {
-        setDone(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     return (
         <MotionConfig reducedMotion="user">
-            <AnimatePresence mode="wait" initial={false}>
-                {!done ? (
-                    <motion.div key="dotaznik" variants={stepV} initial="hidden" animate="visible" exit="exit">
-                        <motion.p variants={itemV} className="text-center text-sm text-white/45">
-                            Krok 2 ze 2
-                        </motion.p>
-                        <motion.h1
-                            variants={itemV}
-                            className="mx-auto mt-4 max-w-[16ch] text-center text-[34px] md:text-[52px] font-bold tracking-[-0.035em] leading-[1.06]"
-                        >
-                            {hello}řekni mi, kde <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
-                        </motion.h1>
-                        <motion.p
-                            variants={itemV}
-                            className="mx-auto mt-5 max-w-[48ch] text-center text-[18px] md:text-[21px] text-white/75 leading-[1.5]"
-                        >
-                            Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Je to šest otázek
-                            a jedním klepnutím se posouváš dál
-                        </motion.p>
-
-                        <motion.div variants={itemV} className="mx-auto mt-12 w-full max-w-[560px] md:mt-14">
-                            <ApplicationForm
-                                token={d.token as string}
-                                defaultName={d.firstName ?? undefined}
-                                defaultEmail={d.email ?? undefined}
-                                onDone={finish}
-                            />
-                            <button
-                                type="button"
-                                onClick={finish}
-                                className="mt-8 min-h-10 text-sm text-white/45 underline underline-offset-4 transition-colors duration-200 hover:text-white"
-                            >
-                                Přeskočit a jít rovnou na termín
-                            </button>
-                        </motion.div>
-                    </motion.div>
-                ) : (
-                    <motion.div key="potvrzeni" variants={stepV} initial="hidden" animate="visible">
-                        <motion.h1
-                            variants={itemV}
-                            className="mx-auto max-w-[14ch] text-center text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]"
+            <motion.div initial="hidden" animate="visible" variants={stepV}>
+                <motion.h1
+                    variants={itemV}
+                    className="mx-auto max-w-[14ch] text-center text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]"
                         >
                             {hello}máš <LedText soft color="red" text="místo" className="whitespace-nowrap" />
                         </motion.h1>
@@ -157,11 +107,9 @@ export const ThankYouSteps = (d: ThankYouData) => {
                                         </a>
                                     )}
                                 </div>
-                            </motion.section>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    </motion.section>
+                </div>
+            </motion.div>
         </MotionConfig>
     );
 };

@@ -66,10 +66,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
 
                 <div className="pt-10 pb-24 md:pt-12 md:pb-28">
                     <ThankYouSteps
-                        token={reg?.token ?? null}
-                        alreadyQualified={Boolean(reg?.qualified_at)}
                         firstName={reg?.name ?? null}
-                        email={reg?.email ?? null}
                         dayLabel={when.day}
                         weekday={when.weekday}
                         dayMonth={when.dayMonth}

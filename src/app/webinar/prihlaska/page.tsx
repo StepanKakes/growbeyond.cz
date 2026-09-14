@@ -21,6 +21,10 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
     // Pátý pád, ať nadpis neoslovoval "Pavel, řekni mi" místo "Pavle".
     const firstName = czVocative(reg?.name);
 
+    // Kdo sem přijde s tokenem a ještě neodpovídal, je čerstvě po registraci
+    // a za otázkami ho čeká termín. Kdo odpovídal, jde o přihlášku na hovor.
+    const poRegistraci = Boolean(t && reg && !reg.qualified_at);
+
     return (
         <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
             <TextureOverlay />
@@ -33,12 +37,15 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
                 </header>
 
                 <div className="pt-10 md:pt-12 text-center">
-                    <h1 className="mx-auto max-w-[14ch] text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]">
+                    {poRegistraci && <p className="text-sm text-white/50">Krok 2 ze 2</p>}
+                    <h1 className="mx-auto mt-4 max-w-[14ch] text-[34px] md:text-[56px] font-bold tracking-[-0.035em] leading-[1.04]">
                         {firstName ? `${firstName}, řekni mi, kde ` : 'Řekni mi, kde '}
                         <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
                     </h1>
                     <p className="mx-auto mt-5 max-w-[48ch] text-[18px] md:text-[21px] text-white/75 leading-[1.5]">
-                        Pár otázek, ať na hovoru neztrácíme čas rozkoukáváním. Když ti nebudeme umět pomoct, řeknu ti to rovnou
+                        {poRegistraci
+                            ? 'Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Je to šest otázek a jedním klepnutím se posouváš dál'
+                            : 'Pár otázek, ať na hovoru neztrácíme čas rozkoukáváním. Když ti nebudeme umět pomoct, řeknu ti to rovnou'}
                     </p>
                 </div>
 
@@ -47,7 +54,18 @@ export default async function ApplicationPage({ searchParams }: { searchParams: 
                         token={t || ''}
                         defaultName={reg?.name || undefined}
                         defaultEmail={reg?.email || undefined}
+                        dalsiKrok={poRegistraci ? `/webinar/dekujeme?t=${t}` : undefined}
                     />
+                    {poRegistraci && (
+                        <p className="mt-8 text-center">
+                            <a
+                                href={`/webinar/dekujeme?t=${t}`}
+                                className="min-h-10 text-sm text-white/45 underline underline-offset-4 transition-colors duration-200 hover:text-white"
+                            >
+                                Přeskočit a jít rovnou na termín
+                            </a>
+                        </p>
+                    )}
                 </div>
             </div>
         </main>

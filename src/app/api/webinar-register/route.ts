@@ -133,5 +133,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: false, error: 'Něco se pokazilo, zkus to prosím znovu' }, { status: 502 });
     }
 
-    return NextResponse.json({ ok: true, redirect: token ? `/webinar/dekujeme?t=${token}` : '/webinar/dekujeme' });
+    // Po registraci jdou lidé rovnou na otázky, potvrzení s termínem je až za nimi.
+    return NextResponse.json({ ok: true, redirect: token ? `/webinar/prihlaska?t=${token}` : '/webinar/dekujeme' });
 }

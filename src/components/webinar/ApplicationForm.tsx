@@ -63,17 +63,17 @@ export const ApplicationForm = ({
     token,
     defaultName,
     defaultEmail,
-    onDone,
+    dalsiKrok,
 }: {
     token: string;
     defaultName?: string;
     defaultEmail?: string;
     /**
-     * Když je předaný, formulář běží hned po registraci: po odeslání se jen
-     * ohlásí a stránka pokračuje na termín. Bez něj je to přihláška na hovor
-     * po webináři, která kvalifikované pouští rovnou do kalendáře.
+     * Kam po odeslání. Po registraci vede na potvrzení s termínem, takže se
+     * hovor nenabízí. Bez adresy se formulář chová jako přihláška na hovor
+     * a kvalifikované pouští rovnou do kalendáře.
      */
-    onDone?: () => void;
+    dalsiKrok?: string;
 }) => {
     const questions = useMemo<Question[]>(() => {
         const list: Question[] = [
@@ -120,7 +120,7 @@ export const ApplicationForm = ({
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Po registraci následuje termín webináře, ne odeslání přihlášky na hovor.
-    const posledniPopisek = onDone ? 'Hotovo, ukaž mi termín' : 'Odeslat přihlášku';
+    const posledniPopisek = dalsiKrok ? 'Hotovo, ukaž mi termín' : 'Odeslat přihlášku';
 
     const current = questions[index];
     const value = answers[current?.key] || '';
@@ -142,15 +142,15 @@ export const ApplicationForm = ({
                 const res = await fetch('/api/webinar/prihlaska', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token, ...all, ...(onDone ? { faze: 'registrace' } : {}) }),
+                    body: JSON.stringify({ token, ...all, ...(dalsiKrok ? { faze: 'registrace' } : {}) }),
                 });
                 const data = (await res.json().catch(() => ({}))) as { ok?: boolean; qualified?: boolean; redirect?: string };
                 if (!res.ok || !data.ok) {
                     setStatus('error');
                     return;
                 }
-                if (onDone) {
-                    onDone();
+                if (dalsiKrok) {
+                    window.location.assign(dalsiKrok);
                     return;
                 }
                 if (data.qualified && data.redirect) {
@@ -162,7 +162,7 @@ export const ApplicationForm = ({
                 setStatus('error');
             }
         },
-        [token, onDone],
+        [token, dalsiKrok],
     );
 
     const goNext = useCallback(() => {
