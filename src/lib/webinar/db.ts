@@ -325,10 +325,23 @@ export async function updateApplication(
     await rest(`applications?id=eq.${enc(id)}`, { method: 'PATCH', body: patch });
 }
 
-export async function listApplications(editionId: string) {
-    return rest<
-        { id: string; email: string; qualified: boolean | null; booked_at: string | null; call_outcome: string | null }[]
-    >(`applications?select=id,email,qualified,booked_at,call_outcome&edition_id=eq.${enc(editionId)}&limit=5000`);
+export type ApplicationRow = {
+    id: string;
+    email: string;
+    name: string | null;
+    phone: string | null;
+    answers: Record<string, unknown>;
+    score: number | null;
+    qualified: boolean | null;
+    booked_at: string | null;
+    call_outcome: string | null;
+    created_at: string;
+};
+
+export async function listApplications(editionId: string): Promise<ApplicationRow[]> {
+    return rest<ApplicationRow[]>(
+        `applications?select=id,email,name,phone,answers,score,qualified,booked_at,call_outcome,created_at&edition_id=eq.${enc(editionId)}&order=created_at.desc&limit=5000`,
+    );
 }
 
 export async function countPageViews(editionId: string): Promise<number> {

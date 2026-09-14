@@ -7,11 +7,17 @@ import {
     revenueLabel,
     stuckLabel,
 } from '@/components/webinar/qualifyOptions';
+import {
+    APPLICATION_MAX,
+    APPLICATION_QUESTIONS,
+    answerLabel,
+} from '@/components/webinar/applicationQuestions';
 import { WEBINAR, webinarDate, webinarStart } from '@/components/webinar/webinarConfig';
 import {
     countPageViews,
     dbConfigured,
     getEdition,
+    listApplications,
     listMessageLog,
     listRegistrations,
     type MessageLogRow,
@@ -207,10 +213,11 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
     const edition = await getEdition();
     if (!edition) notFound();
 
-    const [registrace, log, zobrazeni] = await Promise.all([
+    const [registrace, log, zobrazeni, prihlasky] = await Promise.all([
         listRegistrations(edition.id),
         listMessageLog().catch(() => [] as MessageLogRow[]),
         countPageViews(edition.id).catch(() => 0),
+        listApplications(edition.id).catch(() => []),
     ]);
 
     const celkem = registrace.length;
@@ -336,8 +343,8 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                     </div>
 
                     <Sekce
-                        titulek="Co lidé odpověděli"
-                        popis={`dotazník má dvě otázky, vyplnilo ho ${sDotaznikem.length} z ${celkem}`}
+                        titulek="Co lidé odpověděli při registraci"
+                        popis={`krátký dotazník na děkovačce, dvě otázky, vyplnilo ho ${sDotaznikem.length} z ${celkem}`}
                     >
                         <div className="grid gap-10 lg:grid-cols-2">
                             <div>
@@ -373,6 +380,53 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                                 </p>
                             </div>
                         </div>
+                    </Sekce>
+
+                    <Sekce
+                        titulek="Přihlášky na hovor"
+                        popis={
+                            prihlasky.length
+                                ? `sedm otázek na /webinar/prihlaska, vyplnilo ${prihlasky.length}`
+                                : 'sedm otázek na /webinar/prihlaska, otevírá se po webináři'
+                        }
+                    >
+                        {prihlasky.length === 0 ? (
+                            <p className="max-w-[70ch] text-[15px] leading-[1.55] text-white/60">
+                                Zatím žádná. Je to delší dotazník než ten při registraci a ptá se na roky podnikání,
+                                obrat, kde se člověk zasekl, odkud mu chodí klienti, kolik je připraven investovat
+                                a jak rychle to chce řešit. Až se začnou plnit, objeví se tady i s odpověďmi
+                                a skóre až {APPLICATION_MAX} bodů.
+                            </p>
+                        ) : (
+                            <div className="flex flex-col">
+                                {prihlasky.map(p => (
+                                    <details key={p.id} className="border-b border-white/10">
+                                        <summary className="flex cursor-pointer list-none flex-wrap items-baseline gap-x-5 gap-y-1 py-3 text-[14px] transition-colors duration-150 hover:bg-white/6">
+                                            <span className="w-14 shrink-0 text-[18px] font-bold tabular-nums">
+                                                {p.score ?? 0}
+                                            </span>
+                                            <span className="w-40 shrink-0 truncate font-bold">{p.name || '—'}</span>
+                                            <span className="w-60 shrink-0 truncate text-white/70">{p.email}</span>
+                                            {p.qualified ? (
+                                                <Stav text="prošel" druh="ok" />
+                                            ) : (
+                                                <Stav text="neprošel" druh="nic" />
+                                            )}
+                                            {p.booked_at && <Stav text="má rezervovaný hovor" druh="ok" />}
+                                        </summary>
+                                        <div className="grid gap-5 border-t border-white/8 bg-white/3 px-4 py-5 md:grid-cols-2 lg:grid-cols-3">
+                                            {APPLICATION_QUESTIONS.map(q => (
+                                                <Udaj key={q.key} popis={q.question}>
+                                                    {answerLabel(q.key, p.answers?.[q.key]) ?? (
+                                                        <span className="text-white/45">neodpověděl</span>
+                                                    )}
+                                                </Udaj>
+                                            ))}
+                                        </div>
+                                    </details>
+                                ))}
+                            </div>
+                        )}
                     </Sekce>
 
                     <Sekce titulek="Rozesílání" popis="potvrzení a upomínky, které odešly z aplikace">
