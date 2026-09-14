@@ -335,3 +335,10 @@ export async function countPageViews(editionId: string): Promise<number> {
     const rows = await rest<{ id: number }[]>(`page_views?select=id&edition_id=eq.${enc(editionId)}&limit=100000`);
     return rows.length;
 }
+
+/** Všechny odeslané i neúspěšné kroky, pro přehled o rozesílání. */
+export async function listMessageLog(limit = 5000): Promise<MessageLogRow[]> {
+    return rest<MessageLogRow[]>(
+        `message_log?select=id,registration_id,step_key,channel,status,error,sent_at&order=id.desc&limit=${limit}`,
+    );
+}
