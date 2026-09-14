@@ -57,8 +57,7 @@ export const WEBINAR = {
         name: 'Tim Trnka',
         role: 'Zakladatel Beyond',
         bio: 'Pomáhá koučům, mentorům a konzultantům budovat osobní značku a prodávat kvalitnějším klientům. Na webináři ukáže, co funguje dnes a co se do roku 2030 změní',
-        // Zástupná fotka, dokud Tim nedodá portrét pro webinář.
-        photo: '/images/hero/Still 2026-03-12 235253.jpg',
+        photo: '/images/webinar/tim-trnka.jpg',
     },
 
     closing: {

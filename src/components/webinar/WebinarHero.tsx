@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { LedText } from './LedText';
-import { WebinarVideo } from './WebinarVideo';
 import { WEBINAR, webinarDate } from './webinarConfig';
 import { openWebinarForm } from './formEvents';
 
@@ -69,7 +68,7 @@ const EventStrip = () => {
     );
 };
 
-export const WebinarHero = ({ videoSrc, videoPoster }: { videoSrc?: string; videoPoster?: string }) => {
+export const WebinarHero = () => {
     return (
         <header className="relative z-10 mx-auto w-full max-w-[1200px] px-5 md:px-12 pt-5 md:pt-7 pb-16 md:pb-28">
             <nav className="flex items-center justify-between" aria-label="Hlavní">
@@ -102,7 +101,6 @@ export const WebinarHero = ({ videoSrc, videoPoster }: { videoSrc?: string; vide
             </div>
 
             <motion.div {...reveal(0.9)} className="mt-10 md:mt-14">
-                <WebinarVideo src={videoSrc} poster={videoPoster} />
                 <EventStrip />
             </motion.div>
         </header>

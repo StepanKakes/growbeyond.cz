@@ -18,11 +18,6 @@ import {
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
 const WebinarFormModal = dynamic(() => import('@/components/webinar/WebinarFormModal').then(mod => mod.WebinarFormModal), { ssr: false });
 
-// VSL se doplní přes env NEXT_PUBLIC_WEBINAR_VIDEO_URL (a volitelně poster),
-// do té doby je v hero zástupný rámeček.
-const VIDEO_SRC = process.env.NEXT_PUBLIC_WEBINAR_VIDEO_URL;
-const VIDEO_POSTER = process.env.NEXT_PUBLIC_WEBINAR_VIDEO_POSTER;
-
 export default function WebinarPage() {
     useEffect(() => {
         initUtmTracking();
@@ -49,7 +44,7 @@ export default function WebinarPage() {
             <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">
                 <TextureOverlay />
 
-                <WebinarHero videoSrc={VIDEO_SRC} videoPoster={VIDEO_POSTER} />
+                <WebinarHero />
                 <StatementSection />
                 <AgendaSection />
                 <AudienceSection />
