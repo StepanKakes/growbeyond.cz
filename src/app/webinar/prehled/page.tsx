@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { REVENUE_OPTIONS, REVENUE_SCORE, revenueLabel, stuckLabel } from '@/components/webinar/qualifyOptions';
 import { WEBINAR, webinarDate, webinarStart } from '@/components/webinar/webinarConfig';
 import {
     countPageViews,
@@ -56,6 +57,19 @@ const Nadpis = ({ children }: { children: React.ReactNode }) => (
 const Pruh = ({ podil }: { podil: number }) => (
     <div className="h-1.5 w-full rounded-full bg-white/8">
         <div className="h-full rounded-full bg-brand-red" style={{ width: `${Math.max(3, podil * 100)}%` }} />
+    </div>
+);
+
+/** Sloupce seznamu registrovaných. Hlavička i řádky je musí mít stejné. */
+const RADEK = 'grid grid-cols-[7.5rem_1fr_1.6fr_9rem_4.5rem_5.5rem] items-baseline gap-4 px-1';
+
+const Odpoved = ({ otazka, odpoved, poznamka }: { otazka: string; odpoved?: string; poznamka?: string }) => (
+    <div>
+        <div className="text-[12px] uppercase tracking-[0.12em] text-white/40">{otazka}</div>
+        <div className="mt-1.5 text-[15px] leading-[1.45]">
+            {odpoved ?? <span className="text-white/40">neodpověděl</span>}
+            {poznamka && <span className="text-white/45"> · {poznamka}</span>}
+        </div>
     </div>
 );
 
@@ -174,6 +188,23 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                 </div>
 
                 <section className="mt-14 md:mt-16">
+                    <Nadpis>Jak se počítá skóre</Nadpis>
+                    <p className="mb-5 max-w-[70ch] text-[14px] leading-[1.55] text-white/60">
+                        Body dává jen odpověď na měsíční obrat. Druhá otázka, kde se člověk zasekl, se neboduje,
+                        protože žádná odpověď není sama o sobě lepší, je to kontext pro rozhovor. Kdo dotazník
+                        nevyplnil, nemá skóre žádné.
+                    </p>
+                    <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[14px]">
+                        {REVENUE_OPTIONS.map(o => (
+                            <li key={o.value}>
+                                <span className="tabular-nums font-bold">{REVENUE_SCORE[o.value]}</span>{' '}
+                                <span className="text-white/60">{o.label.toLowerCase()}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+
+                <section className="mt-14 md:mt-16">
                     <Nadpis>Rozesílání</Nadpis>
                     <div className="flex flex-wrap gap-x-10 gap-y-3">
                         {kroky.length === 0 && <p className="text-[15px] text-white/45">Zatím nic neodešlo</p>}
@@ -199,36 +230,50 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                 <section className="mt-14 md:mt-16">
                     <Nadpis>Registrovaní</Nadpis>
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[720px] border-collapse text-left text-[14px]">
-                            <thead>
-                                <tr className="text-[12px] uppercase tracking-[0.12em] text-white/40">
-                                    <th className="border-b border-white/12 pb-3 pr-4 font-normal">Kdy</th>
-                                    <th className="border-b border-white/12 pb-3 pr-4 font-normal">Jméno</th>
-                                    <th className="border-b border-white/12 pb-3 pr-4 font-normal">E-mail</th>
-                                    <th className="border-b border-white/12 pb-3 pr-4 font-normal">Zdroj</th>
-                                    <th className="border-b border-white/12 pb-3 pr-4 text-right font-normal">Skóre</th>
-                                    <th className="border-b border-white/12 pb-3 text-right font-normal">Kalendář</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {registrace.map(r => (
-                                    <tr key={r.id} className="align-top">
-                                        <td className="border-b border-white/8 py-3 pr-4 tabular-nums text-white/55">
+                        <div className="min-w-[760px]">
+                            <div className={`${RADEK} border-b border-white/12 pb-3 text-[12px] uppercase tracking-[0.12em] text-white/40`}>
+                                <span>Kdy</span>
+                                <span>Jméno</span>
+                                <span>E-mail</span>
+                                <span>Zdroj</span>
+                                <span className="text-right">Skóre</span>
+                                <span className="text-right">Kalendář</span>
+                            </div>
+
+                            {/* Rozklik je nativní details, takže funguje i bez skriptů. */}
+                            {registrace.map(r => (
+                                <details key={r.id} className="group border-b border-white/8">
+                                    <summary className={`${RADEK} cursor-pointer list-none py-3 text-[14px] transition-colors duration-150 hover:bg-white/4`}>
+                                        <span className="tabular-nums text-white/55">
                                             {denKey(r.created_at)} {cas(r.created_at)}
-                                        </td>
-                                        <td className="border-b border-white/8 py-3 pr-4">{r.name || '—'}</td>
-                                        <td className="border-b border-white/8 py-3 pr-4 text-white/70">{r.email}</td>
-                                        <td className="border-b border-white/8 py-3 pr-4 text-white/55">{zdroj(r)}</td>
-                                        <td className="border-b border-white/8 py-3 pr-4 text-right tabular-nums">
-                                            {r.qualified_at ? r.qual_score ?? 0 : '—'}
-                                        </td>
-                                        <td className="border-b border-white/8 py-3 text-right text-white/55">
-                                            {r.calendar_added_at ? 'ano' : '—'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </span>
+                                        <span className="truncate">{r.name || '—'}</span>
+                                        <span className="truncate text-white/70">{r.email}</span>
+                                        <span className="truncate text-white/55">{zdroj(r)}</span>
+                                        <span className="text-right tabular-nums">{r.qualified_at ? r.qual_score ?? 0 : '—'}</span>
+                                        <span className="text-right text-white/55">{r.calendar_added_at ? 'ano' : '—'}</span>
+                                    </summary>
+
+                                    <div className="grid gap-5 pb-6 pl-1 pr-1 pt-1 md:grid-cols-2">
+                                        <Odpoved
+                                            otazka="Kde teď nejvíc cítíš, že ses zasekl?"
+                                            odpoved={stuckLabel(r.qual_stuck)}
+                                        />
+                                        <Odpoved
+                                            otazka="Kolik ti dnes byznys měsíčně vydělává?"
+                                            odpoved={revenueLabel(r.qual_revenue)}
+                                            poznamka={r.qualified_at ? `${r.qual_score ?? 0} bodů` : undefined}
+                                        />
+                                        <div className="text-[13px] text-white/55 md:col-span-2">
+                                            {r.phone ? `Telefon ${r.phone}` : 'Bez telefonu, chodí jen e-mail'}
+                                            {' · '}WhatsApp {r.wa_status}
+                                            {r.zoom_registrant_id ? ' · osobní odkaz na Zoom vytvořen' : ' · bez osobního odkazu na Zoom'}
+                                            {r.qualified_at && <> · dotazník vyplněn {denKey(r.qualified_at)} {cas(r.qualified_at)}</>}
+                                        </div>
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
                     </div>
                     {registrace.length === 0 && <p className="mt-4 text-[15px] text-white/45">Zatím nikdo</p>}
                 </section>

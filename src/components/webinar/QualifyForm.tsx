@@ -10,25 +10,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 // Otázky drží stejný jazyk jako přihláška po webináři, aby na sebe
 // odpovědi navazovaly a daly se porovnat před a po.
 
-type Choice = { value: string; label: string };
-
-// Každá odpověď odpovídá jedné části webináře, takže je z ní vidět,
-// co tomu člověku sedne.
-const STUCK: Choice[] = [
-    { value: 'znamost', label: 'Jsem dobrý v tom, co dělám, ale ví o mně málo lidí' },
-    { value: 'kapacita', label: 'Mám dost lidí, ale nestíhám to' },
-    { value: 'obsah', label: 'Tvořím obsah, ale nepřitahuje správné lidi' },
-    { value: 'nabidka', label: 'Mám co nabídnout, ale těžko se to prodává' },
-    { value: 'nevim', label: 'Nevím, právě to chci zjistit' },
-];
-
-const REVENUE: Choice[] = [
-    { value: 'rozjezd', label: 'Ještě to nemám rozjeté' },
-    { value: 'do-100', label: 'Do 100 tisíc měsíčně' },
-    { value: '100-300', label: '100 až 300 tisíc měsíčně' },
-    { value: '300-1m', label: '300 tisíc až milion měsíčně' },
-    { value: 'nad-1m', label: 'Přes milion měsíčně' },
-];
+import { REVENUE_OPTIONS as REVENUE, STUCK_OPTIONS as STUCK, type Choice } from './qualifyOptions';
 
 const LETTERS = 'ABCDE';
 
