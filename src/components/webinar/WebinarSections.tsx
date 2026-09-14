@@ -36,6 +36,8 @@ export const AgendaSection = () => (
     </Shell>
 );
 
+// Sekce staví na jedné myšlence: čím levnější je tvořit, tím dražší je důvěra.
+// Proto svítí uprostřed, ne až na konci, a text za ní ji dovede k pozvánce.
 export const StatementSection = () => (
     <Shell>
         <div className="flex flex-col items-center text-center gap-8 md:gap-10">
@@ -45,7 +47,19 @@ export const StatementSection = () => (
                     <p key={p} className="text-[18px] md:text-[26px] leading-[1.5] md:leading-[1.45]">{p}</p>
                 ))}
             </div>
-            <LedText soft as="p" text={WEBINAR.statement.closing} className="text-[24px] md:text-[36px] font-bold tracking-[-0.02em] leading-none" />
+            <LedText
+                soft
+                as="p"
+                text={WEBINAR.statement.closing}
+                className="max-w-[18ch] md:max-w-[24ch] text-[24px] md:text-[36px] font-bold tracking-[-0.02em] leading-[1.15]"
+            />
+            <p className="max-w-[34ch] md:max-w-[46ch] text-[18px] md:text-[26px] leading-[1.5] md:leading-[1.45]">
+                {WEBINAR.statement.after}
+            </p>
+            <div className="flex flex-col items-center gap-4 md:gap-5">
+                <p className="text-[17px] md:text-[21px] font-bold text-white/85">{WEBINAR.statement.ctaLead}</p>
+                <PrimaryButton className="w-full sm:w-auto">{WEBINAR.statement.cta}</PrimaryButton>
+            </div>
         </div>
     </Shell>
 );

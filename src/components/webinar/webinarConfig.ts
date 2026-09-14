@@ -24,12 +24,17 @@ export const WEBINAR = {
     },
 
     statement: {
-        label: '2030',
+        label: 'PROČ 2030?',
         paragraphs: [
-            'AI dnes dokáže replikovat informace, obsah, design i produkty.',
-            'Nedokáže ti přes noc vytvořit jméno, reputaci, příběh, publikum a roky vybudované důvěry.',
+            'V roce 2030 bude jednodušší než kdy dřív postavit byznys, vytvořit produkt nebo obsah.',
+            'Technologie všechno zrychlují a zlevňují.',
+            'Zatímco vybudovat jméno, kterému lidé věří, stále potřebuje svůj čas.',
         ],
-        closing: '2030 ZAČÍNÁ DNES',
+        /** Pointa celé sekce, svítí jako displej a nese ji hlavní myšlenka. */
+        closing: 'ČÍM LEVNĚJŠÍ BUDE TVOŘIT, TÍM DRAŽŠÍ BUDE DŮVĚRA',
+        after: 'A právě proto může být tvé jméno v roce 2030 jedním z nejcennějších aktiv tvého byznysu.',
+        ctaLead: 'Pojď zjistit jak ho vybudovat',
+        cta: 'Rezervovat místo',
     },
 
     agenda: {
