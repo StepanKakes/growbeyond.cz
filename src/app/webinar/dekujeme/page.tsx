@@ -69,6 +69,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                         token={reg?.token ?? null}
                         alreadyQualified={Boolean(reg?.qualified_at)}
                         firstName={reg?.name ?? null}
+                        email={reg?.email ?? null}
                         dayLabel={when.day}
                         weekday={when.weekday}
                         dayMonth={when.dayMonth}

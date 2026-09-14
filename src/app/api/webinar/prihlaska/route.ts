@@ -33,6 +33,11 @@ export async function POST(req: Request) {
     const token = String(body.token || '').trim();
     const { years, revenue, stuck, leads, budget, when } = body;
 
+    // Stejné otázky se ptají na dvou místech. Hned po registraci slouží
+    // k poznání publika, takže po nich následuje termín webináře. Po
+    // webináři jsou přihláškou na hovor a kdo projde, jde do kalendáře.
+    const poRegistraci = body.faze === 'registrace';
+
     const valid =
         years in YEARS_SCORE &&
         revenue in REVENUE_SCORE &&
@@ -64,14 +69,25 @@ export async function POST(req: Request) {
             email,
             name: name || undefined,
             phone: reg?.phone ?? null,
-            answers: { years, revenue, stuck, leads, budget, when },
+            answers: { years, revenue, stuck, leads, budget, when, faze: poRegistraci ? 'registrace' : 'hovor' },
             score,
             qualified,
         });
 
-        if (reg) await updateRegistration(reg.id, { status: 'applied' }).catch(() => {});
+        // Obrat a zásek se kopírují i k registraci, protože podle nich se
+        // v přehledu pozná, komu se vyplatí napsat ještě před webinářem.
+        if (reg) {
+            await updateRegistration(reg.id, {
+                qual_revenue: revenue,
+                qual_stuck: stuck,
+                qual_score: REVENUE_SCORE[revenue],
+                qualified_at: new Date().toISOString(),
+                ...(poRegistraci ? {} : { status: 'applied' as const }),
+            }).catch(() => {});
+        }
 
-        if (!qualified) return NextResponse.json({ ok: true, qualified: false });
+        // Hned po registraci se hovor nenabízí, na řadě je termín webináře.
+        if (poRegistraci || !qualified) return NextResponse.json({ ok: true, qualified });
 
         const qs = new URLSearchParams({ email, ...(name ? { name } : {}) });
         return NextResponse.json({ ok: true, qualified: true, redirect: `${CAL_LINK}?${qs}` });

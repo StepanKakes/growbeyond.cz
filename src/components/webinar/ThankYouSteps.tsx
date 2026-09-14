@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
 import { EventCard, GoogleCalendarLogo, WhatsAppLogo } from './EventCard';
-import { QualifyForm } from './QualifyForm';
+import { ApplicationForm } from './ApplicationForm';
 import { czVocative } from '@/lib/vokativ';
 
 // Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
@@ -18,6 +18,7 @@ export type ThankYouData = {
     token: string | null;
     alreadyQualified: boolean;
     firstName: string | null;
+    email: string | null;
     dayLabel: string;
     weekday: string;
     dayMonth: string;
@@ -69,21 +70,27 @@ export const ThankYouSteps = (d: ThankYouData) => {
                             variants={itemV}
                             className="mx-auto mt-4 max-w-[16ch] text-center text-[34px] md:text-[52px] font-bold tracking-[-0.035em] leading-[1.06]"
                         >
-                            {hello}ještě <LedText soft color="red" text="dvě otázky" className="whitespace-nowrap" />
+                            {hello}řekni mi, kde <LedText soft color="red" text="právě teď" className="whitespace-nowrap" /> jsi
                         </motion.h1>
                         <motion.p
                             variants={itemV}
                             className="mx-auto mt-5 max-w-[48ch] text-center text-[18px] md:text-[21px] text-white/75 leading-[1.5]"
                         >
-                            Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Zabere to půl minuty
+                            Podle odpovědí poskládám obsah tak, aby seděl lidem, co přijdou. Je to šest otázek
+                            a jedním klepnutím se posouváš dál
                         </motion.p>
 
                         <motion.div variants={itemV} className="mx-auto mt-12 w-full max-w-[560px] md:mt-14">
-                            <QualifyForm token={d.token as string} onDone={finish} />
+                            <ApplicationForm
+                                token={d.token as string}
+                                defaultName={d.firstName ?? undefined}
+                                defaultEmail={d.email ?? undefined}
+                                onDone={finish}
+                            />
                             <button
                                 type="button"
                                 onClick={finish}
-                                className="mt-8 min-h-10 text-sm text-white/40 underline underline-offset-4 transition-colors duration-200 hover:text-white"
+                                className="mt-8 min-h-10 text-sm text-white/45 underline underline-offset-4 transition-colors duration-200 hover:text-white"
                             >
                                 Přeskočit a jít rovnou na termín
                             </button>

@@ -104,10 +104,17 @@ export const ApplicationForm = ({
     token,
     defaultName,
     defaultEmail,
+    onDone,
 }: {
     token: string;
     defaultName?: string;
     defaultEmail?: string;
+    /**
+     * Když je předaný, formulář běží hned po registraci: po odeslání se jen
+     * ohlásí a stránka pokračuje na termín. Bez něj je to přihláška na hovor
+     * po webináři, která kvalifikované pouští rovnou do kalendáře.
+     */
+    onDone?: () => void;
 }) => {
     const questions = useMemo<Question[]>(() => {
         const list: Question[] = [
@@ -173,11 +180,15 @@ export const ApplicationForm = ({
                 const res = await fetch('/api/webinar/prihlaska', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token, ...all }),
+                    body: JSON.stringify({ token, ...all, ...(onDone ? { faze: 'registrace' } : {}) }),
                 });
                 const data = (await res.json().catch(() => ({}))) as { ok?: boolean; qualified?: boolean; redirect?: string };
                 if (!res.ok || !data.ok) {
                     setStatus('error');
+                    return;
+                }
+                if (onDone) {
+                    onDone();
                     return;
                 }
                 if (data.qualified && data.redirect) {
@@ -189,7 +200,7 @@ export const ApplicationForm = ({
                 setStatus('error');
             }
         },
-        [token],
+        [token, onDone],
     );
 
     const goNext = useCallback(() => {
