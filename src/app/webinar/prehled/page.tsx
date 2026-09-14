@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { REVENUE_OPTIONS, REVENUE_SCORE, revenueLabel, stuckLabel } from '@/components/webinar/qualifyOptions';
+import {
+    REVENUE_OPTIONS,
+    REVENUE_SCORE,
+    STUCK_OPTIONS,
+    revenueLabel,
+    stuckLabel,
+} from '@/components/webinar/qualifyOptions';
 import { WEBINAR, webinarDate, webinarStart } from '@/components/webinar/webinarConfig';
 import {
     countPageViews,
@@ -8,12 +14,19 @@ import {
     getEdition,
     listMessageLog,
     listRegistrations,
+    type MessageLogRow,
     type Registration,
 } from '@/lib/webinar/db';
 
-// Přehled registrací na webinář. Čte se jen, nic tu nejde změnit, proto stačí
-// tajný odkaz místo přihlašování. Stránka se nesmí indexovat ani cachovat,
-// čísla mají být aktuální při každém načtení.
+// Přehled registrací na webinář.
+//
+// Je to pracovní panel, ne prezentace: hustota a čitelnost mají přednost
+// před dekorací. Barva nese význam (čeká / hotovo / selhalo), ne náladu,
+// a jediný akcent je značková červená. Čísla jsou tabulková, aby sloupce
+// seděly pod sebou.
+//
+// Čte se jen, nic tu nejde změnit, proto stačí tajný odkaz místo
+// přihlašování. Nesmí se cachovat ani indexovat.
 
 export const dynamic = 'force-dynamic';
 
@@ -24,54 +37,153 @@ export const metadata: Metadata = {
 
 const PRAHA = 'Europe/Prague';
 
-const denKey = (iso: string) =>
-    new Intl.DateTimeFormat('cs-CZ', { day: 'numeric', month: 'numeric', timeZone: PRAHA }).format(new Date(iso));
+const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('cs-CZ', { ...opts, timeZone: PRAHA });
 
-const cas = (iso: string) =>
-    new Intl.DateTimeFormat('cs-CZ', { hour: '2-digit', minute: '2-digit', timeZone: PRAHA }).format(new Date(iso));
+const denKey = (iso: string) => fmt({ day: 'numeric', month: 'numeric' }).format(new Date(iso));
+const cas = (iso: string) => fmt({ hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
+const hodina = (iso: string) => Number(fmt({ hour: '2-digit', hour12: false }).format(new Date(iso)));
 
 /** Odkud člověk přišel. UTM má přednost, jinak zdroj zapsaný při registraci. */
-function zdroj(r: Registration): string {
-    return r.utm?.utm_source || r.source || 'neznámý';
-}
+const zdroj = (r: Registration) => r.utm?.utm_source || r.source || 'neznámý';
 
-function sectCount<T>(rows: T[], key: (r: T) => string): [string, number][] {
+function tally<T>(rows: T[], key: (r: T) => string): Map<string, number> {
     const m = new Map<string, number>();
     for (const r of rows) m.set(key(r), (m.get(key(r)) ?? 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+    return m;
 }
 
-const Cislo = ({ popis, hodnota, detail }: { popis: string; hodnota: string | number; detail?: string }) => (
-    <div className="border-t border-white/12 pt-4">
-        <div className="text-[12px] uppercase tracking-[0.16em] text-white/45">{popis}</div>
-        <div className="mt-2 text-[40px] md:text-[52px] font-bold leading-none tabular-nums">{hodnota}</div>
-        {detail && <div className="mt-2 text-[13px] text-white/55">{detail}</div>}
+/**
+ * Hranice, od které se člověku vyplatí napsat osobně. Odpovídá obratu
+ * 100 tisíc měsíčně a výš, tedy někomu, kdo už má co škálovat.
+ */
+const HORKY_LEAD = 25;
+
+/* ------------------------------------------------------------------ *
+ * Stavba stránky
+ * ------------------------------------------------------------------ */
+
+const Sekce = ({ titulek, popis, children }: { titulek: string; popis?: string; children: React.ReactNode }) => (
+    <section className="border-t border-white/14 pt-6">
+        <div className="mb-6 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <h2 className="text-[17px] font-bold tracking-[-0.01em]">{titulek}</h2>
+            {popis && <p className="text-[14px] text-white/60">{popis}</p>}
+        </div>
+        {children}
+    </section>
+);
+
+/** Klíčové číslo. Velikost dělá hierarchii, ne rámeček kolem. */
+const Metrika = ({
+    popis,
+    hodnota,
+    detail,
+    duraz,
+}: {
+    popis: string;
+    hodnota: string | number;
+    detail?: string;
+    duraz?: boolean;
+}) => (
+    <div className="min-w-[8rem] flex-1">
+        <div className="text-[13px] text-white/60">{popis}</div>
+        <div
+            className={`mt-1.5 text-[46px] font-bold leading-[0.95] tabular-nums ${duraz ? 'text-brand-red' : ''}`}
+        >
+            {hodnota}
+        </div>
+        {detail && <div className="mt-1.5 text-[13px] text-white/60">{detail}</div>}
     </div>
 );
 
-const Nadpis = ({ children }: { children: React.ReactNode }) => (
-    <h2 className="mb-5 text-[13px] uppercase tracking-[0.16em] text-white/45">{children}</h2>
-);
+/**
+ * Rozpad odpovědí. Podíl je vidět z délky pruhu, přesné číslo vpravo,
+ * takže se dá číst rychle i přesně.
+ */
+const Rozpad = ({
+    polozky,
+    celkem,
+    sirkaPopisku = 'w-[22rem]',
+}: {
+    polozky: { klic: string; popisek: string; pocet: number; zvyraznit?: boolean }[];
+    celkem: number;
+    sirkaPopisku?: string;
+}) => {
+    const max = Math.max(1, ...polozky.map(p => p.pocet));
+    return (
+        <ul className="flex flex-col gap-2.5">
+            {polozky.map(p => (
+                <li key={p.klic} className="flex items-center gap-4">
+                    <span className={`${sirkaPopisku} shrink-0 truncate text-[14px] ${p.pocet ? 'text-white/85' : 'text-white/35'}`}>
+                        {p.popisek}
+                    </span>
+                    <span className="h-2 flex-1 bg-white/8">
+                        <span
+                            className={`block h-full ${p.zvyraznit ? 'bg-brand-red' : 'bg-white/70'}`}
+                            style={{ width: `${(p.pocet / max) * 100}%` }}
+                        />
+                    </span>
+                    <span className="w-16 shrink-0 text-right text-[14px] tabular-nums">
+                        <span className={p.pocet ? 'font-bold' : 'text-white/35'}>{p.pocet}</span>
+                        {celkem > 0 && p.pocet > 0 && (
+                            <span className="ml-1.5 text-white/50">{Math.round((p.pocet / celkem) * 100)} %</span>
+                        )}
+                    </span>
+                </li>
+            ))}
+        </ul>
+    );
+};
 
-/** Vodorovný pruh dlouhý podle podílu z maxima. */
-const Pruh = ({ podil }: { podil: number }) => (
-    <div className="h-1.5 w-full rounded-full bg-white/8">
-        <div className="h-full rounded-full bg-brand-red" style={{ width: `${Math.max(3, podil * 100)}%` }} />
-    </div>
-);
+/**
+ * Registrace po hodinách. Všechny zatím přišly v jediný den, takže denní
+ * graf by neřekl nic. Hodinový ukazuje, kdy má smysl postovat.
+ */
+const DenniKrivka = ({ poHodinach }: { poHodinach: number[] }) => {
+    const max = Math.max(1, ...poHodinach);
+    const vyska = 88;
+    return (
+        <div>
+            <div className="flex items-end gap-[3px]" style={{ height: vyska }}>
+                {poHodinach.map((n, h) => (
+                    <div key={h} className="group relative flex-1" title={`${h}:00 — ${n}`}>
+                        <div
+                            className={`w-full ${n ? 'bg-brand-red' : 'bg-white/10'}`}
+                            style={{ height: n ? Math.max(3, (n / max) * vyska) : 2 }}
+                        />
+                    </div>
+                ))}
+            </div>
+            <div className="mt-2 flex justify-between text-[12px] tabular-nums text-white/50">
+                {[0, 6, 12, 18, 23].map(h => (
+                    <span key={h}>{h}:00</span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+/** Stav jedním slovem. Barva má význam, ne náladu. */
+const Stav = ({ text, druh }: { text: string; druh: 'ok' | 'ceka' | 'chyba' | 'nic' }) => {
+    const barva = {
+        ok: 'text-[#4ade80]',
+        ceka: 'text-[#fbbf24]',
+        chyba: 'text-brand-red',
+        nic: 'text-white/45',
+    }[druh];
+    return <span className={`text-[13px] ${barva}`}>{text}</span>;
+};
 
 /** Sloupce seznamu registrovaných. Hlavička i řádky je musí mít stejné. */
-const RADEK = 'grid grid-cols-[7.5rem_1fr_1.6fr_9rem_4.5rem_5.5rem] items-baseline gap-4 px-1';
+const RADEK = 'grid grid-cols-[7.5rem_11rem_1fr_9rem_4.5rem_6.5rem] items-baseline gap-4 px-1';
 
-const Odpoved = ({ otazka, odpoved, poznamka }: { otazka: string; odpoved?: string; poznamka?: string }) => (
+const Udaj = ({ popis, children }: { popis: string; children: React.ReactNode }) => (
     <div>
-        <div className="text-[12px] uppercase tracking-[0.12em] text-white/40">{otazka}</div>
-        <div className="mt-1.5 text-[15px] leading-[1.45]">
-            {odpoved ?? <span className="text-white/40">neodpověděl</span>}
-            {poznamka && <span className="text-white/45"> · {poznamka}</span>}
-        </div>
+        <div className="text-[13px] text-white/55">{popis}</div>
+        <div className="mt-1 text-[15px] leading-[1.4]">{children}</div>
     </div>
 );
+
+/* ------------------------------------------------------------------ */
 
 export default async function PrehledPage({ searchParams }: { searchParams: Promise<{ k?: string }> }) {
     const { k } = await searchParams;
@@ -86,10 +198,11 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
 
     const [registrace, log, zobrazeni] = await Promise.all([
         listRegistrations(edition.id),
-        listMessageLog().catch(() => []),
+        listMessageLog().catch(() => [] as MessageLogRow[]),
         countPageViews(edition.id).catch(() => 0),
     ]);
 
+    const celkem = registrace.length;
     const dnesKey = denKey(new Date().toISOString());
     const dnes = registrace.filter(r => denKey(r.created_at) === dnesKey);
     const sDotaznikem = registrace.filter(r => r.qualified_at);
@@ -97,186 +210,290 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
     const veSkupine = registrace.filter(r => r.wa_group_joined_at);
     const bezTelefonu = registrace.filter(r => !r.phone);
 
-    const podleDnu = sectCount(registrace, r => denKey(r.created_at)).reverse();
-    const maxDen = Math.max(1, ...podleDnu.map(([, n]) => n));
-    const podleZdroje = sectCount(registrace, zdroj);
-    const maxZdroj = Math.max(1, ...podleZdroje.map(([, n]) => n));
+    // Kdo stojí za osobní zprávu. Řadí se od nejsilnějšího.
+    const horke = registrace
+        .filter(r => (r.qual_score ?? 0) >= HORKY_LEAD)
+        .sort((a, b) => (b.qual_score ?? 0) - (a.qual_score ?? 0));
 
-    const kroky = sectCount(log, l => `${l.step_key}|${l.status}`);
-    const selhalo = log.filter(l => l.status === 'failed');
+    const poHodinach = Array.from({ length: 24 }, () => 0);
+    for (const r of registrace) poHodinach[hodina(r.created_at)]++;
+
+    const zdroje = [...tally(registrace, zdroj).entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([klic, pocet]) => ({ klic, popisek: klic, pocet, zvyraznit: true }));
+
+    const obraty = tally(sDotaznikem, r => r.qual_revenue ?? '');
+    const zaseky = tally(sDotaznikem, r => r.qual_stuck ?? '');
+
+    // Odeslané kroky se počítají podle stavu, ať je vidět i to, co selhalo.
+    const kroky = new Map<string, { sent: number; failed: number; skipped: number }>();
+    for (const l of log) {
+        const z = kroky.get(l.step_key) ?? { sent: 0, failed: 0, skipped: 0 };
+        if (l.status === 'sent') z.sent++;
+        else if (l.status === 'failed') z.failed++;
+        else if (l.status === 'skipped') z.skipped++;
+        kroky.set(l.step_key, z);
+    }
+    const odeslano = new Map<string, Set<string>>();
+    for (const l of log) {
+        if (l.status !== 'sent') continue;
+        const s = odeslano.get(l.registration_id) ?? new Set<string>();
+        s.add(l.step_key);
+        odeslano.set(l.registration_id, s);
+    }
 
     const skore = sDotaznikem.map(r => r.qual_score ?? 0);
     const prumer = skore.length ? Math.round(skore.reduce((a, b) => a + b, 0) / skore.length) : 0;
 
-    const start = webinarStart();
-    const doStartu = Math.max(0, start.getTime() - Date.now());
+    const doStartu = Math.max(0, webinarStart().getTime() - Date.now());
     const dniDoStartu = Math.floor(doStartu / 86400000);
     const hodinDoStartu = Math.floor((doStartu % 86400000) / 3600000);
     const { weekday, numeric } = webinarDate();
 
-    const konverze = zobrazeni ? Math.round((registrace.length / zobrazeni) * 1000) / 10 : null;
+    const konverze = zobrazeni ? Math.round((celkem / zobrazeni) * 1000) / 10 : null;
+    const podil = (n: number) => (celkem ? `${Math.round((n / celkem) * 100)} % z registrovaných` : undefined);
 
     return (
-        <main className="min-h-screen bg-[#0A0A0A] text-white">
-            <div className="mx-auto w-full max-w-[1080px] px-5 py-10 md:px-8 md:py-14">
-                <header className="flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        <p className="text-[12px] uppercase tracking-[0.16em] text-white/45">Přehled registrací</p>
-                        <h1 className="mt-2 text-[30px] md:text-[40px] font-bold leading-none tracking-[-0.03em]">
-                            Webinář {WEBINAR.hero.year}
-                        </h1>
-                    </div>
-                    <p className="text-[14px] text-white/55 tabular-nums">
+        <main className="min-h-screen bg-[#0A0A0A] text-white antialiased">
+            <div className="mx-auto w-full max-w-[1180px] px-5 pb-24 pt-10 md:px-8 md:pt-14">
+                <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pb-10">
+                    <h1 className="text-[30px] md:text-[38px] font-bold leading-none tracking-[-0.03em]">
+                        Registrace na webinář {WEBINAR.hero.year}
+                    </h1>
+                    <p className="text-[15px] tabular-nums text-white/70">
                         {weekday} {numeric} v {WEBINAR.time}
-                        {doStartu > 0 && <> · zbývá {dniDoStartu} dní {hodinDoStartu} hodin</>}
+                        {doStartu > 0 && (
+                            <span className="text-white/50"> · zbývá {dniDoStartu} dní {hodinDoStartu} hodin</span>
+                        )}
                     </p>
                 </header>
 
-                <section className="mt-10 grid grid-cols-2 gap-x-8 gap-y-8 md:mt-14 md:grid-cols-4">
-                    <Cislo popis="Registrací" hodnota={registrace.length} detail={`${dnes.length} dnes`} />
-                    <Cislo
-                        popis="Vyplnilo dotazník"
-                        hodnota={sDotaznikem.length}
-                        detail={sDotaznikem.length ? `průměrné skóre ${prumer}` : undefined}
+                {/* Klíčová čísla v jedné řadě. Hierarchii dělá velikost, ne rámeček. */}
+                <section className="flex flex-wrap gap-x-10 gap-y-8 border-y border-white/14 py-8">
+                    <Metrika popis="Registrací" hodnota={celkem} detail={`${dnes.length} dnes`} duraz />
+                    <Metrika
+                        popis="Stojí za osobní zprávu"
+                        hodnota={horke.length}
+                        detail={`obrat od 100 tisíc výš, průměrné skóre ${prumer}`}
                     />
-                    <Cislo
-                        popis="V kalendáři"
-                        hodnota={vKalendari.length}
-                        detail={registrace.length ? `${Math.round((vKalendari.length / registrace.length) * 100)} %` : undefined}
-                    />
-                    <Cislo
-                        popis="Ve skupině"
-                        hodnota={veSkupine.length}
-                        detail={konverze !== null ? `${zobrazeni} zobrazení stránky, ${konverze} % konverze` : undefined}
+                    <Metrika popis="Uložilo si termín" hodnota={vKalendari.length} detail={podil(vKalendari.length)} />
+                    <Metrika popis="Ve skupině" hodnota={veSkupine.length} detail={podil(veSkupine.length)} />
+                    <Metrika
+                        popis="Konverze stránky"
+                        hodnota={konverze !== null ? `${konverze} %` : '—'}
+                        detail={zobrazeni ? `z ${zobrazeni} zobrazení` : 'zatím bez dat'}
                     />
                 </section>
 
-                <div className="mt-14 grid gap-12 md:mt-16 md:grid-cols-2 md:gap-14">
-                    <section>
-                        <Nadpis>Registrace po dnech</Nadpis>
-                        {podleDnu.length === 0 ? (
-                            <p className="text-[15px] text-white/45">Zatím nic</p>
-                        ) : (
-                            <ul className="flex flex-col gap-3">
-                                {podleDnu.map(([den, pocet]) => (
-                                    <li key={den} className="flex items-center gap-4">
-                                        <span className="w-14 shrink-0 text-[14px] tabular-nums text-white/55">{den}</span>
-                                        <Pruh podil={pocet / maxDen} />
-                                        <span className="w-8 shrink-0 text-right text-[14px] font-bold tabular-nums">{pocet}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-
-                    <section>
-                        <Nadpis>Odkud přišli</Nadpis>
-                        {podleZdroje.length === 0 ? (
-                            <p className="text-[15px] text-white/45">Zatím nic</p>
-                        ) : (
-                            <ul className="flex flex-col gap-3">
-                                {podleZdroje.map(([z, pocet]) => (
-                                    <li key={z} className="flex items-center gap-4">
-                                        <span className="w-28 shrink-0 truncate text-[14px] text-white/55">{z}</span>
-                                        <Pruh podil={pocet / maxZdroj} />
-                                        <span className="w-8 shrink-0 text-right text-[14px] font-bold tabular-nums">{pocet}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-                </div>
-
-                <section className="mt-14 md:mt-16">
-                    <Nadpis>Jak se počítá skóre</Nadpis>
-                    <p className="mb-5 max-w-[70ch] text-[14px] leading-[1.55] text-white/60">
-                        Body dává jen odpověď na měsíční obrat. Druhá otázka, kde se člověk zasekl, se neboduje,
-                        protože žádná odpověď není sama o sobě lepší, je to kontext pro rozhovor. Kdo dotazník
-                        nevyplnil, nemá skóre žádné.
-                    </p>
-                    <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[14px]">
-                        {REVENUE_OPTIONS.map(o => (
-                            <li key={o.value}>
-                                <span className="tabular-nums font-bold">{REVENUE_SCORE[o.value]}</span>{' '}
-                                <span className="text-white/60">{o.label.toLowerCase()}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-
-                <section className="mt-14 md:mt-16">
-                    <Nadpis>Rozesílání</Nadpis>
-                    <div className="flex flex-wrap gap-x-10 gap-y-3">
-                        {kroky.length === 0 && <p className="text-[15px] text-white/45">Zatím nic neodešlo</p>}
-                        {kroky.map(([klic, pocet]) => {
-                            const [krok, stav] = klic.split('|');
-                            return (
-                                <div key={klic} className="text-[14px]">
-                                    <span className="tabular-nums font-bold">{pocet}×</span>{' '}
-                                    <span className="text-white/70">{krok}</span>{' '}
-                                    <span className={stav === 'failed' ? 'text-brand-red' : 'text-white/45'}>{stav}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    {(selhalo.length > 0 || bezTelefonu.length > 0) && (
-                        <p className="mt-4 text-[14px] text-white/55">
-                            {selhalo.length > 0 && <>Neodesláno {selhalo.length}×, poslední důvod: {selhalo[0].error?.slice(0, 90)}. </>}
-                            {bezTelefonu.length > 0 && <>Bez telefonu {bezTelefonu.length} lidí, těm chodí jen e-mail.</>}
-                        </p>
-                    )}
-                </section>
-
-                <section className="mt-14 md:mt-16">
-                    <Nadpis>Registrovaní</Nadpis>
-                    <div className="overflow-x-auto">
-                        <div className="min-w-[760px]">
-                            <div className={`${RADEK} border-b border-white/12 pb-3 text-[12px] uppercase tracking-[0.12em] text-white/40`}>
-                                <span>Kdy</span>
-                                <span>Jméno</span>
-                                <span>E-mail</span>
-                                <span>Zdroj</span>
-                                <span className="text-right">Skóre</span>
-                                <span className="text-right">Kalendář</span>
-                            </div>
-
-                            {/* Rozklik je nativní details, takže funguje i bez skriptů. */}
-                            {registrace.map(r => (
-                                <details key={r.id} className="group border-b border-white/8">
-                                    <summary className={`${RADEK} cursor-pointer list-none py-3 text-[14px] transition-colors duration-150 hover:bg-white/4`}>
-                                        <span className="tabular-nums text-white/55">
-                                            {denKey(r.created_at)} {cas(r.created_at)}
+                <div className="mt-12 flex flex-col gap-12">
+                    {horke.length > 0 && (
+                        <Sekce
+                            titulek="Komu napsat před webinářem"
+                            popis={`${horke.length} z ${celkem}, seřazeno od nejsilnějšího`}
+                        >
+                            <ul className="flex flex-col">
+                                {horke.map(r => (
+                                    <li
+                                        key={r.id}
+                                        className="flex flex-wrap items-baseline gap-x-5 gap-y-1 border-b border-white/10 py-3.5 last:border-b-0"
+                                    >
+                                        <span className="w-10 shrink-0 text-[20px] font-bold tabular-nums text-brand-red">
+                                            {r.qual_score}
                                         </span>
-                                        <span className="truncate">{r.name || '—'}</span>
-                                        <span className="truncate text-white/70">{r.email}</span>
-                                        <span className="truncate text-white/55">{zdroj(r)}</span>
-                                        <span className="text-right tabular-nums">{r.qualified_at ? r.qual_score ?? 0 : '—'}</span>
-                                        <span className="text-right text-white/55">{r.calendar_added_at ? 'ano' : '—'}</span>
-                                    </summary>
+                                        <span className="w-40 shrink-0 truncate text-[16px] font-bold">{r.name || '—'}</span>
+                                        <span className="w-60 shrink-0 truncate text-[14px] text-white/70">{r.email}</span>
+                                        <span className="text-[14px] text-white/70">{revenueLabel(r.qual_revenue)}</span>
+                                        <span className="text-[14px] text-white/55">{stuckLabel(r.qual_stuck)}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </Sekce>
+                    )}
 
-                                    <div className="grid gap-5 pb-6 pl-1 pr-1 pt-1 md:grid-cols-2">
-                                        <Odpoved
-                                            otazka="Kde teď nejvíc cítíš, že ses zasekl?"
-                                            odpoved={stuckLabel(r.qual_stuck)}
-                                        />
-                                        <Odpoved
-                                            otazka="Kolik ti dnes byznys měsíčně vydělává?"
-                                            odpoved={revenueLabel(r.qual_revenue)}
-                                            poznamka={r.qualified_at ? `${r.qual_score ?? 0} bodů` : undefined}
-                                        />
-                                        <div className="text-[13px] text-white/55 md:col-span-2">
-                                            {r.phone ? `Telefon ${r.phone}` : 'Bez telefonu, chodí jen e-mail'}
-                                            {' · '}WhatsApp {r.wa_status}
-                                            {r.zoom_registrant_id ? ' · osobní odkaz na Zoom vytvořen' : ' · bez osobního odkazu na Zoom'}
-                                            {r.qualified_at && <> · dotazník vyplněn {denKey(r.qualified_at)} {cas(r.qualified_at)}</>}
-                                        </div>
-                                    </div>
-                                </details>
-                            ))}
-                        </div>
+                    <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr]">
+                        <Sekce titulek="Kdy se lidé hlásí" popis="podle hodiny, součet za všechny dny">
+                            <DenniKrivka poHodinach={poHodinach} />
+                        </Sekce>
+
+                        <Sekce titulek="Odkud chodí">
+                            {zdroje.length ? (
+                                <Rozpad polozky={zdroje} celkem={celkem} sirkaPopisku="w-44" />
+                            ) : (
+                                <p className="text-[15px] text-white/50">Zatím nic</p>
+                            )}
+                        </Sekce>
                     </div>
-                    {registrace.length === 0 && <p className="mt-4 text-[15px] text-white/45">Zatím nikdo</p>}
-                </section>
+
+                    <Sekce
+                        titulek="Co lidé odpověděli"
+                        popis={`dotazník má dvě otázky, vyplnilo ho ${sDotaznikem.length} z ${celkem}`}
+                    >
+                        <div className="grid gap-10 lg:grid-cols-2">
+                            <div>
+                                <p className="mb-4 text-[15px] font-bold">Kolik ti dnes byznys měsíčně vydělává?</p>
+                                <Rozpad
+                                    celkem={sDotaznikem.length}
+                                    sirkaPopisku="w-[15rem]"
+                                    polozky={REVENUE_OPTIONS.map(o => ({
+                                        klic: o.value,
+                                        popisek: `${o.label}  ·  ${REVENUE_SCORE[o.value]} b`,
+                                        pocet: obraty.get(o.value) ?? 0,
+                                        zvyraznit: REVENUE_SCORE[o.value] >= HORKY_LEAD,
+                                    }))}
+                                />
+                                <p className="mt-4 text-[13px] leading-[1.5] text-white/60">
+                                    Jediná otázka, která dává body. Čím vyšší obrat, tím víc má člověk co škálovat.
+                                </p>
+                            </div>
+                            <div>
+                                <p className="mb-4 text-[15px] font-bold">Kde teď nejvíc cítíš, že ses zasekl?</p>
+                                <Rozpad
+                                    celkem={sDotaznikem.length}
+                                    sirkaPopisku="w-[19rem]"
+                                    polozky={STUCK_OPTIONS.map(o => ({
+                                        klic: o.value,
+                                        popisek: o.label,
+                                        pocet: zaseky.get(o.value) ?? 0,
+                                    }))}
+                                />
+                                <p className="mt-4 text-[13px] leading-[1.5] text-white/60">
+                                    Neboduje se, žádná odpověď není sama o sobě lepší. Říká, o čem s tím člověkem mluvit
+                                    a která část webináře mu sedne.
+                                </p>
+                            </div>
+                        </div>
+                    </Sekce>
+
+                    <Sekce titulek="Rozesílání" popis="potvrzení a upomínky, které odešly z aplikace">
+                        {kroky.size === 0 ? (
+                            <p className="text-[15px] text-white/50">Zatím nic neodešlo</p>
+                        ) : (
+                            <ul className="flex flex-col gap-2.5">
+                                {[...kroky.entries()].map(([krok, z]) => (
+                                    <li key={krok} className="flex flex-wrap items-baseline gap-x-5 text-[15px]">
+                                        <span className="w-44 shrink-0 text-white/85">{krok}</span>
+                                        <span className="tabular-nums">
+                                            <span className="font-bold">{z.sent}</span> <Stav text="odesláno" druh="ok" />
+                                        </span>
+                                        {z.failed > 0 && (
+                                            <span className="tabular-nums">
+                                                <span className="font-bold">{z.failed}</span>{' '}
+                                                <Stav text="selhalo" druh="chyba" />
+                                            </span>
+                                        )}
+                                        {z.skipped > 0 && (
+                                            <span className="tabular-nums text-white/50">{z.skipped} přeskočeno</span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {bezTelefonu.length > 0 && (
+                            <p className="mt-4 text-[14px] text-white/60">
+                                {bezTelefonu.length} lidí je bez telefonu, těm chodí jen e-mail.
+                            </p>
+                        )}
+                    </Sekce>
+
+                    <Sekce titulek="Všichni registrovaní" popis="klepnutím na řádek se rozbalí odpovědi a stav">
+                        <div className="overflow-x-auto">
+                            <div className="min-w-[820px]">
+                                <div className={`${RADEK} border-b border-white/14 pb-2.5 text-[13px] text-white/55`}>
+                                    <span>Kdy</span>
+                                    <span>Jméno</span>
+                                    <span>E-mail</span>
+                                    <span>Zdroj</span>
+                                    <span className="text-right">Skóre</span>
+                                    <span className="text-right">Termín</span>
+                                </div>
+
+                                {/* Rozklik je nativní details, takže funguje i bez skriptů. */}
+                                {registrace.map(r => {
+                                    const horky = (r.qual_score ?? 0) >= HORKY_LEAD;
+                                    const poslano = odeslano.get(r.id);
+                                    return (
+                                        <details key={r.id} className="border-b border-white/10">
+                                            <summary
+                                                className={`${RADEK} cursor-pointer list-none py-3 text-[14px] transition-colors duration-150 hover:bg-white/6 focus-visible:bg-white/6 focus-visible:outline-none`}
+                                            >
+                                                <span className="tabular-nums text-white/60">
+                                                    {denKey(r.created_at)} {cas(r.created_at)}
+                                                </span>
+                                                <span className={`truncate ${horky ? 'font-bold' : ''}`}>{r.name || '—'}</span>
+                                                <span className="truncate text-white/70">{r.email}</span>
+                                                <span className="truncate text-white/60">{zdroj(r)}</span>
+                                                <span
+                                                    className={`text-right tabular-nums ${horky ? 'font-bold text-brand-red' : r.qualified_at ? '' : 'text-white/35'}`}
+                                                >
+                                                    {r.qualified_at ? r.qual_score ?? 0 : '—'}
+                                                </span>
+                                                <span className="text-right">
+                                                    {r.calendar_added_at ? (
+                                                        <Stav text="uložen" druh="ok" />
+                                                    ) : (
+                                                        <Stav text="neuložen" druh="nic" />
+                                                    )}
+                                                </span>
+                                            </summary>
+
+                                            <div className="grid gap-6 border-t border-white/8 bg-white/3 px-4 py-5 md:grid-cols-3">
+                                                <Udaj popis="Kolik ti dnes byznys měsíčně vydělává?">
+                                                    {revenueLabel(r.qual_revenue) ?? (
+                                                        <span className="text-white/45">neodpověděl</span>
+                                                    )}
+                                                    {r.qualified_at && (
+                                                        <span className="text-white/55"> · {r.qual_score ?? 0} bodů</span>
+                                                    )}
+                                                </Udaj>
+                                                <Udaj popis="Kde teď nejvíc cítíš, že ses zasekl?">
+                                                    {stuckLabel(r.qual_stuck) ?? (
+                                                        <span className="text-white/45">neodpověděl</span>
+                                                    )}
+                                                </Udaj>
+                                                <Udaj popis="Kontakt">
+                                                    {r.phone ? (
+                                                        <a href={`tel:${r.phone}`} className="tabular-nums underline-offset-4 hover:underline">
+                                                            {r.phone}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-white/45">bez telefonu</span>
+                                                    )}
+                                                </Udaj>
+
+                                                <div className="flex flex-wrap gap-x-6 gap-y-2 md:col-span-3">
+                                                    <span className="text-[13px] text-white/55">
+                                                        WhatsApp{' '}
+                                                        {poslano?.has('confirm-wa') ? (
+                                                            <Stav text="potvrzení odesláno" druh="ok" />
+                                                        ) : r.phone ? (
+                                                            <Stav text="čeká na odeslání" druh="ceka" />
+                                                        ) : (
+                                                            <Stav text="nemá číslo" druh="nic" />
+                                                        )}
+                                                    </span>
+                                                    <span className="text-[13px] text-white/55">
+                                                        Zoom{' '}
+                                                        {r.zoom_registrant_id ? (
+                                                            <Stav text="osobní odkaz vytvořen" druh="ok" />
+                                                        ) : (
+                                                            <Stav text="jen obecný odkaz" druh="ceka" />
+                                                        )}
+                                                    </span>
+                                                    {r.qualified_at && (
+                                                        <span className="text-[13px] text-white/55">
+                                                            Dotazník vyplněn {denKey(r.qualified_at)} {cas(r.qualified_at)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </details>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        {celkem === 0 && <p className="mt-4 text-[15px] text-white/50">Zatím nikdo</p>}
+                    </Sekce>
+                </div>
             </div>
         </main>
     );
