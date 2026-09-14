@@ -2,29 +2,11 @@
 // Používá PLUNK_SECRET_KEY (bearer). Vokativ řešíme tady, ať /strategie optin
 // i ostatní formuláře plní `data.vokativ` konzistentně (s defaultem v Plunku).
 
-import { vokativ } from 'vokativ';
+import { czGreeting, czVocative } from './vokativ';
+
+export { czGreeting, czVocative };
 
 const PLUNK_API_URL = process.env.PLUNK_API_URL || 'https://next-api.useplunk.com';
-
-/**
- * Celé oslovení do jedné hodnoty, aby ho šablona jen vypsala.
- * Kdo nemá použitelné jméno, dostane "Ahoj," bez mezery navíc. Dřív šablony
- * skládaly "Ahoj {{ vokativ }}," a u kontaktů bez jména z toho vznikalo
- * "Ahoj ," s mezerou před čárkou.
- */
-export function czGreeting(firstNameRaw?: string): string {
-    const v = czVocative(firstNameRaw);
-    return v ? `Ahoj ${v},` : 'Ahoj,';
-}
-
-/** Z křestního jména (bere první slovo) udělá kapitalizovaný český vokativ. */
-export function czVocative(firstNameRaw?: string): string | undefined {
-    const first = firstNameRaw?.trim().split(/\s+/)[0];
-    if (!first) return undefined;
-    const v = vokativ(first);
-    if (!v) return undefined;
-    return v.charAt(0).toUpperCase() + v.slice(1);
-}
 
 /**
  * Transakční email přes Plunk (POST /v1/send). Plain text dostane <br> zalomení.

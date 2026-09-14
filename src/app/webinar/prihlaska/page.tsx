@@ -4,6 +4,7 @@ import { ApplicationForm } from '@/components/webinar/ApplicationForm';
 import { LedText } from '@/components/webinar/LedText';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { dbConfigured, getRegistrationByToken } from '@/lib/webinar/db';
+import { czVocative } from '@/lib/vokativ';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 export default async function ApplicationPage({ searchParams }: { searchParams: Promise<{ t?: string }> }) {
     const { t } = await searchParams;
     const reg = dbConfigured() && t ? await getRegistrationByToken(t).catch(() => null) : null;
-    const firstName = reg?.name?.trim().split(/\s+/)[0];
+    // Pátý pád, ať nadpis neoslovoval "Pavel, řekni mi" místo "Pavle".
+    const firstName = czVocative(reg?.name);
 
     return (
         <main className="min-h-screen relative bg-[#0A0A0A] text-white selection:bg-brand-red selection:text-white overflow-x-hidden">

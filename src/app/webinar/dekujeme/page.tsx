@@ -68,7 +68,7 @@ export default async function ThankYouPage({ searchParams }: { searchParams: Pro
                     <ThankYouSteps
                         token={reg?.token ?? null}
                         alreadyQualified={Boolean(reg?.qualified_at)}
-                        firstName={reg?.name?.trim().split(/\s+/)[0] ?? null}
+                        firstName={reg?.name ?? null}
                         dayLabel={when.day}
                         weekday={when.weekday}
                         dayMonth={when.dayMonth}

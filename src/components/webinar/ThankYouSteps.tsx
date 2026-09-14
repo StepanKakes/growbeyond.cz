@@ -5,6 +5,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { LedText } from './LedText';
 import { EventCard, GoogleCalendarLogo, WhatsAppLogo } from './EventCard';
 import { QualifyForm } from './QualifyForm';
+import { czVocative } from '@/lib/vokativ';
 
 // Děkovačka po registraci má dva kroky. Nejdřív dotazník, teprve po něm
 // potvrzení s termínem a kalendářem. Kdyby přišlo obojí naráz, dotazník
@@ -45,7 +46,9 @@ const BlockTitle = ({ children }: { children: React.ReactNode }) => (
 
 export const ThankYouSteps = (d: ThankYouData) => {
     const [done, setDone] = useState(d.alreadyQualified || !d.token);
-    const hello = d.firstName ? `${d.firstName}, ` : '';
+    // Oslovení musí být v pátém pádu, jinak stránka volá "Pavel, máš místo".
+    const vocative = czVocative(d.firstName);
+    const hello = vocative ? `${vocative}, ` : '';
 
     // Dotazník je delší než obrazovka, takže po odeslání zůstane stránka
     // odrolovaná dole a potvrzení by začalo někde uprostřed.

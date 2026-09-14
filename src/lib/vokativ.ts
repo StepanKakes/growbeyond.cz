@@ -22,3 +22,35 @@ export function toVokativ(name: string): string {
 export function firstNameFrom(full: string): string {
     return full.trim().split(/\s+/)[0] ?? '';
 }
+
+/* ------------------------------------------------------------------ *
+ * Skloňování přes knihovnu
+ *
+ * Funkce výš jsou ruční pravidla zrcadlící n8n workflow u onboardingu.
+ * Pro weby a e-maily se používá knihovna, která zvládne i jména, na
+ * která ta pravidla nestačí. Je tady, aby oslovení sedělo stejně na
+ * serveru i v prohlížeči, dřív to uměl jen server a děkovačka proto
+ * psala "Pavel, máš místo" místo "Pavle, máš místo".
+ * ------------------------------------------------------------------ */
+
+import { vokativ } from 'vokativ';
+
+/** Z křestního jména (bere první slovo) udělá kapitalizovaný český vokativ. */
+export function czVocative(firstNameRaw?: string | null): string | undefined {
+    const first = firstNameRaw?.trim().split(/\s+/)[0];
+    if (!first) return undefined;
+    const v = vokativ(first);
+    if (!v) return undefined;
+    return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
+/**
+ * Celé oslovení do jedné hodnoty, aby ho šablona jen vypsala.
+ * Kdo nemá použitelné jméno, dostane "Ahoj," bez mezery navíc. Dřív šablony
+ * skládaly "Ahoj {{ vokativ }}," a u kontaktů bez jména z toho vznikalo
+ * "Ahoj ," s mezerou před čárkou.
+ */
+export function czGreeting(firstNameRaw?: string | null): string {
+    const v = czVocative(firstNameRaw);
+    return v ? `Ahoj ${v},` : 'Ahoj,';
+}
