@@ -118,7 +118,7 @@ const Rozpad = ({
                     </span>
                     <span className="h-2 flex-1 bg-white/8">
                         <span
-                            className={`block h-full ${p.zvyraznit ? 'bg-brand-red' : 'bg-white/70'}`}
+                            className={`block h-full ${p.zvyraznit ? 'bg-brand-red' : 'bg-white/80'}`}
                             style={{ width: `${(p.pocet / max) * 100}%` }}
                         />
                     </span>
@@ -140,24 +140,35 @@ const Rozpad = ({
  */
 const DenniKrivka = ({ poHodinach }: { poHodinach: number[] }) => {
     const max = Math.max(1, ...poHodinach);
-    const vyska = 88;
+    const vyska = 96;
+    const spicka = poHodinach.indexOf(max);
     return (
         <div>
-            <div className="flex items-end gap-[3px]" style={{ height: vyska }}>
+            {/* Popisky sedí ve stejné mřížce jako sloupce, aby ukazovaly
+                na hodinu, ke které patří. */}
+            <div className="grid grid-cols-24 items-end gap-[2px]" style={{ height: vyska }}>
                 {poHodinach.map((n, h) => (
-                    <div key={h} className="group relative flex-1" title={`${h}:00 — ${n}`}>
+                    <div key={h} title={`${h}:00, ${n} registrací`} className="flex h-full flex-col justify-end">
+                        {n > 0 && (
+                            <span className="mb-1 text-center text-[11px] font-bold tabular-nums leading-none">{n}</span>
+                        )}
                         <div
-                            className={`w-full ${n ? 'bg-brand-red' : 'bg-white/10'}`}
-                            style={{ height: n ? Math.max(3, (n / max) * vyska) : 2 }}
+                            className={n ? 'bg-brand-red' : 'bg-white/12'}
+                            style={{ height: n ? Math.max(4, (n / max) * (vyska - 18)) : 2 }}
                         />
                     </div>
                 ))}
             </div>
-            <div className="mt-2 flex justify-between text-[12px] tabular-nums text-white/50">
-                {[0, 6, 12, 18, 23].map(h => (
-                    <span key={h}>{h}:00</span>
+            <div className="mt-2 grid grid-cols-24 gap-[2px] text-[11px] tabular-nums text-white/50">
+                {Array.from({ length: 24 }, (_, h) => (
+                    <span key={h} className="text-center">
+                        {h % 6 === 0 ? h : ''}
+                    </span>
                 ))}
             </div>
+            <p className="mt-3 text-[13px] text-white/60">
+                Nejvíc se hlásí kolem {spicka}:00
+            </p>
         </div>
     );
 };
@@ -269,7 +280,7 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                 </header>
 
                 {/* Klíčová čísla v jedné řadě. Hierarchii dělá velikost, ne rámeček. */}
-                <section className="flex flex-wrap gap-x-10 gap-y-8 border-y border-white/14 py-8">
+                <section className="flex flex-wrap gap-x-10 gap-y-8 border-t border-white/14 pt-8">
                     <Metrika popis="Registrací" hodnota={celkem} detail={`${dnes.length} dnes`} duraz />
                     <Metrika
                         popis="Stojí za osobní zprávu"
@@ -285,7 +296,7 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                     />
                 </section>
 
-                <div className="mt-12 flex flex-col gap-12">
+                <div className="mt-12 flex flex-col gap-11">
                     {horke.length > 0 && (
                         <Sekce
                             titulek="Komu napsat před webinářem"
