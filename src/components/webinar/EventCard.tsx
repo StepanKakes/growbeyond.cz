@@ -56,7 +56,6 @@ export const EventCard = ({ weekday, dayMonth, time, minutes }: EventCardProps) 
         <div className="mt-7 flex flex-col gap-3.5">
             <Line label="Délka" value={`${minutes} minut`} />
             <Line label="Kde" value="Online, živě" />
-            <Line label="Cena" value="Zdarma" />
         </div>
     </div>
 );
