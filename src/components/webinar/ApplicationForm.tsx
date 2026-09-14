@@ -3,7 +3,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 
-// Přihláška na hovor po webináři, vedená po jedné otázce.
+// Dotazník vedený po jedné otázce. Ptá se hned po registraci, aby bylo
+// vidět, kdo přijde, a znovu po webináři jako přihláška na hovor.
 //
 // Proč postupně a ne jeden dlouhý formulář: dlouhý formulář se očima vyhodnotí
 // jako práce a člověk ho zavře. Jedna otázka na obrazovce drží tempo a dovolí
@@ -21,59 +22,17 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 // působí lacině. Kdo má v systému vypnuté animace, dostane přechody bez
 // pohybu, o to se stará MotionConfig.
 
-type Choice = { value: string; label: string };
+import {
+    BUDGET_OPTIONS as BUDGET,
+    LEADS_OPTIONS as LEADS,
+    WHEN_OPTIONS as WHEN,
+    YEARS_OPTIONS as YEARS,
+} from './applicationQuestions';
+import { REVENUE_OPTIONS as REVENUE, STUCK_OPTIONS as STUCK, type Choice } from './qualifyOptions';
 
 type Question =
     | { key: string; kind: 'choice'; question: string; hint?: string; options: Choice[] }
     | { key: string; kind: 'text'; question: string; hint?: string; placeholder: string; inputType: 'text' | 'email' };
-
-const YEARS: Choice[] = [
-    { value: 'do-1', label: 'Méně než rok' },
-    { value: '1-3', label: '1 až 3 roky' },
-    { value: '3-5', label: '3 až 5 let' },
-    { value: 'nad-5', label: 'Víc než 5 let' },
-];
-
-const REVENUE: Choice[] = [
-    { value: 'rozjezd', label: 'Ještě to nemám rozjeté' },
-    { value: 'do-100', label: 'Do 100 tisíc měsíčně' },
-    { value: '100-300', label: '100 až 300 tisíc měsíčně' },
-    { value: '300-1m', label: '300 tisíc až milion měsíčně' },
-    { value: 'nad-1m', label: 'Přes milion měsíčně' },
-];
-
-// Diagnostická otázka. Neskóruje, ale každá odpověď odpovídá jedné části
-// webináře, takže je z ní vidět, co tomu člověku sedne a o čem bude hovor.
-const STUCK: Choice[] = [
-    { value: 'znamost', label: 'Jsem dobrý v tom, co dělám, ale ví o mně málo lidí' },
-    { value: 'kapacita', label: 'Mám dost lidí, ale nestíhám to' },
-    { value: 'obsah', label: 'Tvořím obsah, ale nepřitahuje správné lidi' },
-    { value: 'nabidka', label: 'Mám co nabídnout, ale těžko se to prodává' },
-    { value: 'nevim', label: 'Nevím, právě to chci zjistit' },
-];
-
-// Distribuce, tedy přesně to, o čem webinář je. Taky jen kontext.
-const LEADS: Choice[] = [
-    { value: 'doporuceni', label: 'Z doporučení' },
-    { value: 'reklama', label: 'Z placené reklamy' },
-    { value: 'obsah', label: 'Z obsahu na sítích' },
-    { value: 'oslovuju', label: 'Oslovuju si je sám' },
-    { value: 'nemam', label: 'Nemám stabilní zdroj' },
-];
-
-const BUDGET: Choice[] = [
-    { value: 'nic', label: 'Zatím nechci investovat nic' },
-    { value: 'do-20', label: 'Do 20 tisíc' },
-    { value: '20-50', label: '20 až 50 tisíc' },
-    { value: 'nad-50', label: 'Nad 50 tisíc' },
-];
-
-const WHEN: Choice[] = [
-    { value: 'hned', label: 'Hned' },
-    { value: 'mesic', label: 'Během následujícího měsíce' },
-    { value: 'ctvrtleti', label: 'Během tří měsíců' },
-    { value: 'ujasnit', label: 'Nejdřív si to chci ujasnit' },
-];
 
 // Směr drží prostorovou logiku: dopředu odchází nahoru, zpět dolů.
 const blockV = {
@@ -159,6 +118,9 @@ export const ApplicationForm = ({
     const [error, setError] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'rejected' | 'error'>('idle');
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Po registraci následuje termín webináře, ne odeslání přihlášky na hovor.
+    const posledniPopisek = onDone ? 'Hotovo, ukaž mi termín' : 'Odeslat přihlášku';
 
     const current = questions[index];
     const value = answers[current?.key] || '';
@@ -403,7 +365,7 @@ export const ApplicationForm = ({
                                         >
                                             {/* Neviditelná kopie drží šířku, ať tlačítko při změně textu neposkočí */}
                                             <span className="invisible" aria-hidden="true">
-                                                {isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
+                                                {isLast ? posledniPopisek : 'Pokračovat'}
                                             </span>
                                             <AnimatePresence mode="popLayout" initial={false}>
                                                 <motion.span
@@ -414,7 +376,7 @@ export const ApplicationForm = ({
                                                     transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
                                                     className="absolute inset-0 grid place-items-center"
                                                 >
-                                                    {status === 'submitting' ? 'Odesílám' : isLast ? 'Odeslat přihlášku' : 'Pokračovat'}
+                                                    {status === 'submitting' ? 'Odesílám' : isLast ? posledniPopisek : 'Pokračovat'}
                                                 </motion.span>
                                             </AnimatePresence>
                                         </motion.button>
