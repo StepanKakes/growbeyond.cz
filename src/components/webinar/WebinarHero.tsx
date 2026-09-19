@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { LedText } from './LedText';
+import { WebinarVideo } from './WebinarVideo';
 import { WEBINAR, webinarDate } from './webinarConfig';
 import { openWebinarForm } from './formEvents';
 
@@ -100,7 +101,11 @@ export const WebinarHero = () => {
                 </motion.p>
             </div>
 
-            <motion.div {...reveal(0.9)} className="mt-10 md:mt-14">
+            <motion.div {...reveal(0.9)} className="mx-auto mt-10 w-full max-w-[880px] md:mt-14">
+                <WebinarVideo />
+            </motion.div>
+
+            <motion.div {...reveal(1.05)} className="mx-auto w-full max-w-[880px]">
                 <EventStrip />
             </motion.div>
         </header>

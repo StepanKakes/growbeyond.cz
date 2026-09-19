@@ -14,6 +14,14 @@ export const WEBINAR = {
         label: 'Uzavření registrace za:',
     },
 
+    // VSL v hero. Soubory leží na vlastním hostingu (nginx s byte-range,
+    // viz video.growbeyond.cz), ne na YouTube, aby stránku nebrzdil cizí
+    // přehrávač a nesvítily na ní odkazy pryč.
+    video: {
+        src: 'https://video.growbeyond.cz/webinar-vsl.mp4',
+        poster: 'https://video.growbeyond.cz/webinar-vsl.jpg',
+    },
+
     hero: {
         year: '2030',
         headline: 'Jsi profík v tom, co děláš?',
