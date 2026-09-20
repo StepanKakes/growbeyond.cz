@@ -6,7 +6,7 @@ import { loadMetaPixel } from '@/lib/metaPixel';
 const CONSENT_KEY = "gb_cookie_consent"; // sdíleno s CookieConsent
 
 /**
- * Načte Meta Pixel jen na /strategie funnelu a jen po souhlasu s cookies.
+ * Načte Meta Pixel jen na funnelech /strategie a /webinar a jen po souhlasu s cookies.
  * - Při mountu: pokud už je souhlas udělen → načti hned.
  * - Jinak čekej na event z cookie lišty (gb-cookie-consent-accepted).
  */

@@ -1,4 +1,4 @@
-// Meta (Facebook) Pixel — načítá se POUZE na /strategie funnelu a AŽ po souhlasu
+// Meta (Facebook) Pixel — načítá se POUZE na funnelech /strategie a /webinar a AŽ po souhlasu
 // s cookies (gb_cookie_consent === "accepted"). Stejný consent model jako Clarity.
 // Pixel ID se nastavuje přes NEXT_PUBLIC_META_PIXEL_ID. Bez ID je vše no-op.
 
@@ -37,8 +37,15 @@ export const loadMetaPixel = () => {
     window.fbq!('track', 'PageView');
 };
 
-/** Odešle Lead event (pokud je pixel načtený). Bez souhlasu / bez ID je no-op. */
-export const trackMetaLead = (params?: Record<string, unknown>) => {
+/** Odešle standardní event (pokud je pixel načtený). Bez souhlasu / bez ID je no-op. */
+export const trackMetaEvent = (event: string, params?: Record<string, unknown>) => {
     if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
-    window.fbq('track', 'Lead', params);
+    window.fbq('track', event, params);
 };
+
+/** Lead: vytvořený lead na /strategie, kvalifikovaná přihláška na hovor z /webinar. */
+export const trackMetaLead = (params?: Record<string, unknown>) => trackMetaEvent('Lead', params);
+
+/** CompleteRegistration: registrace na webinář. Na tohle se optimalizuje reklama. */
+export const trackMetaCompleteRegistration = (params?: Record<string, unknown>) =>
+    trackMetaEvent('CompleteRegistration', params);

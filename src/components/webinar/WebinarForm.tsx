@@ -2,6 +2,7 @@
 
 import React, { useId, useState } from 'react';
 import { getStoredUtm } from '@/lib/utm';
+import { trackMetaCompleteRegistration } from '@/lib/metaPixel';
 import { PhoneField } from './PhoneField';
 import { WEBINAR } from './webinarConfig';
 
@@ -45,6 +46,8 @@ export const WebinarForm = () => {
             });
             const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string }));
             if (res.ok && data?.ok) {
+                // Meta Pixel: registrace na webinář. No-op bez souhlasu / bez Pixel ID.
+                trackMetaCompleteRegistration({ content_name: 'Webinář 2030' });
                 // Děkovačka nese token registrace, proto přesměrování a ne jen
                 // inline hláška. Když token nedorazil, necháme aspoň potvrzení.
                 if (data.redirect) {

@@ -29,6 +29,7 @@ import {
     YEARS_OPTIONS as YEARS,
 } from './applicationQuestions';
 import { REVENUE_OPTIONS as REVENUE, STUCK_OPTIONS as STUCK, type Choice } from './qualifyOptions';
+import { trackMetaLead } from '@/lib/metaPixel';
 
 type Question =
     | { key: string; kind: 'choice'; question: string; hint?: string; options: Choice[] }
@@ -154,6 +155,8 @@ export const ApplicationForm = ({
                     return;
                 }
                 if (data.qualified && data.redirect) {
+                    // Meta Pixel: kvalifikovaná přihláška na hovor. No-op bez souhlasu / bez Pixel ID.
+                    trackMetaLead({ content_name: 'Přihláška na hovor' });
                     window.location.assign(data.redirect);
                     return;
                 }
