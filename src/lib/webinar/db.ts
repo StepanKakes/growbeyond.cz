@@ -344,6 +344,56 @@ export async function listApplications(editionId: string): Promise<ApplicationRo
     );
 }
 
+export type PageViewRow = {
+    id: number;
+    source: string | null;
+    utm: Record<string, string>;
+    session_id: string | null;
+    created_at: string;
+};
+
+/** Zobrazení i s původem, aby šla konverze spočítat po reklamách a sadách. */
+export async function listPageViews(editionId: string): Promise<PageViewRow[]> {
+    return rest<PageViewRow[]>(
+        `page_views?select=id,source,utm,session_id,created_at&edition_id=eq.${enc(editionId)}&order=id.asc&limit=100000`,
+    );
+}
+
+export type BeoPuvod = {
+    email: string | null;
+    klik_id: string | null;
+    odkaz_id: string | null;
+    lead_id: string | null;
+    conversation_id: string | null;
+    ig_username: string | null;
+    jmeno: string | null;
+    druh: 'komentar' | 'story' | 'dm';
+    prispevek_url: string | null;
+    prispevek_popis: string | null;
+    prispevek_nahled: string | null;
+    workflow: string | null;
+    kliknuto: string | null;
+    poslano: string | null;
+};
+
+/**
+ * Odkud v Beovi přišli lidé z DM: který lead, jestli přes komentář (a pod
+ * jakým příspěvkem), story nebo klíčové slovo v DM. Funkce v DB běží s právy
+ * vlastníka a vrací jen tyhle popisné údaje, viz webinar.beo_puvod.
+ * Dohledává podle id prokliku, id odkazu i e-mailu (starší registrace).
+ */
+export async function beoPuvod(input: { emaily?: string[]; kliky?: string[]; odkazy?: string[] }): Promise<BeoPuvod[]> {
+    // Hodnoty přišly z prohlížeče; cokoliv, co není uuid, by shodilo celý dotaz.
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const body = {
+        emaily: [...new Set((input.emaily ?? []).map(e => e.toLowerCase()))],
+        kliky: [...new Set((input.kliky ?? []).filter(v => UUID.test(v)))],
+        odkazy: [...new Set((input.odkazy ?? []).filter(v => UUID.test(v)))],
+    };
+    if (!body.emaily.length && !body.kliky.length && !body.odkazy.length) return [];
+    return rest<BeoPuvod[]>('rpc/beo_puvod', { method: 'POST', body });
+}
+
 export async function countPageViews(editionId: string): Promise<number> {
     const rows = await rest<{ id: number }[]>(`page_views?select=id&edition_id=eq.${enc(editionId)}&limit=100000`);
     return rows.length;

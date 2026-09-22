@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { getStoredUtm, initUtmTracking } from '@/lib/utm';
+import { getAtribuce, initAtribuce } from '@/lib/atribuce';
+import { getStoredUtm } from '@/lib/utm';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { WebinarTopBar } from '@/components/webinar/WebinarTopBar';
 import { WebinarHero } from '@/components/webinar/WebinarHero';
@@ -20,7 +21,8 @@ const WebinarFormModal = dynamic(() => import('@/components/webinar/WebinarFormM
 
 export default function WebinarPage() {
     useEffect(() => {
-        initUtmTracking();
+        // Dřív než měřicí skript Bea uklidí ?beo= z adresy.
+        initAtribuce();
 
         // Návštěvu počítáme jednou za relaci, jinak by první poměr funnelu
         // (návštěva na registraci) nafoukly obnovené stránky.
@@ -32,7 +34,7 @@ export default function WebinarPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 keepalive: true,
-                body: JSON.stringify({ path: '/webinar', sessionId: KEY + Date.now(), utm: getStoredUtm() }),
+                body: JSON.stringify({ path: '/webinar', sessionId: KEY + Date.now(), utm: getStoredUtm(), atribuce: getAtribuce() }),
             }).catch(() => {});
         } catch { /* soukromý režim bez sessionStorage */ }
     }, []);

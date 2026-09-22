@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { dbConfigured, getEdition, logPageView } from '@/lib/webinar/db';
 import { UTM_KEYS } from '@/lib/utm';
+import { kanal, ocistiAtribuci } from '@/lib/atribuce';
 
 export const runtime = 'nodejs';
 
@@ -14,6 +15,7 @@ export async function POST(req: Request) {
         path?: string;
         sessionId?: string;
         utm?: Record<string, string>;
+        atribuce?: unknown;
     };
 
     const utm: Record<string, string> = {};
@@ -24,13 +26,17 @@ export async function POST(req: Request) {
         }
     }
 
+    // Detail původu (id reklamy, stopa z Bea, odkazovač) se ukládá do stejného
+    // jsonb jako UTM. UTM z adresy mají přednost před tím, co je v úložišti.
+    const atribuce = { ...ocistiAtribuci(body.atribuce), ...utm };
+
     try {
         const edition = await getEdition();
         await logPageView({
             edition_id: edition?.id,
             path: String(body.path || '/webinar').slice(0, 200),
-            source: utm.utm_source,
-            utm,
+            source: kanal(atribuce),
+            utm: atribuce,
             session_id: String(body.sessionId || '').slice(0, 64) || undefined,
         });
     } catch (e) {

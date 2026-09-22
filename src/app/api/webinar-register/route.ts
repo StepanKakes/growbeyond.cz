@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { validateEmail } from '@/lib/validate-contact';
 import { plunkEnroll } from '@/lib/plunk';
 import { UTM_KEYS } from '@/lib/utm';
+import { adsetNazev, kanal, ocistiAtribuci } from '@/lib/atribuce';
 import { dbConfigured, getEdition, updateRegistration, upsertRegistration } from '@/lib/webinar/db';
 import { addRegistrant, zoomConfigured } from '@/lib/webinar/zoom';
 
@@ -32,6 +33,7 @@ export async function POST(req: Request) {
         email?: string;
         phone?: string;
         utm?: Record<string, string>;
+        atribuce?: unknown;
     };
 
     const name = String(body.name || '').trim();
@@ -56,6 +58,12 @@ export async function POST(req: Request) {
         }
     }
 
+    // Celý původ: UTM, id kampaně / sady / reklamy z Mety, stopa z Bea (proklik
+    // z /l/ a cookie sledovaného odkazu), odkazovač, první dotek. Jde do jsonb
+    // `utm`, sloupec `source` nese odvozený kanál pro rychlé filtrování.
+    const atribuce = { ...ocistiAtribuci(body.atribuce), ...utm };
+    const zdroj = kanal(atribuce);
+
     let token: string | null = null;
     let joinUrl = '';
     let stored = false;
@@ -73,8 +81,8 @@ export async function POST(req: Request) {
                 phone,
                 consent_marketing: true,
                 consent_whatsapp: true,
-                source: utm.utm_source || 'growbeyond.cz/webinar',
-                utm,
+                source: zdroj,
+                utm: atribuce,
             });
             token = registration.token;
             joinUrl = registration.zoom_join_url || edition.zoom_join_url || '';
@@ -120,11 +128,13 @@ export async function POST(req: Request) {
             phone,
             webinar: '2030',
             source: 'growbeyond.cz/webinar',
+            kanal: zdroj,
+            ad_set: adsetNazev(atribuce) || '',
             registered_at: new Date().toISOString(),
             webinar_page_url: pageUrl,
             webinar_join_url: joinUrl || pageUrl,
             webinar_apply_url: token ? `${site}/webinar/prihlaska?t=${token}` : `${site}/webinar/prihlaska`,
-            ...utm,
+            ...atribuce,
         },
     });
 

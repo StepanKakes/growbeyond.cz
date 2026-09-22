@@ -14,15 +14,29 @@ import {
 } from '@/components/webinar/applicationQuestions';
 import { WEBINAR, webinarDate, webinarStart } from '@/components/webinar/webinarConfig';
 import {
-    countPageViews,
+    beoPuvod,
     dbConfigured,
     getEdition,
     listApplications,
     listMessageLog,
+    listPageViews,
     listRegistrations,
+    type BeoPuvod,
     type MessageLogRow,
+    type PageViewRow,
     type Registration,
 } from '@/lib/webinar/db';
+import { kanalPopisek } from '@/lib/atribuce';
+import {
+    BEO_DRUH,
+    puvodRegistrace,
+    rozpadBea,
+    rozpadKanalu,
+    rozpadReklam,
+    sparujBeo,
+    type Puvod,
+    type Radek,
+} from '@/lib/webinar/puvod';
 
 // Přehled registrací na webinář.
 //
@@ -49,8 +63,8 @@ const denKey = (iso: string) => fmt({ day: 'numeric', month: 'numeric' }).format
 const cas = (iso: string) => fmt({ hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 const hodina = (iso: string) => Number(fmt({ hour: '2-digit', hour12: false }).format(new Date(iso)));
 
-/** Odkud člověk přišel. UTM má přednost, jinak zdroj zapsaný při registraci. */
-const zdroj = (r: Registration) => r.utm?.utm_source || r.source || 'neznámý';
+/** Aplikace Bea, kam vedou odkazy na konverzace. */
+const BEO_APP = process.env.NEXT_PUBLIC_BEO_APP_URL || 'https://app.growbeyond.cz';
 
 function tally<T>(rows: T[], key: (r: T) => string): Map<string, number> {
     const m = new Map<string, number>();
@@ -179,6 +193,127 @@ const DenniKrivka = ({ poHodinach }: { poHodinach: number[] }) => {
     );
 };
 
+/**
+ * Tabulka původu: řádek na kanál, reklamu nebo příspěvek. Konverze je
+ * registrace ku zobrazení se stejným původem, takže se dá číst, která
+ * reklama lidi přivede a která je jen proklikne.
+ */
+const TabulkaPuvodu = ({ radky, zobrazeni = true }: { radky: Radek[]; zobrazeni?: boolean }) => {
+    const sloupce = zobrazeni
+        ? 'grid-cols-[minmax(0,1fr)_5.5rem_5.5rem_5.5rem_5rem_5rem]'
+        : 'grid-cols-[minmax(0,1fr)_5.5rem_5rem_5rem]';
+    const cislo = (n: number, duraz = false) => (
+        <span className={`text-right tabular-nums ${n ? (duraz ? 'font-bold' : '') : 'text-white/35'}`}>{n}</span>
+    );
+    return (
+        <div className="overflow-x-auto">
+            <div className={`min-w-[640px] ${zobrazeni ? '' : 'min-w-[520px]'}`}>
+                <div className={`grid ${sloupce} items-baseline gap-x-4 border-b border-white/14 pb-2.5 text-[13px] text-white/55`}>
+                    <span>Odkud</span>
+                    {zobrazeni && <span className="text-right">Zobrazení</span>}
+                    <span className="text-right">Registrací</span>
+                    {zobrazeni && <span className="text-right">Konverze</span>}
+                    <span className="text-right">Dotazník</span>
+                    <span className="text-right">Horkých</span>
+                </div>
+                {radky.map(r => {
+                    const konverze = r.zobrazeni ? `${Math.round((r.registrace / r.zobrazeni) * 1000) / 10} %` : '—';
+                    const odsazeni = ['', 'pl-6', 'pl-12'][r.uroven ?? 0];
+                    const list = r.uroven === undefined || r.uroven === 2;
+                    return (
+                        <div key={r.klic} className={`grid ${sloupce} items-baseline gap-x-4 border-b border-white/8 py-2.5 text-[14px]`}>
+                            <div className={`min-w-0 ${odsazeni}`}>
+                                <div className={`flex items-baseline gap-2 ${list ? '' : 'text-white/60'}`}>
+                                    {r.nahled && (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={r.nahled} alt="" className="h-9 w-7 shrink-0 self-center object-cover" />
+                                    )}
+                                    {r.odkaz ? (
+                                        <a href={r.odkaz} target="_blank" rel="noopener noreferrer" className="truncate underline-offset-4 hover:underline">
+                                            {r.popisek}
+                                        </a>
+                                    ) : (
+                                        <span className="truncate">{r.popisek}</span>
+                                    )}
+                                </div>
+                                {r.lide && r.lide.length > 0 && (
+                                    <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-white/60">
+                                        {r.lide.map((l, i) =>
+                                            l.odkaz ? (
+                                                <a key={i} href={l.odkaz} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">
+                                                    {l.jmeno}
+                                                </a>
+                                            ) : (
+                                                <span key={i}>{l.jmeno}</span>
+                                            ),
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            {zobrazeni && cislo(r.zobrazeni)}
+                            {cislo(r.registrace, true)}
+                            {zobrazeni && <span className={`text-right tabular-nums ${r.zobrazeni ? '' : 'text-white/35'}`}>{konverze}</span>}
+                            {cislo(r.dotaznik)}
+                            <span className={`text-right tabular-nums ${r.horke ? 'font-bold text-brand-red' : 'text-white/35'}`}>{r.horke}</span>
+                        </div>
+                    );
+                })}
+                {radky.length === 0 && <p className="pt-3 text-[15px] text-white/50">Zatím nic</p>}
+            </div>
+        </div>
+    );
+};
+
+/** Celá cesta jednoho člověka: první dotek, poslední dotek, stopa z Bea. */
+const CestaRegistrace = ({ r, p }: { r: Registration; p?: Puvod }) => {
+    const a = r.utm || {};
+    if (!p) return <span className="text-white/45">neznámo</span>;
+    return (
+        <div className="flex flex-col gap-1">
+            <span>{p.kratce}</span>
+            {p.kanal === 'reklama' && (
+                <span className="text-[13px] text-white/60">
+                    {[p.kampan && `kampaň ${p.kampan}`, p.sada && `sada ${p.sada}`, a.placement && a.placement].filter(Boolean).join(' · ')}
+                </span>
+            )}
+            {p.beo && (
+                <span className="text-[13px] text-white/60">
+                    {BEO_DRUH[p.beo.druh]}
+                    {p.beo.prispevek_url && (
+                        <>
+                            {' '}pod{' '}
+                            <a href={p.beo.prispevek_url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">
+                                příspěvkem
+                            </a>
+                        </>
+                    )}
+                    {p.beo.workflow && ` · ${p.beo.workflow}`}
+                    {p.beo.conversation_id && (
+                        <>
+                            {' · '}
+                            <a href={`${BEO_APP}/inbox/${p.beo.conversation_id}`} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-white hover:underline">
+                                otevřít v Beovi
+                            </a>
+                        </>
+                    )}
+                </span>
+            )}
+            {p.prvni && (
+                <span className="text-[13px] text-white/60">
+                    poprvé přišel přes {kanalPopisek(p.prvni.kanal).toLowerCase()}
+                    {p.prvni.popis && p.prvni.popis !== kanalPopisek(p.prvni.kanal) ? ` (${p.prvni.popis})` : ''}
+                    {p.prvni.kdy && `, ${denKey(p.prvni.kdy)} ${cas(p.prvni.kdy)}`}
+                </span>
+            )}
+            {(a.referrer || a.landing) && (
+                <span className="text-[13px] text-white/45">
+                    {[a.referrer && `odkazovač ${a.referrer}`, a.landing && `vstup ${a.landing.split('?')[0]}`].filter(Boolean).join(' · ')}
+                </span>
+            )}
+        </div>
+    );
+};
+
 /** Stav jedním slovem. Barva má význam, ne náladu. */
 const Stav = ({ text, druh }: { text: string; druh: 'ok' | 'ceka' | 'chyba' | 'nic' }) => {
     const barva = {
@@ -191,7 +326,7 @@ const Stav = ({ text, druh }: { text: string; druh: 'ok' | 'ceka' | 'chyba' | 'n
 };
 
 /** Sloupce seznamu registrovaných. Hlavička i řádky je musí mít stejné. */
-const RADEK = 'grid grid-cols-[7.5rem_11rem_1fr_9rem_4.5rem_6.5rem] items-baseline gap-4 px-1';
+const RADEK = 'grid grid-cols-[7.5rem_10rem_1fr_15rem_4.5rem_6.5rem] items-baseline gap-4 px-1';
 
 const Udaj = ({ popis, children }: { popis: string; children: React.ReactNode }) => (
     <div>
@@ -213,12 +348,27 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
     const edition = await getEdition();
     if (!edition) notFound();
 
-    const [registrace, log, zobrazeni, prihlasky] = await Promise.all([
+    const [registrace, log, zobrazeniRadky, prihlasky] = await Promise.all([
         listRegistrations(edition.id),
         listMessageLog().catch(() => [] as MessageLogRow[]),
-        countPageViews(edition.id).catch(() => 0),
+        listPageViews(edition.id).catch(() => [] as PageViewRow[]),
         listApplications(edition.id).catch(() => []),
     ]);
+    const zobrazeni = zobrazeniRadky.length;
+
+    // Co o lidech ví Beo: podle stopy z prokliku, cookie odkazu, nebo e-mailu.
+    const beo = await beoPuvod({
+        emaily: registrace.map(r => r.email),
+        kliky: registrace.map(r => r.utm?.beo_klik).filter((v): v is string => Boolean(v)),
+        odkazy: registrace.map(r => r.utm?.beo_odkaz).filter((v): v is string => Boolean(v)),
+    }).catch((e): BeoPuvod[] => {
+        console.error('beo_puvod selhalo:', e);
+        return [];
+    });
+    const beoPodleRegistrace = sparujBeo(registrace, beo);
+    const puvody = new Map<string, Puvod>();
+    for (const r of registrace) puvody.set(r.id, puvodRegistrace(r, beoPodleRegistrace.get(r.id)));
+    const horkyLead = (r: Registration) => (r.qual_score ?? 0) >= HORKY_LEAD;
 
     const celkem = registrace.length;
     const dnesKey = denKey(new Date().toISOString());
@@ -236,9 +386,12 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
     const poHodinach = Array.from({ length: 24 }, () => 0);
     for (const r of registrace) poHodinach[hodina(r.created_at)]++;
 
-    const zdroje = [...tally(registrace, zdroj).entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([klic, pocet]) => ({ klic, popisek: klic, pocet, zvyraznit: true }));
+    const kanaly = rozpadKanalu(registrace, puvody, zobrazeniRadky, horkyLead);
+    const reklamy = rozpadReklam(registrace, puvody, zobrazeniRadky, horkyLead);
+    const beoRadky = rozpadBea(registrace, puvody, horkyLead, BEO_APP);
+    const sPrvnimDotekem = registrace.filter(r => puvody.get(r.id)?.prvni);
+    const registraciZReklam = kanaly.find(k => k.klic === 'reklama')?.registrace ?? 0;
+    const registraciZBea = kanaly.find(k => k.klic === 'beo')?.registrace ?? 0;
 
     const obraty = tally(sDotaznikem, r => r.qual_revenue ?? '');
     const zaseky = tally(sDotaznikem, r => r.qual_stuck ?? '');
@@ -328,19 +481,51 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                         </Sekce>
                     )}
 
-                    <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr]">
-                        <Sekce titulek="Kdy se lidé hlásí" popis="podle hodiny, součet za všechny dny">
-                            <DenniKrivka poHodinach={poHodinach} />
-                        </Sekce>
+                    <Sekce
+                        titulek="Odkud lidé chodí"
+                        popis="poslední dotek před registrací, zobrazení se počítají jednou za relaci"
+                    >
+                        <TabulkaPuvodu radky={kanaly} />
+                        {sPrvnimDotekem.length > 0 && (
+                            <p className="mt-4 max-w-[70ch] text-[14px] leading-[1.5] text-white/60">
+                                {sPrvnimDotekem.length} lidí přišlo poprvé odjinud, než odkud se nakonec registrovali.
+                                U každého je to vidět v seznamu dole.
+                            </p>
+                        )}
+                    </Sekce>
 
-                        <Sekce titulek="Odkud chodí">
-                            {zdroje.length ? (
-                                <Rozpad polozky={zdroje} celkem={celkem} sirkaPopisku="w-44" />
-                            ) : (
-                                <p className="text-[15px] text-white/50">Zatím nic</p>
-                            )}
-                        </Sekce>
-                    </div>
+                    <Sekce
+                        titulek="Reklamy"
+                        popis={
+                            reklamy.length
+                                ? `kampaň, sada, reklama; ${registraciZReklam} registrací`
+                                : 'zatím žádné zobrazení z reklam'
+                        }
+                    >
+                        {reklamy.length > 0 ? (
+                            <TabulkaPuvodu radky={reklamy} />
+                        ) : (
+                            <p className="max-w-[70ch] text-[15px] leading-[1.55] text-white/60">
+                                Jakmile reklama přivede první návštěvu, objeví se tady strom kampaň, sada, reklama
+                                s počtem zobrazení a registrací.
+                            </p>
+                        )}
+                    </Sekce>
+
+                    <Sekce
+                        titulek="Beo"
+                        popis={
+                            beoRadky.length
+                                ? `komentáře, story a DM; ${registraciZBea} registrací`
+                                : 'zatím nikdo z DM od Bea'
+                        }
+                    >
+                        <TabulkaPuvodu radky={beoRadky} zobrazeni={false} />
+                    </Sekce>
+
+                    <Sekce titulek="Kdy se lidé hlásí" popis="podle hodiny, součet za všechny dny">
+                        <DenniKrivka poHodinach={poHodinach} />
+                    </Sekce>
 
                     <Sekce
                         titulek="Co lidé odpověděli při registraci"
@@ -462,7 +647,7 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
 
                     <Sekce titulek="Všichni registrovaní" popis="klepnutím na řádek se rozbalí odpovědi a stav">
                         <div className="overflow-x-auto">
-                            <div className="min-w-[820px]">
+                            <div className="min-w-[960px]">
                                 <div className={`${RADEK} border-b border-white/14 pb-2.5 text-[13px] text-white/55`}>
                                     <span>Kdy</span>
                                     <span>Jméno</span>
@@ -486,7 +671,9 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                                                 </span>
                                                 <span className={`truncate ${horky ? 'font-bold' : ''}`}>{r.name || '—'}</span>
                                                 <span className="truncate text-white/70">{r.email}</span>
-                                                <span className="truncate text-white/60">{zdroj(r)}</span>
+                                                <span className="truncate text-white/60" title={puvody.get(r.id)?.kratce}>
+                                                    {puvody.get(r.id)?.kratce ?? '—'}
+                                                </span>
                                                 <span
                                                     className={`text-right tabular-nums ${horky ? 'font-bold text-brand-red' : r.qualified_at ? '' : 'text-white/35'}`}
                                                 >
@@ -524,6 +711,12 @@ export default async function PrehledPage({ searchParams }: { searchParams: Prom
                                                         <span className="text-white/45">bez telefonu</span>
                                                     )}
                                                 </Udaj>
+
+                                                <div className="md:col-span-3">
+                                                    <Udaj popis="Odkud přišel">
+                                                        <CestaRegistrace r={r} p={puvody.get(r.id)} />
+                                                    </Udaj>
+                                                </div>
 
                                                 <div className="flex flex-wrap gap-x-6 gap-y-2 md:col-span-3">
                                                     <span className="text-[13px] text-white/55">

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useId, useState } from 'react';
+import { getAtribuce } from '@/lib/atribuce';
 import { getStoredUtm } from '@/lib/utm';
 import { trackMetaCompleteRegistration } from '@/lib/metaPixel';
 import { PhoneField } from './PhoneField';
@@ -42,7 +43,7 @@ export const WebinarForm = () => {
             const res = await fetch('/api/webinar-register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim(), utm: getStoredUtm() }),
+                body: JSON.stringify({ name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim(), utm: getStoredUtm(), atribuce: getAtribuce() }),
             });
             const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string }));
             if (res.ok && data?.ok) {
