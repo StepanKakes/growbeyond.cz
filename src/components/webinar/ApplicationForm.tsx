@@ -145,7 +145,7 @@ export const ApplicationForm = ({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token, ...all, ...(dalsiKrok ? { faze: 'registrace' } : {}) }),
                 });
-                const data = (await res.json().catch(() => ({}))) as { ok?: boolean; qualified?: boolean; redirect?: string };
+                const data = (await res.json().catch(() => ({}))) as { ok?: boolean; qualified?: boolean; redirect?: string; eventId?: string };
                 if (!res.ok || !data.ok) {
                     setStatus('error');
                     return;
@@ -156,7 +156,7 @@ export const ApplicationForm = ({
                 }
                 if (data.qualified && data.redirect) {
                     // Meta Pixel: kvalifikovaná přihláška na hovor. No-op bez souhlasu / bez Pixel ID.
-                    trackMetaLead({ content_name: 'Přihláška na hovor' });
+                    trackMetaLead({ content_name: 'Přihláška na hovor' }, data.eventId);
                     window.location.assign(data.redirect);
                     return;
                 }

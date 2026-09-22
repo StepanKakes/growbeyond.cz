@@ -4,6 +4,7 @@ import { validateEmail } from '@/lib/validate-contact';
 import { plunkEnroll } from '@/lib/plunk';
 import { UTM_KEYS } from '@/lib/utm';
 import { adsetNazev, kanal, ocistiAtribuci } from '@/lib/atribuce';
+import { eventIdFor } from '@/lib/eventId';
 import { dbConfigured, getEdition, updateRegistration, upsertRegistration } from '@/lib/webinar/db';
 import { addRegistrant, zoomConfigured } from '@/lib/webinar/zoom';
 
@@ -144,5 +145,11 @@ export async function POST(req: Request) {
     }
 
     // Po registraci jdou lidé rovnou na otázky, potvrzení s termínem je až za nimi.
-    return NextResponse.json({ ok: true, redirect: token ? `/webinar/prihlaska?t=${token}` : '/webinar/dekujeme' });
+    // eventId drží Meta Pixel a serverovou kopii téže události pohromadě,
+    // aby se jedna registrace nezapočítala dvakrát.
+    return NextResponse.json({
+        ok: true,
+        eventId: eventIdFor('webinar-registrace', token || email),
+        redirect: token ? `/webinar/prihlaska?t=${token}` : '/webinar/dekujeme',
+    });
 }

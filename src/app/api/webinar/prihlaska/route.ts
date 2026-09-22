@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { eventIdFor } from '@/lib/eventId';
 import { APPLICATION_SCORE, LEADS_OPTIONS } from '@/components/webinar/applicationQuestions';
 import { STUCK_OPTIONS } from '@/components/webinar/qualifyOptions';
 import { createApplication, getEdition, getRegistrationByToken, updateRegistration } from '@/lib/webinar/db';
@@ -90,7 +91,12 @@ export async function POST(req: Request) {
         if (poRegistraci || !qualified) return NextResponse.json({ ok: true, qualified });
 
         const qs = new URLSearchParams({ email, ...(name ? { name } : {}) });
-        return NextResponse.json({ ok: true, qualified: true, redirect: `${CAL_LINK}?${qs}` });
+        return NextResponse.json({
+            ok: true,
+            qualified: true,
+            eventId: eventIdFor('webinar-prihlaska', email),
+            redirect: `${CAL_LINK}?${qs}`,
+        });
     } catch (e) {
         console.error('webinar/prihlaska selhalo:', e);
         return NextResponse.json({ ok: false }, { status: 500 });

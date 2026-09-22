@@ -45,10 +45,10 @@ export const WebinarForm = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: values.name.trim(), email: values.email.trim(), phone: values.phone.trim(), utm: getStoredUtm(), atribuce: getAtribuce() }),
             });
-            const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string }));
+            const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string; eventId?: string }));
             if (res.ok && data?.ok) {
                 // Meta Pixel: registrace na webinář. No-op bez souhlasu / bez Pixel ID.
-                trackMetaCompleteRegistration({ content_name: 'Webinář 2030' });
+                trackMetaCompleteRegistration({ content_name: 'Webinář 2030' }, data.eventId);
                 // Děkovačka nese token registrace, proto přesměrování a ne jen
                 // inline hláška. Když token nedorazil, necháme aspoň potvrzení.
                 if (data.redirect) {
