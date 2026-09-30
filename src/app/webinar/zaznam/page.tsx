@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { LedText } from '@/components/webinar/LedText';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { RecordingVideo } from '@/components/webinar/RecordingVideo';
+import { WebinarCalEmbed } from '@/components/webinar/WebinarCalEmbed';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,21 +49,16 @@ export default function RecordingPage() {
                             <RecordingVideo src={VIDEO} poster={POSTER} />
                         </div>
 
-                        <div className="mt-14 md:mt-20 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
-                            <div>
-                                <h2 className="text-[28px] md:text-[40px] font-bold leading-[1.05] tracking-[-0.03em]">
-                                    Chceš to rozjet s námi?
-                                </h2>
-                                <p className="mt-4 max-w-[52ch] text-[17px] md:text-[19px] text-white/70 leading-[1.5]">
-                                    Vyplň krátkou přihlášku a domluvíme si hovor, na kterém projdeme, kde teď jsi a co by ti dávalo smysl
-                                </p>
-                            </div>
-                            <Link
-                                href="/webinar/prihlaska"
-                                className="inline-flex h-14 items-center justify-center rounded-full bg-white px-9 text-base font-bold text-black transition-opacity hover:opacity-90"
-                            >
-                                Vyplnit přihlášku
-                            </Link>
+                        <div className="mt-16 md:mt-24 text-center">
+                            <h2 className="text-[28px] md:text-[40px] font-bold leading-[1.05] tracking-[-0.03em]">
+                                Chceš to rozjet s námi?
+                            </h2>
+                            <p className="mx-auto mt-4 max-w-[52ch] text-[17px] md:text-[19px] text-white/70 leading-[1.5]">
+                                Vyber si termín hovoru, projdeme, kde teď jsi a co by ti dávalo smysl
+                            </p>
+                        </div>
+                        <div className="mt-8 md:mt-10">
+                            <WebinarCalEmbed />
                         </div>
                     </section>
                 ) : (
@@ -73,14 +69,11 @@ export default function RecordingPage() {
                             className="block font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(40px,8vw,104px)]"
                         />
                         <p className="mx-auto mt-6 max-w-[48ch] text-[18px] md:text-[21px] text-white/70 leading-[1.5]">
-                            Záznam byl dostupný týden po webináři, pokud tě téma zajímá, ozvi se nám přes přihlášku
+                            Záznam byl dostupný týden po webináři, pokud tě téma zajímá, vyber si termín hovoru
                         </p>
-                        <Link
-                            href="/webinar/prihlaska"
-                            className="mt-10 inline-flex h-14 items-center rounded-full bg-white px-9 text-base font-bold text-black transition-opacity hover:opacity-90"
-                        >
-                            Vyplnit přihlášku
-                        </Link>
+                        <div className="mt-10 text-left">
+                            <WebinarCalEmbed />
+                        </div>
                     </section>
                 )}
             </div>
