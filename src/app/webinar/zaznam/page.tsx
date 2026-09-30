@@ -41,7 +41,7 @@ export default function RecordingPage() {
                                 className="block font-bold leading-[0.92] tracking-[-0.04em] text-[clamp(40px,8vw,104px)]"
                             />
                             <p className="mx-auto mt-6 max-w-[52ch] text-[18px] md:text-[21px] text-white/70 leading-[1.5]">
-                                Celý záznam webináře, pusť si ho v klidu a klidně po kouscích. Na stránce bude do 7. října
+                                Celý záznam webináře, na stránce bude do 7. října
                             </p>
                         </div>
 
