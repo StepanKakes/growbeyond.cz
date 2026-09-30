@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LedText } from '@/components/webinar/LedText';
 import { TextureOverlay } from '@/components/TextureOverlay';
+import { RecordingVideo } from '@/components/webinar/RecordingVideo';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,14 +45,7 @@ export default function RecordingPage() {
                         </div>
 
                         <div className="mt-10 md:mt-14 overflow-hidden rounded-2xl border border-white/10 bg-black">
-                            <video
-                                src={VIDEO}
-                                poster={POSTER}
-                                controls
-                                playsInline
-                                preload="metadata"
-                                className="block aspect-video w-full"
-                            />
+                            <RecordingVideo src={VIDEO} poster={POSTER} />
                         </div>
 
                         <div className="mt-14 md:mt-20 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
