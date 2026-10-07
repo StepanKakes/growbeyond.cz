@@ -6,7 +6,8 @@ import { czVocative, plunkSendEmail } from '@/lib/plunk';
 import {
     claimGroupStep,
     claimStep,
-    countWhatsAppSentToday,
+    countWhatsAppSentSince,
+    lastWhatsAppSentAt,
     finishGroupStep,
     finishStep,
     getEdition,
@@ -17,21 +18,26 @@ import {
     type Registration,
 } from './db';
 import { dueGroupSteps, STEPS, stepDueAt, stepMissed, type Step, type StepContext } from './schedule';
-import { pickVariant, sendText, sessionWorking, sleep, WA_DAILY_CAP } from './waha';
+import { nextGapMs, pickVariant, quietHours, sendText, sessionWorking, sleep, WA_DAILY_CAP, WA_HOURLY_CAP } from './waha';
 
 const SITE = process.env.NEXT_PUBLIC_BASE_URL || 'https://growbeyond.cz';
 
 /** Kolik času smí jeden běh cronu zabrat, ať HTTP volání nevyprší. */
 const RUN_BUDGET_MS = Number(process.env.WEBINAR_CRON_BUDGET_MS || 50000);
 
-/** Rozestup u první zprávy člověku. Nové konverzace jsou to citlivé, co WhatsApp hlídá. */
-const GAP_FIRST_MIN = 20000;
-const GAP_FIRST_MAX = 40000;
-/** Rozestup u dalších zpráv do už otevřené konverzace. */
-const GAP_FOLLOWUP_MIN = 3000;
-const GAP_FOLLOWUP_MAX = 8000;
+const HOUR = 3600 * 1000;
 
-const rand = (min: number, max: number) => min + Math.floor(Math.random() * Math.max(1, max - min));
+/**
+ * Upomínka, která by dorazila pozdě, už nemá smysl a byla by jen zpráva navíc.
+ * Při tempu jedné zprávy za minutu až dvě se k velké skupině všichni nedostanou
+ * včas, a to je v pořádku: zbytek pokryje email a skupina.
+ */
+function waStale(job: Job, edition: Edition, now: number): boolean {
+    const late = now - job.due.getTime();
+    if (job.step.anchor === 'registration') return late > 24 * HOUR;
+    if (now >= new Date(edition.starts_at).getTime()) return true;
+    return late > (Math.abs(job.step.offsetMinutes) * 60000) / 2;
+}
 
 function buildContext(edition: Edition, reg: Registration): StepContext {
     const start = new Date(edition.starts_at);
@@ -207,50 +213,56 @@ export async function runScheduler(opts: { dryRun?: boolean } = {}): Promise<Run
         } else {
             await runGroup(edition, summary);
 
-            const sentToday = await countWhatsAppSentToday();
-            let budgetLeft = Math.max(0, WA_DAILY_CAP - sentToday);
-
+            // Prošlé upomínky zahodit, ať se nepošlou se zpožděním.
+            const fresh: Job[] = [];
             for (const job of waJobs) {
-                if (budgetLeft <= 0) {
-                    summary.reason = `denní strop WhatsApp zpráv ${WA_DAILY_CAP} vyčerpán`;
+                if (!job.reg.phone) continue;
+                if (waStale(job, edition, Date.now())) {
+                    await markSkipped(job.reg, job.step, job.due);
+                    summary.skipped++;
+                } else fresh.push(job);
+            }
+
+            // Tempo člověka: nanejvýš jedna zpráva jednotlivci za běh cronu,
+            // rozestup od poslední zprávy napříč běhy, strop za hodinu i den, v noci nic.
+            const [sentDay, sentHour, lastSent] = await Promise.all([
+                countWhatsAppSentSince(24 * HOUR),
+                countWhatsAppSentSince(HOUR),
+                lastWhatsAppSentAt(),
+            ]);
+            if (!fresh.length) {
+                // nic k odeslání
+            } else if (quietHours()) {
+                summary.reason = 'noc, WhatsApp jednotlivcům počká do rána';
+            } else if (sentDay >= WA_DAILY_CAP) {
+                summary.reason = `denní strop WhatsApp zpráv ${WA_DAILY_CAP} vyčerpán`;
+            } else if (sentHour >= WA_HOURLY_CAP) {
+                summary.reason = `hodinový strop WhatsApp zpráv ${WA_HOURLY_CAP} vyčerpán`;
+            } else if (lastSent && Date.now() - lastSent.getTime() < nextGapMs()) {
+                summary.reason = 'rozestup od poslední WhatsApp zprávy, další běh';
+            } else {
+                for (const job of fresh) {
+                    const claimed = await claimStep({
+                        registration_id: job.reg.id,
+                        step_key: job.step.key,
+                        channel: 'whatsapp',
+                        scheduled_for: job.due.toISOString(),
+                    });
+                    if (!claimed) continue;
+
+                    const variants = job.step.variants || [job.step.body];
+                    const variant = pickVariant(job.reg.id, variants.length);
+                    const res = await sendText(job.reg.phone!, variants[variant](job.ctx));
+                    await finishStep(job.reg.id, job.step.key, {
+                        status: res.ok ? 'sent' : 'failed',
+                        variant,
+                        ...(res.ok ? {} : { error: res.error.slice(0, 400) }),
+                    });
+
+                    if (res.ok) summary.waSent++;
+                    else summary.failed++;
                     break;
                 }
-                if (Date.now() - startedAt > RUN_BUDGET_MS) break;
-                if (!job.reg.phone) continue;
-
-                const claimed = await claimStep({
-                    registration_id: job.reg.id,
-                    step_key: job.step.key,
-                    channel: 'whatsapp',
-                    scheduled_for: job.due.toISOString(),
-                });
-                if (!claimed) continue;
-
-                const variants = job.step.variants || [job.step.body];
-                const variant = pickVariant(job.reg.id, variants.length);
-                // První zpráva do nové konverzace je pro WhatsApp ta citlivá,
-                // proto se za ní čeká déle než za ostatními.
-                const isFirstContact = job.step.key === 'confirm-wa';
-                const text = variants[variant](job.ctx);
-
-                const res = await sendText(job.reg.phone, text);
-                await finishStep(job.reg.id, job.step.key, {
-                    status: res.ok ? 'sent' : 'failed',
-                    variant,
-                    ...(res.ok ? {} : { error: res.error.slice(0, 400) }),
-                });
-
-                if (res.ok) {
-                    summary.waSent++;
-                    budgetLeft--;
-                } else {
-                    summary.failed++;
-                }
-
-                // Rozestup. První kontakt je pro WhatsApp citlivý, tam jdeme pomalu.
-                await sleep(
-                    isFirstContact ? rand(GAP_FIRST_MIN, GAP_FIRST_MAX) : rand(GAP_FOLLOWUP_MIN, GAP_FOLLOWUP_MAX),
-                );
             }
         }
     }

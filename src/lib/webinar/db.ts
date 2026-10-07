@@ -231,12 +231,20 @@ export async function listDoneSteps(): Promise<Map<string, Set<string>>> {
 }
 
 /** Kolik WhatsApp zpráv už dnes odešlo, kvůli dennímu stropu. */
-export async function countWhatsAppSentToday(): Promise<number> {
-    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+export async function countWhatsAppSentSince(ms: number): Promise<number> {
+    const since = new Date(Date.now() - ms).toISOString();
     const rows = await rest<{ id: number }[]>(
         `message_log?select=id&channel=eq.whatsapp&status=eq.sent&sent_at=gte.${enc(since)}&limit=10000`,
     );
     return rows.length;
+}
+
+/** Kdy naposledy odešla WhatsApp zpráva jednotlivci, napříč všemi běhy cronu. */
+export async function lastWhatsAppSentAt(): Promise<Date | null> {
+    const rows = await rest<{ sent_at: string | null }[]>(
+        `message_log?select=sent_at&channel=eq.whatsapp&status=eq.sent&sent_at=not.is.null&order=sent_at.desc&limit=1`,
+    );
+    return rows[0]?.sent_at ? new Date(rows[0].sent_at) : null;
 }
 
 /**
