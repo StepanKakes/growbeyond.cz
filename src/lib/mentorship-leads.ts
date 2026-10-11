@@ -1,5 +1,7 @@
 // Načtení a skórování leadů z Notion (vsl-lp-form) pro interní dashboard /leads.
 
+import { posthogOsobaUrl } from './posthog-server';
+
 export type LeadTier = 'A' | 'B' | 'C';
 
 export type Lead = {
@@ -18,7 +20,7 @@ export type Lead = {
     source: string;
     campaign: string;
     video: string;
-    clarity: string;
+    zaznam: string;
     createdTime: string;
     notionUrl: string;
     score: number;
@@ -117,7 +119,7 @@ export async function listMentorshipLeads(): Promise<Lead[]> {
                     source: text(p['Zdroj']),
                     campaign: text(p['Kampaň']),
                     video: text(p['Video']),
-                    clarity: urlp(p['Clarity']),
+                    zaznam: posthogOsobaUrl(title(p['Email'])),
                     createdTime: page.created_time || '',
                     notionUrl: page.url || '',
                     score,

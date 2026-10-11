@@ -15,19 +15,11 @@ type UtmPayload = {
 };
 
 export async function POST(request: NextRequest) {
-    const { firstName, email, igHandle, q3, q4, q5, q6, q7, clarityUserId, utm } = await request.json() as {
+    const { firstName, email, igHandle, q3, q4, q5, q6, q7, utm } = await request.json() as {
         firstName?: string; email?: string; igHandle?: string;
         q3?: string; q4?: string; q5?: string; q6?: string; q7?: string;
-        clarityUserId?: string;
         utm?: UtmPayload;
     };
-
-    // Z hashnutého Clarity user id postav přímý filtrovaný odkaz na nahrávky
-    const CLARITY_PROJECT = 'vuqnag017s';
-    const clarityUrl = clarityUserId
-        ? `https://clarity.microsoft.com/projects/view/${CLARITY_PROJECT}/impressions?` +
-          `date=${encodeURIComponent('Last 30 days')}&smartEvents=SubmitForm&UserId=${encodeURIComponent('is;' + clarityUserId)}`
-        : '';
 
     // Extract just the short title (before colon) for Notion select fields
     const q3Short = q3 ? q3.split(':')[0].trim() : '';
@@ -85,7 +77,6 @@ export async function POST(request: NextRequest) {
         ...(igProfilePic ? { 'Profilovka': { url: igProfilePic } } : {}),
         // Uživatelem zadané jméno má přednost; IG fullName jen když jméno chybí.
         ...(!firstName?.trim() && igName ? { 'Jméno': { rich_text: [{ text: { content: igName } }] } } : {}),
-        ...(clarityUrl ? { 'Clarity': { url: clarityUrl } } : {}),
     };
 
     const createPage = (properties: Record<string, unknown>) =>

@@ -22,7 +22,7 @@ export default function RootLayout({
           {children}
         </main>
 
-        {/* Cookie lišta — Clarity se načte až po souhlasu */}
+        {/* Cookie lišta — PostHog se načte až po souhlasu */}
         <CookieConsent />
 
       </body>

@@ -35,23 +35,8 @@ export function getStoredUtm(): UtmData {
     }
 }
 
-type ClarityFn = (...args: unknown[]) => void;
-
-export function setClarityTags(utm: UtmData): void {
-    if (typeof window === 'undefined') return;
-    const clarity = (window as unknown as { clarity?: ClarityFn }).clarity;
-    if (typeof clarity !== 'function') return;
-    UTM_KEYS.forEach(key => {
-        if (utm[key]) clarity('set', key, utm[key] as string);
-    });
-}
-
+// PostHog si uložené UTM přečte sám při načtení (lib/posthog.ts)
 export function initUtmTracking(): void {
     const fromUrl = captureUtmFromUrl();
-    if (Object.keys(fromUrl).length > 0) {
-        persistUtm(fromUrl);
-        setClarityTags(fromUrl);
-    } else {
-        setClarityTags(getStoredUtm());
-    }
+    if (Object.keys(fromUrl).length > 0) persistUtm(fromUrl);
 }

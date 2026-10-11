@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { phCapture, phIdentify } from '@/lib/posthog';
 
 // Vstup do free programu na LP. Instagram se NIKDY nezadává ručně:
 // - s ?u= (odkaz z Beo DM po keywordu "rentgen") nese username neviditelně;
@@ -42,6 +43,8 @@ export const ProgramJoin = ({ username = '' }: { username?: string }) => {
             });
             const data = await res.json().catch(() => null);
             if (data?.ok && data.next) {
+                phIdentify(email, { ig: '@' + username });
+                phCapture('program_vstup');
                 window.location.href = data.next;
                 return;
             }

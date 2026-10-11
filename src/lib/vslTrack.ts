@@ -2,6 +2,8 @@
 // na n8n (dedup přes localStorage, keyed per cid = leadId). cid = Notion lead id
 // (= /strategie/[id]), takže contact id máme z URL, není nutný query param.
 
+import { phCapture } from './posthog';
+
 export const VSL_MILESTONES: { p: number; name: string }[] = [
     { p: 0.05, name: 'vsl_started' },
     { p: 0.25, name: 'vsl_25' },
@@ -52,6 +54,7 @@ export function trackVslEvent(cid: string, event: string, email?: string, day?: 
         if (localStorage.getItem(key)) return false;
         localStorage.setItem(key, '1');
     } catch { /* private mode apod. — pošli aspoň jednou */ }
+    phCapture(event, { video: day ? `program_den_${day}` : 'vsl', lead_id: cid });
     if (day) {
         beacon('/api/program/track', JSON.stringify({ cid, day, event, ts: Date.now() }));
     } else {

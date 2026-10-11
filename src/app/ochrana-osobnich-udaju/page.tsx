@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
                             <li><strong>Plunk</strong> — rozesílka e-mailů</li>
                             <li><strong>Notion</strong> — evidence přihlášek a klientů</li>
                             <li><strong>Cal.com</strong> — rezervace termínů hovorů</li>
-                            <li><strong>Microsoft Clarity</strong> — analytika chování na webu (pouze s vaším souhlasem)</li>
+                            <li><strong>PostHog</strong> (PostHog Inc., data uložená v EU): analytika chování na webu a záznamy návštěv, které nám ukazují, kde je web nesrozumitelný (pouze s vaším souhlasem)</li>
                             <li><strong>Beo</strong> — vlastní měření návštěv a odeslaných formulářů, abychom věděli, odkud návštěvník přišel (pouze s vaším souhlasem)</li>
                         </ul>
                         <p className="mt-3">
@@ -100,8 +100,13 @@ export default function PrivacyPolicyPage() {
                         <h2>5. Cookies</h2>
                         <p>
                             Web používá nezbytné technické cookies (pro správné fungování webu) a — pouze s vaším
-                            souhlasem — analytické cookies služby Microsoft Clarity a našeho vlastního měření Beo,
+                            souhlasem — analytické cookies služby PostHog a našeho vlastního měření Beo,
                             které pomáhají pochopit, jak návštěvníci web používají a odkud přišli.
+                        </p>
+                        <p className="mt-3">
+                            Pokud jste nám už dali svůj e-mail a souhlasili s cookies, můžeme podle toho, které
+                            stránky jste si prohlédli, odhadnout, co vás zajímá, a poslat vám k tomu jeden
+                            navazující e-mail. Z dalších e-mailů se můžete kdykoliv odhlásit odkazem v patičce.
                         </p>
                         <p className="mt-3">
                             Souhlas s analytickými cookies můžete kdykoliv odvolat smazáním cookies ve svém

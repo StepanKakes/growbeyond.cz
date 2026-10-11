@@ -6,6 +6,7 @@ import { getStoredUtm } from '@/lib/utm';
 import { trackMetaCompleteRegistration } from '@/lib/metaPixel';
 import { PhoneField } from './PhoneField';
 import { WEBINAR } from './webinarConfig';
+import { phCapture, phIdentify } from '@/lib/posthog';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const phoneOk = (raw: string) => /^\+?\d{9,15}$/.test(raw.replace(/[\s\-().]/g, ''));
@@ -47,6 +48,8 @@ export const WebinarForm = () => {
             });
             const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string; field?: string; redirect?: string; eventId?: string }));
             if (res.ok && data?.ok) {
+                phIdentify(values.email, { name: values.name.trim() });
+                phCapture('webinar_registrace');
                 // Meta Pixel: registrace na webinář. No-op bez souhlasu / bez Pixel ID.
                 trackMetaCompleteRegistration({ content_name: 'Webinář 2030' }, data.eventId);
                 // Děkovačka nese token registrace, proto přesměrování a ne jen

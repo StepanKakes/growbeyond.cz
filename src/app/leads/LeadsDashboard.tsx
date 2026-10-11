@@ -47,7 +47,7 @@ const Verified = () => (
     <svg className="w-4 h-4 text-[#3897f0] shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.4-.6 2.9 1.6 2.5-2 2.2.2 3-2.8.9-1.4 2.6-2.9-.7-2.6 1.5-2.3-1.9-2.3 1.9-2.6-1.5-2.9.7L4.8 16l-2.8-.9.2-3-2-2.2L1.8 7.4 1.2 4.5l2.6-1.4 1-2.8 3 .2L10 .2" /><path d="M10.6 14.6l-2.7-2.7 1.1-1.1 1.6 1.6 3.8-3.8 1.1 1.1z" fill="#fff" /></svg>
 );
 
-export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { leads: Lead[]; clarityProjectId?: string }) => {
+export const LeadsDashboard = ({ leads }: { leads: Lead[] }) => {
     const [q, setQ] = useState('');
     const [tier, setTier] = useState<'all' | LeadTier>('all');
     const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -194,7 +194,7 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
                 ) : (
                     <div className="flex flex-col gap-2">
                         {filtered.map(lead => (
-                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} onDelete={handleDelete} clarityProjectId={clarityProjectId} videoDuration={videoDuration} />
+                            <LeadRow key={lead.id} lead={lead} open={openId === lead.id} onToggle={() => setOpenId(openId === lead.id ? null : lead.id)} onDelete={handleDelete} videoDuration={videoDuration} />
                         ))}
                     </div>
                 )}
@@ -203,9 +203,8 @@ export const LeadsDashboard = ({ leads, clarityProjectId = 'vuqnag017s' }: { lea
     );
 };
 
-function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId, videoDuration }: { lead: Lead; open: boolean; onToggle: () => void; onDelete: (id: string) => void; clarityProjectId: string; videoDuration: number }) {
+function LeadRow({ lead, open, onToggle, onDelete, videoDuration }: { lead: Lead; open: boolean; onToggle: () => void; onDelete: (id: string) => void; videoDuration: number }) {
     const ts = tierStyle[lead.tier];
-    const claritySearch = `https://clarity.microsoft.com/projects/view/${clarityProjectId}/impressions?` + encodeURI('date=Last 30 days&smartEvents=SubmitForm');
     const pct = watchPct(lead, videoDuration);
     const watchColor = pct == null ? '' : pct >= 75 ? 'text-green-400' : pct >= 40 ? 'text-amber-400' : 'text-gray-400';
 
@@ -264,7 +263,6 @@ function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId, videoDurati
 
                 <div className="hidden md:block w-14 text-right text-xs text-gray-500 shrink-0">{relTime(lead.createdTime)}</div>
 
-                {lead.clarity && <span className="text-brand-red shrink-0" title="Clarity nahrávka">▶</span>}
                 <svg className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
             </div>
 
@@ -306,10 +304,8 @@ function LeadRow({ lead, open, onToggle, onDelete, clarityProjectId, videoDurati
 
                     {/* Akce */}
                     <div className="flex flex-wrap items-center gap-2 mt-4">
-                        {lead.clarity ? (
-                            <a href={lead.clarity} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-red text-white text-xs font-bold hover:bg-[#cc0b00] transition-colors">▶ Clarity nahrávka</a>
-                        ) : (
-                            <a href={claritySearch} target="_blank" rel="noopener noreferrer" title="Lead nemá přímý odkaz (nepřijal cookies nebo přišel jinudy). Otevře hledání v Clarity." className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-400 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">🔎 Hledat v Clarity</a>
+                        {lead.zaznam && (
+                            <a href={lead.zaznam} target="_blank" rel="noopener noreferrer" title="Záznamy návštěv v PostHogu. Prázdné, když nepřijal cookies." className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-red text-white text-xs font-bold hover:bg-[#cc0b00] transition-colors">▶ Záznamy návštěv</a>
                         )}
                         <a href={`mailto:${lead.email}`} className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">✉ {lead.email}</a>
                         <a href={`https://instagram.com/${lead.ig}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-200 border border-white/10 text-xs font-medium hover:bg-white/10 transition-colors">Instagram ↗</a>

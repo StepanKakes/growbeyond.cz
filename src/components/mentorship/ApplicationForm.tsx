@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 import { CalendlySection } from './CalendlySection';
 import { getStoredUtm } from '@/lib/utm';
+import { phCapture, phIdentify } from '@/lib/posthog';
 
 type FormData = {
     email: string;
@@ -187,30 +188,15 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
         if (currentStep !== 5 || !isStepValid()) return;
         setIsSubmitting(true);
 
-        // Clarity: označ session leadem → hashnuté user id použijeme pro
-        // automatický odkaz na nahrávku v dashboardu.
-        let clarityUserId = '';
-        try {
-            const ig = '@' + formData.igHandle.trim().replace(/^@+/, '');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const clarity = (window as any).clarity;
-            if (typeof clarity === 'function') {
-                const p = clarity('identify', formData.email, undefined, undefined, ig);
-                clarity('set', 'lead_email', formData.email);
-                clarity('set', 'lead_ig', ig);
-                clarity('upgrade', 'lead-submit'); // garantuj uložení nahrávky
-                if (p && typeof p.then === 'function') {
-                    const r = await p;
-                    clarityUserId = r?.id || '';
-                }
-            }
-        } catch { /* clarity nemusí být načtený (bez souhlasu) */ }
+        // PostHog: návštěva dostane jméno, záznam najdeš u kontaktu
+        phIdentify(formData.email, { ig: '@' + formData.igHandle.trim().replace(/^@+/, '') });
+        phCapture('prihlaska_mentoring');
 
         try {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, clarityUserId, utm: getStoredUtm() })
+                body: JSON.stringify({ ...formData, utm: getStoredUtm() })
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) setLeadId(data.id);

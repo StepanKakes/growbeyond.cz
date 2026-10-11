@@ -30,6 +30,7 @@ import {
 } from './applicationQuestions';
 import { REVENUE_OPTIONS as REVENUE, STUCK_OPTIONS as STUCK, type Choice } from './qualifyOptions';
 import { trackMetaLead } from '@/lib/metaPixel';
+import { phCapture } from '@/lib/posthog';
 
 type Question =
     | { key: string; kind: 'choice'; question: string; hint?: string; options: Choice[] }
@@ -150,6 +151,7 @@ export const ApplicationForm = ({
                     setStatus('error');
                     return;
                 }
+                phCapture('webinar_prihlaska', { kvalifikovany: Boolean(data.qualified) });
                 if (dalsiKrok) {
                     window.location.assign(dalsiKrok);
                     return;

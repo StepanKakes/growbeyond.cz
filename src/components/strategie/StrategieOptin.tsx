@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 import { getStoredUtm } from '@/lib/utm';
+import { phCapture, phIdentify } from '@/lib/posthog';
 import { trackMetaLead } from '@/lib/metaPixel';
 
 type IgPreview = {
@@ -62,27 +63,16 @@ export const StrategieOptin = () => {
             }
         } catch { /* fail-open */ }
 
-        // 2) Clarity identify (kontakt → nahrávka v dashboardu)
-        let clarityUserId = '';
-        try {
-            const handle = '@' + normIg(ig);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const clarity = (window as any).clarity;
-            if (typeof clarity === 'function') {
-                const p = clarity('identify', email, undefined, undefined, handle);
-                clarity('set', 'lead_email', email);
-                clarity('set', 'lead_ig', handle);
-                clarity('upgrade', 'lead-optin');
-                if (p && typeof p.then === 'function') clarityUserId = (await p)?.id || '';
-            }
-        } catch { /* clarity nemusí být */ }
+        // 2) PostHog: návštěva dostane jméno, záznam najdeš u kontaktu
+        phIdentify(email, { name: name.trim(), ig: '@' + normIg(ig), prijem: income });
+        phCapture('optin_strategie');
 
         // 3) Vytvoř lead → redirect na jeho unikátní stránku
         try {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName: name.trim(), email, igHandle: ig, q4: income, clarityUserId, utm: getStoredUtm() }),
+                body: JSON.stringify({ firstName: name.trim(), email, igHandle: ig, q4: income, utm: getStoredUtm() }),
             });
             const data = await res.json().catch(() => ({} as { id?: string }));
             if (data?.id) {

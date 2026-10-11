@@ -1,5 +1,5 @@
 // Meta (Facebook) Pixel — načítá se POUZE na funnelech /strategie a /webinar a AŽ po souhlasu
-// s cookies (gb_cookie_consent === "accepted"). Stejný consent model jako Clarity.
+// s cookies (gb_cookie_consent === "accepted"). Stejný consent model jako PostHog.
 // Pixel ID se nastavuje přes NEXT_PUBLIC_META_PIXEL_ID. Bez ID je vše no-op.
 
 declare global {

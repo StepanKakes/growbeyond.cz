@@ -2,14 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { loadPostHog } from "@/lib/posthog";
 
 const CONSENT_KEY = "gb_cookie_consent"; // "accepted" | "rejected"
-
-declare global {
-    interface Window {
-        clarity?: (...args: unknown[]) => void;
-    }
-}
 
 /**
  * Měřicí skript Bea.
@@ -19,7 +14,7 @@ declare global {
  * proklik; kolik lidí došlo na stránku, vyplnilo formulář a domluvilo si
  * hovor, zůstane na nule.
  *
- * Je za stejným souhlasem jako Clarity: taky sleduje chování na webu.
+ * Je za stejným souhlasem jako PostHog: taky sleduje chování na webu.
  */
 const loadBeoPixel = () => {
     if (document.getElementById("beo-pixel")) return;
@@ -30,28 +25,13 @@ const loadBeoPixel = () => {
     document.head.appendChild(script);
 };
 
-const loadClarity = () => {
-    if (document.getElementById("clarity-script")) return;
-    const script = document.createElement("script");
-    script.id = "clarity-script";
-    script.async = true;
-    script.innerHTML = `
-        (function(c,l,a,r,i,t,y){
-            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-        })(window, document, "clarity", "script", "vuqnag017s");
-    `;
-    document.head.appendChild(script);
-};
-
 export const CookieConsent = () => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         const consent = localStorage.getItem(CONSENT_KEY);
         if (consent === "accepted") {
-            loadClarity();
+            void loadPostHog();
             loadBeoPixel();
         } else if (consent !== "rejected") {
             setVisible(true);
@@ -61,7 +41,7 @@ export const CookieConsent = () => {
     const handleAccept = () => {
         localStorage.setItem(CONSENT_KEY, "accepted");
         setVisible(false);
-        loadClarity();
+        void loadPostHog();
         loadBeoPixel();
         // Oznámí ostatním (např. Meta Pixel na /strategie), že je souhlas udělen
         window.dispatchEvent(new Event("gb-cookie-consent-accepted"));
@@ -78,7 +58,7 @@ export const CookieConsent = () => {
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-[200] bg-[#1A1A1A] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/50">
             <p className="text-white text-sm font-bold mb-2">Cookies 🍪</p>
             <p className="text-gray-400 text-xs leading-relaxed mb-4">
-                Používáme analytické a marketingové cookies (Microsoft Clarity, Meta Pixel, Beo), abychom pochopili,
+                Používáme analytické a marketingové cookies (PostHog, Meta Pixel, Beo), abychom pochopili,
                 jak web používáš, a mohli ho zlepšovat. Více v{" "}
                 <Link
                     href="/ochrana-osobnich-udaju"

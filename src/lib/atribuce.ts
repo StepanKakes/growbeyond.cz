@@ -1,4 +1,4 @@
-import { UTM_KEYS, captureUtmFromUrl, persistUtm, setClarityTags, getStoredUtm } from '@/lib/utm';
+import { UTM_KEYS, captureUtmFromUrl, persistUtm } from '@/lib/utm';
 
 // Odkud člověk přišel, do detailu.
 //
@@ -126,7 +126,6 @@ export function initAtribuce(): void {
     const { dotek, explicitni } = aktualniDotek();
     const utm = captureUtmFromUrl();
     if (Object.keys(utm).length > 0) persistUtm(utm);
-    setClarityTags(Object.keys(utm).length > 0 ? utm : getStoredUtm());
 
     try {
         const ulozeno = nacti();

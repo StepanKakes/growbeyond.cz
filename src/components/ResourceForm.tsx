@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { instrumentSerif, helvetica } from "@/app/fonts";
+import { phCapture, phIdentify } from '@/lib/posthog';
 
 interface ResourceFormProps {
     plunkEvent?: string;
@@ -70,6 +71,8 @@ export function ResourceForm({ plunkEvent, formId, tagId, redirectUrl, buttonTex
                 const data = await response.json();
 
                 if (response.ok) {
+                    phIdentify(email, { name: firstName.trim() });
+                    phCapture('materialy_optin', { plunkEvent });
                     setStatus('success');
                     // Success state now handled by conditional rendering
                 } else {

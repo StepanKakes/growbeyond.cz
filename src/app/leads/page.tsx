@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 
 export default async function LeadsPage() {
     const leads = await listMentorshipLeads();
-    return <LeadsDashboard leads={leads} clarityProjectId="vuqnag017s" />;
+    return <LeadsDashboard leads={leads} />;
 }
