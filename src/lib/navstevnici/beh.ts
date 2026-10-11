@@ -1,6 +1,6 @@
 // Navazující e-mail po návštěvě webu.
 //
-// Každých 15 minut: vezme z PostHogu ukončené návštěvy lidí, které už známe
+// Jednou denně ráno: vezme z PostHogu ukončené návštěvy lidí, které už známe
 // podle e-mailu, přeskočí ty, kterým psát nemáme, zbytek pravidly zařadí
 // do typu (typy.ts) a pošle e-mail pro ten typ. Každou návštěvu
 // zapíše do webinar.navstevy, i přeskočenou, ať je vidět proč.
@@ -57,12 +57,12 @@ async function nactiNavstevy(): Promise<Navsteva[]> {
             groupArray(tuple(toString(timestamp), event, coalesce(properties.$pathname, ''))),
             any(properties.$referring_domain)
         FROM events
-        WHERE timestamp > now() - INTERVAL 6 HOUR
+        WHERE timestamp > now() - INTERVAL 30 HOUR
           AND notEmpty(person.properties.email)
           AND notEmpty($session_id)
         GROUP BY $session_id
         HAVING max(timestamp) < now() - INTERVAL ${TICHO_MIN} MINUTE
-        LIMIT 300
+        LIMIT 2000
     `);
     return radky.map(([session, email, jmeno, kontaktOd, zacatek, konec, udalosti, odkud]) => ({
         session, email, jmeno, kontaktOd, zacatek, konec, odkud,

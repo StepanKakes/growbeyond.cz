@@ -4,7 +4,7 @@ import { zpracujNavstevy } from '@/lib/navstevnici/beh';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-// Navazující e-maily po návštěvě webu. Volá se každých 15 minut ze systémového
+// Navazující e-maily po návštěvě webu. Volá se jednou denně v 7:00 ze systémového
 // crontabu na serveru se stejným x-cron-secret jako scheduler webináře.
 //
 // Ruční kontrola bez zápisu a odesílání:
