@@ -16,7 +16,6 @@ const STAV: Record<string, { text: string; trida: string }> = {
 };
 
 const cas = (iso: string) => new Date(iso).toLocaleString('cs-CZ', { timeZone: 'Europe/Prague', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
-const pct = (n?: number | null) => (typeof n === 'number' ? `${Math.round(Number(n) * 100)} %` : '');
 
 function Radek({ r }: { r: NavstevaRadek }) {
     const s = STAV[r.stav] ?? STAV.preskoceno;
@@ -28,12 +27,11 @@ function Radek({ r }: { r: NavstevaRadek }) {
                 <span className="w-24 shrink-0 text-xs text-gray-500 tabular-nums">{cas(r.konec || r.created_at)}</span>
                 <span className="min-w-0 flex-1 truncate text-sm text-gray-100" title={r.email}>{r.jmeno ? `${r.jmeno}, ` : ''}{r.email}</span>
                 <span className="hidden md:block w-44 shrink-0 truncate text-xs text-gray-300" title={r.typ || ''}>{r.typ || ''}</span>
-                <span className="hidden md:block w-24 shrink-0 text-right text-xs text-gray-500 tabular-nums">{pct(r.jistota)}</span>
                 <span className={`w-24 shrink-0 rounded-md border px-2 py-0.5 text-center text-xs ${s.trida}`}>{s.text}</span>
             </summary>
             <div className="border-t border-white/10 px-4 py-4 text-sm text-gray-300 space-y-3">
                 {r.duvod && <p className="text-gray-400">{r.duvod}</p>}
-                {r.typ && <p>Typ <span className="text-gray-100">{r.typ}</span>, jistota {pct(r.jistota)}, zájem {pct(r.zajem)}</p>}
+                {r.typ && <p>Typ <span className="text-gray-100">{r.typ}</span></p>}
                 <p className="text-gray-400 break-words">Stránky: {stranky.join(', ') || 'žádné'}</p>
                 {akce.length > 0 && <p className="text-gray-400 break-words">Akce: {akce.join(', ')}</p>}
                 {r.text && (

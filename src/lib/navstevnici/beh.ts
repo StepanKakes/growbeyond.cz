@@ -1,8 +1,8 @@
 // Navazující e-mail po návštěvě webu.
 //
 // Každých 15 minut: vezme z PostHogu ukončené návštěvy lidí, které už známe
-// podle e-mailu, přeskočí ty, kterým psát nemáme, zbytek nechá rozhodovací
-// model zařadit do typu (typy.ts) a pošle e-mail pro ten typ. Každou návštěvu
+// podle e-mailu, přeskočí ty, kterým psát nemáme, zbytek pravidly zařadí
+// do typu (typy.ts) a pošle e-mail pro ten typ. Každou návštěvu
 // zapíše do webinar.navstevy, i přeskočenou, ať je vidět proč.
 //
 // Dokud není NAVSTEVNICI_ODESILAT=1, e-mail se jen uloží jako náhled.
@@ -11,8 +11,7 @@ import { hogql } from '@/lib/posthog-server';
 import { plunkSendEmail } from '@/lib/plunk';
 import { czGreeting } from '@/lib/vokativ';
 import { rest } from '@/lib/webinar/db';
-import { rozhodni, type OdpovedChoice, type OdpovedNoul } from './rozhodovac';
-import { TYPY } from './typy';
+import { TYPY, zaradNavstevu } from './typy';
 
 /** Návštěva je u konce, když se 30 minut nic nestalo. */
 const TICHO_MIN = 30;
@@ -20,8 +19,6 @@ const TICHO_MIN = 30;
 const ROZESTUP_DNI = 14;
 /** Čerstvé kontakty vede uvítací sekvence v Plunku, do té nezasahujeme. */
 const CERSTVY_DNI = 7;
-const PRAH_TYP = 0.5;
-const PRAH_ZAJEM = 0.5;
 
 /** Po těchhle událostech člověk právě konvertoval a má svou sekvenci. */
 const KONVERZE = new Set(['optin_strategie', 'prihlaska_mentoring', 'webinar_registrace', 'webinar_prihlaska', 'program_vstup', 'materialy_optin']);
@@ -106,21 +103,23 @@ async function nedavnoPsano(emaily: string[]): Promise<Set<string>> {
     return new Set(radky.map(r => r.email));
 }
 
-/** Kdy se na stránce co dělo, ve tvaru, kterému rozhodovací model rozumí. */
-function stavProModel(n: Navsteva) {
-    const zacatek = new Date(n.zacatek).getTime();
-    const stranky: string[] = [];
-    for (const u of n.udalosti) if (u.udalost === '$pageview' && u.cesta && stranky.at(-1) !== u.cesta) stranky.push(u.cesta);
-    return {
-        stranky,
-        udalosti: n.udalosti
-            .filter(u => !u.udalost.startsWith('$') || u.udalost === '$pageview')
-            .map(u => `${Math.round((new Date(u.cas).getTime() - zacatek) / 1000)} s: ${u.udalost === '$pageview' ? 'zobrazil ' + u.cesta : u.udalost}`)
-            .slice(0, 80),
-        delka_navstevy_s: Math.round((new Date(n.konec).getTime() - zacatek) / 1000),
-        prisel_z: n.odkud || 'přímo',
-        ma_osobni_stranku_strategie: Boolean(leadUrl(n)),
-    };
+/**
+ * Kam člověk ve videu a formuláři došel za celou dobu, ne jen v téhle návštěvě.
+ * Milníky se posílají jen jednou na leada, při návratu už se znovu neobjeví.
+ */
+async function historieVidea(emaily: string[]): Promise<Map<string, Set<string>>> {
+    const mapa = new Map<string, Set<string>>();
+    if (!emaily.length) return mapa;
+    const radky = await hogql<[string, string[]]>(`
+        SELECT lower(person.properties.email), groupUniqArray(event)
+        FROM events
+        WHERE event IN ('vsl_started', 'vsl_25', 'vsl_50', 'vsl_75', 'vsl_finished', 'form_viewed', 'form_started')
+          AND properties.video = 'vsl'
+          AND lower(person.properties.email) IN {emaily}
+        GROUP BY 1
+    `, { emaily });
+    for (const [email, udalosti] of radky) mapa.set(email, new Set(udalosti));
+    return mapa;
 }
 
 function leadUrl(n: Navsteva): string | null {
@@ -156,7 +155,7 @@ export async function zpracujNavstevy({ dry = false } = {}): Promise<Souhrn> {
     if (!nove.length) return souhrn;
 
     const emaily = [...new Set(nove.map(n => n.email))];
-    const [hotovi, psano] = await Promise.all([hotoviLide(emaily), nedavnoPsano(emaily)]);
+    const [hotovi, psano, video] = await Promise.all([hotoviLide(emaily), nedavnoPsano(emaily), historieVidea(emaily)]);
 
     for (const n of nove) {
         const zaklad = { session_id: n.session, email: n.email, jmeno: n.jmeno, zacatek: n.zacatek, konec: n.konec, stranky: n.udalosti };
@@ -167,33 +166,20 @@ export async function zpracujNavstevy({ dry = false } = {}): Promise<Souhrn> {
             zapis = { ...zaklad, stav: 'preskoceno', duvod };
         } else {
             try {
-                const odpovedi = await rozhodni(stavProModel(n), {
-                    typ: {
-                        type: 'choice',
-                        instructions: 'Kdo je tenhle návštěvník webu koučinku pro tvůrce na Instagramu, podle toho, co na webu dělal?',
-                        criteria: Object.fromEntries(Object.entries(TYPY).map(([k, t]) => [k, t.kriterium])),
-                    },
-                    zajem: {
-                        type: 'noul',
-                        instructions: 'Je z návštěvy vidět skutečný zájem o spolupráci, kvůli kterému dává smysl poslat jeden osobní navazující e-mail?',
-                        criteria: { true: 'Vrátil se k nabídce, sledoval video, otevřel formulář nebo kalendář.', false: 'Náhodné proklikání, nic nesledoval.' },
-                    },
-                });
-                const typ = odpovedi.typ as OdpovedChoice;
-                const zajem = (odpovedi.zajem as OdpovedNoul).noul;
-                const rozhodnuti = { typ: typ.choice, jistota: typ.confidence, zajem, pravdepodobnosti: typ.probabilities };
-                const email = TYPY[typ.choice]?.email?.({ osloveni: czGreeting(n.jmeno), leadUrl: leadUrl(n) });
+                const lead = leadUrl(n);
+                const zobrazeni = new Set(n.udalosti.filter(u => u.udalost === '$pageview').map(u => u.cesta)).size;
+                const { typ, proc } = zaradNavstevu({ maOsobniStranku: Boolean(lead), video: video.get(n.email) ?? new Set(), zobrazeniStranek: zobrazeni });
+                const rozhodnuti = { typ };
+                const email = TYPY[typ]?.email?.({ osloveni: czGreeting(n.jmeno), leadUrl: lead });
 
                 if (!email) {
-                    zapis = { ...zaklad, ...rozhodnuti, stav: 'preskoceno', duvod: 'pro tenhle typ e-mail nemáme' };
-                } else if (typ.confidence < PRAH_TYP || zajem < PRAH_ZAJEM) {
-                    zapis = { ...zaklad, ...rozhodnuti, ...email, stav: 'preskoceno', duvod: `nízká jistota (typ ${Math.round(typ.confidence * 100)} %, zájem ${Math.round(zajem * 100)} %)` };
+                    zapis = { ...zaklad, ...rozhodnuti, stav: 'preskoceno', duvod: proc };
                 } else if (!ostre) {
-                    zapis = { ...zaklad, ...rozhodnuti, ...email, stav: 'nahled', duvod: 'odesílání vypnuté' };
+                    zapis = { ...zaklad, ...rozhodnuti, ...email, stav: 'nahled', duvod: `${proc}, odesílání vypnuté` };
                 } else {
                     const ok = await plunkSendEmail({ to: n.email, subject: email.predmet, body: email.text });
                     zapis = ok
-                        ? { ...zaklad, ...rozhodnuti, ...email, stav: 'odeslano', duvod: '', odeslano_at: new Date().toISOString() }
+                        ? { ...zaklad, ...rozhodnuti, ...email, stav: 'odeslano', duvod: proc, odeslano_at: new Date().toISOString() }
                         : { ...zaklad, ...rozhodnuti, ...email, stav: 'chyba', duvod: 'Plunk e-mail neodeslal' };
                 }
                 // Ve stejném běhu už stejnému člověku nepsat podruhé
