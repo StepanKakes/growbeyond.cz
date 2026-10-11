@@ -82,7 +82,7 @@ type RestOpts = {
  * Volání PostgREST nad schématem `webinar`.
  * Hodí při chybě, ať volající rozhodne, jestli to je fatální.
  */
-async function rest<T>(path: string, opts: RestOpts = {}): Promise<T> {
+export async function rest<T>(path: string, opts: RestOpts = {}): Promise<T> {
     if (!dbConfigured()) throw new Error('Webinar DB není nakonfigurovaná (WEBINAR_DB_ANON_KEY, WEBINAR_DB_JWT)');
 
     const method = opts.method || 'GET';

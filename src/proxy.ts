@@ -5,7 +5,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtectedSop = pathname.startsWith('/sop') && !pathname.startsWith('/sop/login');
-  const isProtectedInternal = pathname.startsWith('/links') || pathname.startsWith('/leads');
+  const isProtectedInternal = pathname.startsWith('/links') || pathname.startsWith('/leads') || pathname.startsWith('/navstevnici');
 
   // SOP knihovna – vlastní cookie/PIN
   if (isProtectedSop && request.cookies.get('sop_authorized')?.value !== 'true') {
@@ -32,5 +32,6 @@ export const config = {
     '/sop/:path*',
     '/links/:path*',
     '/leads/:path*',
+    '/navstevnici/:path*',
   ],
 };
