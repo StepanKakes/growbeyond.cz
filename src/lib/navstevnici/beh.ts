@@ -157,7 +157,6 @@ export async function zpracujNavstevy({ dry = false } = {}): Promise<Souhrn> {
 
     const emaily = [...new Set(nove.map(n => n.email))];
     const [hotovi, psano] = await Promise.all([hotoviLide(emaily), nedavnoPsano(emaily)]);
-    const calUrl = process.env.WEBINAR_CAL_LINK || 'https://cal.com/creationwithtim/strategicky-hovor';
 
     for (const n of nove) {
         const zaklad = { session_id: n.session, email: n.email, jmeno: n.jmeno, zacatek: n.zacatek, konec: n.konec, stranky: n.udalosti };
@@ -183,7 +182,7 @@ export async function zpracujNavstevy({ dry = false } = {}): Promise<Souhrn> {
                 const typ = odpovedi.typ as OdpovedChoice;
                 const zajem = (odpovedi.zajem as OdpovedNoul).noul;
                 const rozhodnuti = { typ: typ.choice, jistota: typ.confidence, zajem, pravdepodobnosti: typ.probabilities };
-                const email = TYPY[typ.choice]?.email?.({ osloveni: czGreeting(n.jmeno), leadUrl: leadUrl(n), calUrl });
+                const email = TYPY[typ.choice]?.email?.({ osloveni: czGreeting(n.jmeno), leadUrl: leadUrl(n) });
 
                 if (!email) {
                     zapis = { ...zaklad, ...rozhodnuti, stav: 'preskoceno', duvod: 'pro tenhle typ e-mail nemáme' };

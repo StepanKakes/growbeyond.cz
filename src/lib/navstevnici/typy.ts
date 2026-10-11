@@ -16,7 +16,6 @@ export type Promenne = {
     osloveni: string;
     /** Osobní stránka leada /strategie/<id>, když ji má. */
     leadUrl: string | null;
-    calUrl: string;
 };
 
 const podpis = '\n\nTim';
@@ -53,22 +52,6 @@ Pusť si ho, až budeš mít klid, a zastav se v místě, kde si řekneš „toh
 Najdeš ho pořád tady:
 ${leadUrl}` + podpis,
         } : null,
-    },
-    webinar_bez_hovoru: {
-        kriterium:
-            'Je registrovaný na webinář a vrací se na stránky /webinar (záznam, přihláška, děkovačka), ale přihlášku na hovor neodeslal a nerezervoval si ho.',
-        email: ({ osloveni, calUrl }) => ({
-            predmet: 'Po webináři',
-            text:
-`${osloveni}
-
-z webináře si většina lidí odnese pár poznámek a pak se nestane nic. Ne proto, že by to nechtěli, ale protože neví, kterou věc udělat jako první.
-
-Na tohle je krátký hovor. Podíváme se na tvůj účet a vybereme jednu věc, která u tebe pohne čísly nejvíc.
-
-Termín si vybereš tady:
-${calUrl}` + podpis,
-        }),
     },
     zacatecnik: {
         kriterium:
