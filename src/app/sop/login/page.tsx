@@ -15,7 +15,7 @@ function LoginForm() {
   const from = searchParams.get('from') || '/sop';
   // Interní systémy (links, leads) mají oddělený PIN i přihlašovací scope.
   // SOP knihovna používá 4místný PIN, interní systémy běžné heslové pole.
-  const isInternal = from.startsWith('/links') || from.startsWith('/leads');
+  const isInternal = from.startsWith('/links') || from.startsWith('/leads') || from.startsWith('/navstevnici');
   const scope = isInternal ? 'internal' : 'sop';
   const title = isInternal ? 'Interní systémy' : 'SOP Knihovna';
 
