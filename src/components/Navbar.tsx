@@ -18,7 +18,7 @@ export const Navbar = ({ minimal = false }: { minimal?: boolean }) => {
     const pathname = usePathname();
 
     const isCSP = pathname === '/csp';
-    const mainButtonHref = isCSP ? '/' : '/csp';
+    const mainButtonHref = isCSP ? '/kouci' : '/csp';
     const mainButtonText = isCSP ? 'spolupracovat 1:1' : 'Creator Starter Pack';
     const mainButtonStyle = isCSP 
         ? "bg-[#FF0E00] hover:bg-[#cc0b00] text-white px-6 py-2 rounded-full text-sm font-bold tracking-tight-custom transition-all"

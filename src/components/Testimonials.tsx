@@ -101,7 +101,7 @@ const TestimonialCard: React.FC<{
 
 const testimonials = [
     {
-        hook: "Z 50k na 80k sledujících a launch za $7,000 USD – během 5 týdnů.",
+        hook: "Z 50k na 80k sledujících a launch za $7,000 USD během 5 týdnů.",
         quote: "Když jsem se připojil do Beyond, už jsem měl nějaké publikum, ale nedokázal jsem to monetizovat. Během pěti týdnů co jsem implementoval strategii, kterou jsme s klukama nastavili jsem dostal můj profil z 50k sledujících na 80k. Obsah začal oslovovat cílené publikum a hned na to jsme nastavili můj první launch produktu. Za dva týdny jsem vydělal přes $7k USD. Mají to postavené fakt dobře, všechno je praktické a přesně jsem věděl co dělat. Pokud chcete mít funkční Instagram, kluci ví co dělají. Díkyy",
         author: "Air4future",
         role: "Drone Pilot",
@@ -140,13 +140,14 @@ const testimonials = [
         image: "/images/users/patrick.jpg"
     },
     {
-        quote: "Prošel jsem spoustu programů, které slibovaly hory doly a skončil jsem jen s větším zmatkem. Beyond je úplně jiný. Tim tě provede celým procesem krok za krokem — žádná nudná teorie, jen čistá praxe. Nikdy jsem si nebyl tak jistý tím, co buduju. Pokud chceš vybudovat vlastní značku, tohle ti skutečně pomůže.",
+        quote: "Prošel jsem spoustu programů, které slibovaly hory doly a skončil jsem jen s větším zmatkem. Beyond je úplně jiný. Tim tě provede celým procesem krok za krokem, žádná nudná teorie, jen čistá praxe. Nikdy jsem si nebyl tak jistý tím, co buduju. Pokud chceš vybudovat vlastní značku, tohle ti skutečně pomůže.",
         author: "Chris Nolan",
         role: "Content Creator"
     }
 ];
 
-export const Testimonials = () => {
+export const Testimonials = ({ only }: { only?: string[] }) => {
+    const items = only ? testimonials.filter(t => only.includes(t.author)) : testimonials;
     return (
         <section className="py-24 md:py-32 px-4 relative z-20 bg-transparent">
             <div className="max-w-7xl mx-auto">
@@ -154,7 +155,7 @@ export const Testimonials = () => {
                     <FadeUp>
                         <h3 className="text-[36px] md:text-[46px] font-bold text-white tracking-tight-custom leading-[0.9]">
                             Co říkají naši <span className="relative inline-block pb-2">
-                                <span className="font-serif italic font-normal text-gray-400">studenti...</span>
+                                <span className="font-serif italic font-normal text-gray-400">studenti</span>
                                 <svg className="absolute left-0 bottom-0 w-full h-3 text-brand-red z-0" viewBox="0 0 400 12" fill="none" preserveAspectRatio="none">
                                     <path d="M2 9C100 3 300 3 398 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                                 </svg>
@@ -164,7 +165,7 @@ export const Testimonials = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                    {testimonials.map((t, i) => (
+                    {items.map((t, i) => (
                         <div key={i} className="h-full">
                             <FadeUp delay={i * 0.1}>
                                 <TestimonialCard

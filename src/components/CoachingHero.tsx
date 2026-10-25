@@ -4,7 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { FadeUp } from './FadeUp';
 import { motion, AnimatePresence } from 'motion/react';
 
-export const CoachingHero = () => {
+type CoachingHeroProps = {
+    words?: [string, string, string];
+    line1?: string;
+    line2?: string;
+    sub?: string;
+    cta?: string;
+};
+
+export const CoachingHero = ({
+    words = ["kouč", "mentor", "konzultant"],
+    line1 = "Pomůžeme ti implementovat náš",
+    line2 = "statisícový funnel",
+    sub = "Abys svůj program, koučink nebo konzultace prodával/a kvalitnějším klientům a každý měsíc stabilně dosahoval/a šestimístných příjmů",
+    cta = "JSEM READY RŮST",
+}: CoachingHeroProps) => {
     const [step, setStep] = useState(0);
 
     useEffect(() => {
@@ -17,7 +31,6 @@ export const CoachingHero = () => {
         return () => clearTimeout(timer);
     }, [step]);
 
-    const words = ["kouč", "mentor", "konzultant"];
     const rotations = [-1.8, 1.4, -1.1];
 
     return (
@@ -68,7 +81,7 @@ export const CoachingHero = () => {
                                         transition={{ delay: 0.05 }}
                                         className="bg-brand-red px-2 md:px-2.5 text-white inline-block"
                                     >
-                                        kouč
+                                        {words[0]}
                                     </motion.span>
                                     <span className="text-white">,</span>
                                     <motion.span
@@ -77,7 +90,7 @@ export const CoachingHero = () => {
                                         transition={{ delay: 0.1 }}
                                         className="bg-brand-red px-2 md:px-2.5 text-white inline-block"
                                     >
-                                        mentor
+                                        {words[1]}
                                     </motion.span>
                                     <span className="text-white">nebo</span>
                                     <motion.span
@@ -86,7 +99,7 @@ export const CoachingHero = () => {
                                         transition={{ delay: 0.15 }}
                                         className="bg-brand-red px-2 md:px-2.5 text-white inline-block"
                                     >
-                                        konzultant
+                                        {words[2]}
                                     </motion.span>
                                 </motion.div>
                             )}
@@ -108,7 +121,7 @@ export const CoachingHero = () => {
                             className="absolute inset-0 bg-brand-red origin-left"
                         />
                         <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
-                            Pomůžeme ti implementovat náš
+                            {line1}
                         </h1>
                     </div>
 
@@ -121,7 +134,7 @@ export const CoachingHero = () => {
                             className="absolute inset-0 bg-brand-red origin-left"
                         />
                         <h1 className="relative z-10 text-[32px] md:text-[56px] font-bold text-white tracking-tight-custom leading-none">
-                            statisícový funnel
+                            {line2}
                         </h1>
                     </div>
                 </div>
@@ -144,7 +157,7 @@ export const CoachingHero = () => {
                                     paddingBottom: '8px'
                                 }}
                             >
-                                Abys svůj program, koučink nebo konzultace prodával/a kvalitnějším klientům a každý měsíc stabilně dosahoval/a šestimístných příjmů
+                                {sub}
                             </span>
                         </p>
                     </div>
@@ -155,7 +168,7 @@ export const CoachingHero = () => {
                         href="#apply"
                         className="bg-brand-red hover:bg-[#cc0b00] text-white px-8 py-3 rounded-full text-sm md:text-base font-bold tracking-tight-custom transition-all inline-block uppercase"
                     >
-                        JSEM READY RŮST
+                        {cta}
                     </a>
                 </FadeUp>
             </div>

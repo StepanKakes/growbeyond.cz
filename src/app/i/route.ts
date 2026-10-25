@@ -3,7 +3,7 @@ import { getPublicOrigin, parseClickContext, recordClick } from '@/lib/notion-li
 
 export async function GET(request: NextRequest) {
     const origin = getPublicOrigin(request);
-    const target = `${origin}/?utm_source=instagram&utm_campaign=bio#apply`;
+    const target = `${origin}/kouci?utm_source=instagram&utm_campaign=bio#apply`;
     const ctx = parseClickContext(request);
     after(async () => {
         await recordClick({

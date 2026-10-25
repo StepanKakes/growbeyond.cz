@@ -22,7 +22,7 @@ export const CallBenefits = () => {
                                 />
                             </div>
                             <p className="text-lg md:text-xl text-white font-bold leading-relaxed tracking-tight max-w-[300px]">
-                                Personalizovaný <span className="text-brand-red">rozbor a audit</span> tvé aktuální situace a společně najdeme <span className="text-brand-red">překážky</span> v tvém podnikání
+                                <span className="text-brand-red">Rozbor tvé situace</span>. Projdeme tvůj profil, nabídku a čísla a ukážeme ti, kde <span className="text-brand-red">utíkají klienti</span>
                             </p>
                         </div>
 
@@ -36,7 +36,7 @@ export const CallBenefits = () => {
                                 />
                             </div>
                             <p className="text-lg md:text-xl text-white font-bold leading-relaxed tracking-tight max-w-[300px]">
-                                Kompletní představení našich <span className="text-brand-red">systémů a strategií</span> které denně používáme k <span className="text-brand-red">prodeji</span> na instagramu
+                                <span className="text-brand-red">Ukázku našeho systému</span>, jak u nás i u klientů vypadá cesta od videa k <span className="text-brand-red">zaplacené faktuře</span>
                             </p>
                         </div>
 
@@ -50,7 +50,7 @@ export const CallBenefits = () => {
                                 />
                             </div>
                             <p className="text-lg md:text-xl text-white font-bold leading-relaxed tracking-tight max-w-[300px]">
-                                <span className="text-brand-red">Jasný akční plán</span>, konkrétní kroky, které ti pomůžou <span className="text-brand-red">dosáhnout tvých cílů</span>
+                                <span className="text-brand-red">Konkrétní další kroky</span>, které můžeš začít dělat hned, i když <span className="text-brand-red">spolupracovat nebudeme</span>
                             </p>
                         </div>
                     </div>

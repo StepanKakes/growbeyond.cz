@@ -9,7 +9,7 @@ export async function GET(
     const { campaign } = await params;
     const slug = slugify(decodeURIComponent(campaign)) || 'bio';
     const origin = getPublicOrigin(request);
-    const target = `${origin}/?utm_source=instagram&utm_campaign=${encodeURIComponent(slug)}#apply`;
+    const target = `${origin}/kouci?utm_source=instagram&utm_campaign=${encodeURIComponent(slug)}#apply`;
 
     const ctx = parseClickContext(request);
     after(async () => {

@@ -15,8 +15,8 @@ type UtmPayload = {
 };
 
 export async function POST(request: NextRequest) {
-    const { firstName, email, igHandle, q3, q4, q5, q6, q7, utm } = await request.json() as {
-        firstName?: string; email?: string; igHandle?: string;
+    const { firstName, email, igHandle, q3, q4, q5, q6, q7, utm, vetev } = await request.json() as {
+        firstName?: string; email?: string; igHandle?: string; vetev?: 'kouci' | 'podnikatele';
         q3?: string; q4?: string; q5?: string; q6?: string; q7?: string;
         utm?: UtmPayload;
     };
@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
     };
 
     const enrichProperties: Record<string, unknown> = {
+        // Větev z rozcestníku (kouči / podnikatelé). Když sloupec v DB chybí, fallback níž ho zahodí.
+        ...(vetev ? { 'Větev': { select: { name: vetev === 'podnikatele' ? 'Podnikatelé' : 'Kouči' } } } : {}),
         'Verified': { checkbox: igVerified },
         ...(igFollowers != null ? { 'Sledující': { number: igFollowers } } : {}),
         ...(igProfilePic ? { 'Profilovka': { url: igProfilePic } } : {}),
@@ -111,7 +113,8 @@ export async function POST(request: NextRequest) {
         // Zařaď leada do Plunku → spustí větvenou VSL sekvenci (E1 + follow-up).
         // lead_url = jeho unikátní stránka (video + formulář) pro odkazy v emailech.
         // Best-effort: případný fail Plunku nesmí shodit uložení leada.
-        if (email) {
+        // Sekvence je VSL pro kouče, podnikatelům by nedávala smysl
+        if (email && vetev !== 'podnikatele') {
             const leadUrl = `${SITE_URL}/strategie/${created.id}`;
             await plunkEnroll({
                 email,

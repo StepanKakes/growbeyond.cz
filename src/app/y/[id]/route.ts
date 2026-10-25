@@ -30,7 +30,7 @@ export async function GET(
         // keep default campaign
     }
 
-    const target = `${origin}/?utm_source=youtube&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${id}`;
+    const target = `${origin}/kouci?utm_source=youtube&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${id}`;
 
     const ctx = parseClickContext(request);
     after(async () => {

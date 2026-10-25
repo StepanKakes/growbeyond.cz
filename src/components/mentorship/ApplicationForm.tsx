@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { FadeUp } from '../FadeUp';
 import { CalendlySection } from './CalendlySection';
 import { getStoredUtm } from '@/lib/utm';
 import { phCapture, phIdentify } from '@/lib/posthog';
+
+export type Vetev = 'kouci' | 'podnikatele';
 
 type FormData = {
     email: string;
@@ -14,72 +15,110 @@ type FormData = {
     q4: string;
     q5: string;
     q6: string;
+    firma: string;
+    cil: string;
 };
 
-const q3Options = [
-    "Stagnace: Zasekl/a jsem se a nedaří se mi posunout dál.",
-    "Nekonzistentní příjem: Jeden měsíc dobrý, druhý slabý.",
-    "Plná kapacita: Časově to nestíhám odbavit, ale chci růst dál.",
-    "Málo klientů: Nechodí dost poptávek.",
-    "Začínám: Zatím (skoro) nevydělávám a chci to rozjet.",
-];
+type Moznost = { value: string; title: string; desc?: string };
 
-const q4Options = [
-    "Nic",
-    "Do 50 tisíc Kč",
-    "50 - 80 tisíc Kč",
-    "80 - 120 tisíc Kč",
-    "Více než 120 tisíc Kč"
-];
+// Hodnoty (value) jdou beze změny do Notionu jako select, proto zůstávají ve starém tvaru.
+// Na webu se ukazuje title a desc.
+const rozsah = (v: string) => v.replace(' - ', ' až ');
 
-const q5Options = [
-    "1:1 koučink nebo konzultace",
-    "Skupinový program nebo mastermind",
-    "Online kurz nebo digitální produkt",
-    "Zatím neprodávám / teprve začínám"
-];
+const KOUCI = {
+    q3: [
+        { value: "Stagnace: Zasekl/a jsem se a nedaří se mi posunout dál.", title: "Stagnace", desc: "Zasekl jsem se a nedaří se mi posunout dál" },
+        { value: "Nekonzistentní příjem: Jeden měsíc dobrý, druhý slabý.", title: "Nekonzistentní příjem", desc: "Jeden měsíc dobrý, druhý slabý" },
+        { value: "Plná kapacita: Časově to nestíhám odbavit, ale chci růst dál.", title: "Plná kapacita", desc: "Nestíhám to odbavit, ale chci růst dál" },
+        { value: "Málo klientů: Nechodí dost poptávek.", title: "Málo klientů", desc: "Nechodí dost poptávek" },
+        { value: "Začínám: Zatím (skoro) nevydělávám a chci to rozjet.", title: "Začínám", desc: "Zatím skoro nevydělávám a chci to rozjet" },
+    ] as Moznost[],
+    q4: ["Nic", "Do 50 tisíc Kč", "50 - 80 tisíc Kč", "80 - 120 tisíc Kč", "Více než 120 tisíc Kč"]
+        .map(v => ({ value: v, title: rozsah(v) })) as Moznost[],
+    q5: [
+        { value: "1:1 koučink nebo konzultace", title: "1:1 koučink nebo konzultace" },
+        { value: "Skupinový program nebo mastermind", title: "Skupinový program nebo mastermind" },
+        { value: "Online kurz nebo digitální produkt", title: "Online kurz nebo digitální produkt" },
+        { value: "Zatím neprodávám / teprve začínám", title: "Zatím neprodávám, teprve začínám" },
+    ] as Moznost[],
+    q6: ["0 - 25 tisíc Kč", "25 - 50 tisíc Kč", "50 - 90 tisíc Kč", "90 - 150 tisíc Kč"]
+        .map(v => ({ value: v, title: rozsah(v) })) as Moznost[],
+};
 
-const q6Options = [
-    "0 - 25 tisíc Kč",
-    "25 - 50 tisíc Kč",
-    "50 - 90 tisíc Kč",
-    "90 - 150 tisíc Kč"
-];
+const PODNIKATELE = {
+    q4: ["Zatím bez pravidelných tržeb", "Do 100 tisíc Kč", "100 až 250 tisíc Kč", "250 až 500 tisíc Kč", "500 tisíc až 1 milion Kč", "Více než 1 milion Kč"]
+        .map(v => ({ value: v, title: v })) as Moznost[],
+    q5: ["Doporučení", "Reklamy", "Obchodník nebo obchodní tým", "Sociální sítě", "Zatím nijak systematicky"]
+        .map(v => ({ value: v, title: v })) as Moznost[],
+    q3: [
+        { value: "Málo poptávek: Zákazníci o nás nevědí", title: "Málo poptávek", desc: "Zákazníci o nás nevědí" },
+        { value: "Nízká důvěra: Lidé nás neznají a váhají", title: "Nízká důvěra", desc: "Lidé nás neznají a váhají" },
+        { value: "Jeden zdroj zákazníků: Když vypadne, poptávky stojí", title: "Jeden zdroj zákazníků", desc: "Když vypadne, poptávky stojí" },
+        { value: "Zakladatel není vidět: Firma nemá tvář", title: "Zakladatel není vidět", desc: "Firma navenek nemá tvář" },
+    ] as Moznost[],
+};
 
-// Nejnižší stupeň investice → diskvalifikace na CSP a vyřazení z follow-up e-mailu.
+// Nejnižší stupeň investice → diskvalifikace (jen kouči).
 const LOWEST_BUDGET = "0 - 25 tisíc Kč";
+const KROKU = 5;
 
-// Po kvalifikaci v reklamním funnelu přesměruj na unikátní stránku leadu
-// s VSL videem a kalendářem (/strategie/<id>). Když API nevrátilo ID,
-// spadni zpět na inline rezervaci, ať lead nepropadne.
-const RedirectToVideo = ({ leadId, email, followupEligible }: { leadId: string | null; email: string; followupEligible: boolean }) => {
-    const router = useRouter();
+const NADPISY: Record<Vetev, string[]> = {
+    kouci: [
+        "Kontaktní údaje",
+        "Co tě teď nejvíc brzdí?",
+        "Kolik ti teď podnikání vydělá za měsíc?",
+        "Jak teď prodáváš?",
+        "Kolik můžeš teď do růstu investovat?",
+    ],
+    podnikatele: [
+        "Kontaktní údaje",
+        "Řekni nám o firmě",
+        "Jaké má firma měsíční tržby?",
+        "Jak dnes získáváte zákazníky?",
+        "Co nejvíc brzdí růst firmy?",
+    ],
+};
 
-    useEffect(() => {
-        if (leadId) router.push(`/strategie/${leadId}`);
-    }, [leadId, router]);
+const inputCls = (chyba?: string) =>
+    `w-full h-[52px] bg-[#0f0f0f] border rounded-xl px-4 text-base text-white placeholder:text-gray-600 focus:outline-none transition-colors ${chyba ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`;
 
-    if (!leadId) {
-        return (
-            <div className="w-full animate-[fadeIn_1s_ease-out]">
-                <CalendlySection prefillEmail={email} followupEligible={followupEligible} />
-            </div>
-        );
-    }
+const Spinner = () => <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />;
 
+// Náhled kalendáře, který se odemkne po vyplnění přihlášky
+const ZamcenyKalendar = () => {
+    const dny = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+    const cisla = Array.from({ length: 35 }, (_, i) => i - 2);
     return (
-        <div className="w-full flex flex-col items-center justify-center py-24 gap-6 animate-[fadeIn_0.6s_ease-out]">
-            <div className="w-12 h-12 border-2 border-white/20 border-t-brand-red rounded-full animate-spin" />
-            <p className="text-white text-lg font-bold tracking-tight-custom">Připravujeme tvé strategické video…</p>
+        <div className="relative h-full min-h-[360px]">
+            <div className="opacity-30 select-none pointer-events-none" aria-hidden="true">
+                <div className="flex items-center justify-between mb-5">
+                    <span className="w-8 h-8 rounded-lg border border-white/15" />
+                    <span className="text-sm font-bold text-white">Termíny hovorů</span>
+                    <span className="w-8 h-8 rounded-lg border border-white/15" />
+                </div>
+                <div className="grid grid-cols-7 gap-y-3 text-center">
+                    {dny.map(d => <span key={d} className="text-[11px] font-bold text-gray-500">{d}</span>)}
+                    {cisla.map(c => <span key={c} className="text-sm text-gray-500">{c > 0 && c <= 31 ? c : ''}</span>)}
+                </div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+                <div className="max-w-[280px] bg-[#0f0f0f] border border-white/10 rounded-2xl px-6 py-5 text-center">
+                    <svg className="w-5 h-5 mx-auto mb-3 text-brand-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                    </svg>
+                    <p className="text-sm font-bold text-white mb-1">Kalendář je zamčený</p>
+                    <p className="text-sm text-gray-400 leading-relaxed">Vyplň přihlášku a pak si vybereš termín hovoru</p>
+                </div>
+            </div>
         </div>
     );
 };
 
-export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boolean }) => {
+export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [leadId, setLeadId] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState('');
     const [isValidating, setIsValidating] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; igHandle?: string }>({});
     const [igPreview, setIgPreview] = useState<{
@@ -89,51 +128,46 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
     const [debug, setDebug] = useState(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [valLog, setValLog] = useState<any>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug')) {
-            setDebug(true);
-        }
-    }, []);
     const [formData, setFormData] = useState<FormData>({
-        email: '',
-        igHandle: '',
-        q3: '',
-        q4: '',
-        q5: '',
-        q6: ''
+        email: '', igHandle: '', q3: '', q4: '', q5: '', q6: '', firma: '', cil: '',
     });
 
-    const handleSelect = (field: keyof FormData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+    useEffect(() => {
+        if (new URLSearchParams(window.location.search).has('debug')) setDebug(true);
+    }, []);
 
-    // Live náhled IG profilu po opuštění pole — ukáže, že jsme našli správný účet
+    const set = (field: keyof FormData, value: string) => setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Které pole a možnosti patří ke kroku 2 až 5
+    const vyberKroku: Record<number, { field: keyof FormData; options: Moznost[] } | null> = vetev === 'kouci'
+        ? { 2: { field: 'q3', options: KOUCI.q3 }, 3: { field: 'q4', options: KOUCI.q4 }, 4: { field: 'q5', options: KOUCI.q5 }, 5: { field: 'q6', options: KOUCI.q6 } }
+        : { 2: null, 3: { field: 'q4', options: PODNIKATELE.q4 }, 4: { field: 'q5', options: PODNIKATELE.q5 }, 5: { field: 'q3', options: PODNIKATELE.q3 } };
+
+    // Live náhled IG profilu po opuštění pole, ukáže, že jsme našli správný účet
     const lookupIgPreview = async () => {
-        const h = formData.igHandle
-            .trim()
-            .replace(/^@+/, '')
-            .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
-            .replace(/\/+$/, '')
-            .split(/[/?#]/)[0];
-        if (!h || h.length < 2) {
-            setIgPreview({ state: 'idle' });
-            return;
-        }
+        const h = formData.igHandle.trim().replace(/^@+/, '')
+            .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/\/+$/, '').split(/[/?#]/)[0];
+        if (!h || h.length < 2) { setIgPreview({ state: 'idle' }); return; }
         setIgPreview({ state: 'loading' });
         try {
             const res = await fetch(`/api/ig-lookup?username=${encodeURIComponent(h)}`);
             const data = await res.json();
             if (data?.found && data.profile) setIgPreview({ state: 'found', profile: data.profile });
-            else if (data?.uncertain) setIgPreview({ state: 'idle' }); // nejisté → nech být
+            else if (data?.uncertain) setIgPreview({ state: 'idle' });
             else setIgPreview({ state: 'not_found' });
         } catch {
             setIgPreview({ state: 'idle' });
         }
     };
 
-    // 1. krok: instantní validace e-mailu a Instagramu před postupem dál.
-    // Fail-open — když validační endpoint selže, leada nezablokujeme.
+    const isStepValid = () => {
+        if (currentStep === 1) return formData.email.includes('@') && formData.igHandle.trim() !== '';
+        const vyber = vyberKroku[currentStep];
+        if (vyber) return formData[vyber.field] !== '';
+        return formData.firma.trim().length > 2 && formData.cil.trim().length > 2;
+    };
+
+    // 1. krok: validace e-mailu a Instagramu. Fail-open, když endpoint selže, leada nezablokujeme.
     const handleStep1Next = async () => {
         if (!isStepValid() || isValidating) return;
         setIsValidating(true);
@@ -150,361 +184,289 @@ export const ApplicationForm = ({ redirectMode = false }: { redirectMode?: boole
                 setErrors(data.errors);
                 return;
             }
-            // V debug módu nepostupuj automaticky, ať je vidět výsledek
             if (debug) return;
             setCurrentStep(2);
         } catch {
-            // síťová chyba → pusť dál
             setCurrentStep(2);
         } finally {
             setIsValidating(false);
         }
     };
 
-    const handleBack = () => {
-        if (currentStep > 1) setCurrentStep(prev => prev - 1);
+    const handleNext = () => {
+        if (currentStep === 1) return handleStep1Next();
+        if (isStepValid() && currentStep < KROKU) setCurrentStep(s => s + 1);
     };
 
     const autoAdvance = (field: keyof FormData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        setTimeout(() => {
-            if (currentStep < 5) setCurrentStep(prev => prev + 1);
-        }, 150);
-    };
-
-    const isStepValid = () => {
-        switch (currentStep) {
-            case 1: return formData.email.includes('@') && formData.igHandle.trim() !== '';
-            case 2: return formData.q3 !== '';
-            case 3: return formData.q4 !== '';
-            case 4: return formData.q5 !== '';
-            case 5: return formData.q6 !== '';
-            default: return false;
-        }
+        set(field, value);
+        if (currentStep < KROKU) setTimeout(() => setCurrentStep(s => Math.min(s + 1, KROKU)), 180);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentStep !== 5 || !isStepValid()) return;
+        if (currentStep !== KROKU || !isStepValid() || isSubmitting) return;
         setIsSubmitting(true);
+        setSubmitError('');
 
-        // PostHog: návštěva dostane jméno, záznam najdeš u kontaktu
         phIdentify(formData.email, { ig: '@' + formData.igHandle.trim().replace(/^@+/, '') });
-        phCapture('prihlaska_mentoring');
+        phCapture(vetev === 'kouci' ? 'prihlaska_mentoring' : 'prihlaska_podnikatele');
+
+        const payload = vetev === 'kouci'
+            ? { email: formData.email, igHandle: formData.igHandle, q3: formData.q3, q4: formData.q4, q5: formData.q5, q6: formData.q6 }
+            : {
+                email: formData.email, igHandle: formData.igHandle, q3: formData.q3, q4: formData.q4, q5: formData.q5,
+                q7: `Co firma dělá: ${formData.firma.trim()}\nCíl na 90 dní: ${formData.cil.trim()}`,
+            };
 
         try {
             const res = await fetch('/api/mentorship-submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, utm: getStoredUtm() })
+                body: JSON.stringify({ ...payload, vetev, utm: getStoredUtm() }),
             });
-            const data = await res.json().catch(() => ({} as { id?: string }));
-            if (data?.id) setLeadId(data.id);
-
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             setIsSubmitted(true);
-            if (!redirectMode) {
-                setTimeout(() => {
-                    const calElem = document.getElementById('calendly');
-                    calElem?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 300);
-            }
         } catch (error) {
-            console.error("Error submitting form", error);
-            setIsSubmitted(true);
+            console.error('Error submitting form', error);
+            setSubmitError('Přihlášku se nepodařilo odeslat. Zkus to prosím znovu za chvíli.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (isSubmitted) {
-        // Low budget → přímá diskvalifikace, bez druhé šance.
-        if (formData.q6 === LOWEST_BUDGET) {
+    const nizkyRozpocet = vetev === 'kouci' && formData.q6 === LOWEST_BUDGET;
+
+    const Moznosti = ({ field, options }: { field: keyof FormData; options: Moznost[] }) => (
+        <div className="grid gap-2.5" role="radiogroup">
+            {options.map(opt => {
+                const vybrano = formData[field] === opt.value;
+                return (
+                    <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={vybrano}
+                        onClick={() => autoAdvance(field, opt.value)}
+                        className={`w-full flex items-center gap-4 text-left px-4 py-3.5 min-h-[56px] rounded-xl border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red ${vybrano ? 'border-brand-red bg-brand-red/10' : 'border-white/10 bg-[#0f0f0f] hover:border-white/25'}`}
+                    >
+                        <span className={`w-[18px] h-[18px] shrink-0 rounded-full border-2 flex items-center justify-center ${vybrano ? 'border-brand-red' : 'border-white/25'}`}>
+                            {vybrano && <span className="w-2 h-2 rounded-full bg-brand-red" />}
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block text-[15px] md:text-base font-bold text-white leading-snug">{opt.title}</span>
+                            {opt.desc && <span className="block text-sm text-gray-400 leading-snug mt-0.5">{opt.desc}</span>}
+                        </span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+
+    const renderStepContent = () => {
+        if (currentStep === 1) {
             return (
-                <div className="w-full animate-[fadeIn_1s_ease-out]">
-                    <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-8 md:p-12 text-center">
-                        <div className="mb-6">
-                            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-brand-red/10 flex items-center justify-center">
-                                <svg className="w-8 h-8 text-brand-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                    <path d="M2 17l10 5 10-5" />
-                                    <path d="M2 12l10 5 10-5" />
-                                </svg>
+                <div className="grid gap-4">
+                    <div>
+                        <label htmlFor="prihlaska-email" className="block text-sm text-gray-300 mb-2">E-mail</label>
+                        <input
+                            id="prihlaska-email"
+                            required
+                            type="email"
+                            autoComplete="email"
+                            value={formData.email}
+                            onChange={e => { set('email', e.target.value); if (errors.email) setErrors(p => ({ ...p, email: undefined })); }}
+                            className={inputCls(errors.email)}
+                            placeholder="jmeno@email.cz"
+                        />
+                        {errors.email && <p className="text-brand-red text-sm mt-2">{errors.email}</p>}
+                    </div>
+                    <div>
+                        <label htmlFor="prihlaska-ig" className="block text-sm text-gray-300 mb-2">Instagram</label>
+                        <input
+                            id="prihlaska-ig"
+                            required
+                            type="text"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            value={formData.igHandle}
+                            onChange={e => { set('igHandle', e.target.value); if (errors.igHandle) setErrors(p => ({ ...p, igHandle: undefined })); if (igPreview.state !== 'idle') setIgPreview({ state: 'idle' }); }}
+                            onBlur={lookupIgPreview}
+                            className={inputCls(errors.igHandle)}
+                            placeholder="@tvujucet"
+                        />
+                        {errors.igHandle && <p className="text-brand-red text-sm mt-2">{errors.igHandle}</p>}
+                        {igPreview.state === 'loading' && (
+                            <div className="flex items-center gap-2 mt-3 text-gray-400 text-sm"><Spinner />Hledám profil</div>
+                        )}
+                        {igPreview.state === 'found' && igPreview.profile && (
+                            <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-[#0f0f0f] border border-white/10">
+                                {igPreview.profile.profilePicUrl && (
+                                    <img
+                                        src={`/api/ig-avatar?username=${encodeURIComponent(igPreview.profile.username)}&url=${encodeURIComponent(igPreview.profile.profilePicUrl)}`}
+                                        alt=""
+                                        className="w-9 h-9 rounded-full object-cover shrink-0 bg-[#262626]"
+                                    />
+                                )}
+                                <span className="text-white font-bold truncate flex-1 min-w-0">@{igPreview.profile.username}</span>
+                                <svg className="w-5 h-5 text-green-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-label="Nalezeno"><path d="M20 6L9 17l-5-5" /></svg>
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">
-                                Díky za tvé odpovědi!
-                            </h3>
-                            <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-4">
-                                V dotazníku jsi uvedl/a, že tvůj rozpočet na růst je 0 - 25 tisíc Kč. Buďme k sobě na rovinu — naše intenzivní 1:1 spolupráce vyžaduje vyšší počáteční investici.
-                            </p>
-                            <p className="text-white text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-                                Vzhledem k tvému rozpočtu tahle 1:1 spolupráce pro tebe teď nejspíš není ta správná volba. Díky za tvůj čas a přejeme ti hodně úspěchů na cestě dál.
-                            </p>
-                        </div>
+                        )}
+                        {igPreview.state === 'not_found' && !errors.igHandle && (
+                            <p className="text-brand-red text-sm mt-2">Tenhle účet jsme nenašli. Zkontroluj, jestli je jméno správně</p>
+                        )}
                     </div>
                 </div>
             );
         }
 
-        if (redirectMode) {
-            return (
-                <RedirectToVideo
-                    leadId={leadId}
-                    email={formData.email}
-                    followupEligible={formData.q6 !== LOWEST_BUDGET}
-                />
-            );
-        }
+        const vyber = vyberKroku[currentStep];
+        if (vyber) return Moznosti({ field: vyber.field, options: vyber.options });
 
+        // Podnikatelé, krok 2: dvě krátké odpovědi vlastními slovy
         return (
-            <div className="w-full animate-[fadeIn_1s_ease-out]">
-                <CalendlySection
-                    prefillEmail={formData.email}
-                    followupEligible={formData.q6 !== LOWEST_BUDGET}
-                />
+            <div className="grid gap-4">
+                <div>
+                    <label htmlFor="prihlaska-firma" className="block text-sm text-gray-300 mb-2">Co firma dělá a komu prodává?</label>
+                    <textarea
+                        id="prihlaska-firma"
+                        rows={3}
+                        value={formData.firma}
+                        onChange={e => set('firma', e.target.value)}
+                        className="w-full bg-[#0f0f0f] border border-white/10 focus:border-brand-red rounded-xl px-4 py-3 text-base text-white placeholder:text-gray-600 focus:outline-none transition-colors resize-none"
+                        placeholder="Například: dodáváme účetní software malým e-shopům"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="prihlaska-cil" className="block text-sm text-gray-300 mb-2">Jaký je tvůj hlavní obchodní cíl na příštích 90 dní?</label>
+                    <textarea
+                        id="prihlaska-cil"
+                        rows={2}
+                        value={formData.cil}
+                        onChange={e => set('cil', e.target.value)}
+                        className="w-full bg-[#0f0f0f] border border-white/10 focus:border-brand-red rounded-xl px-4 py-3 text-base text-white placeholder:text-gray-600 focus:outline-none transition-colors resize-none"
+                        placeholder="Například: 10 nových zákazníků z B2B"
+                    />
+                </div>
             </div>
         );
-    }
-
-    const renderStepContent = () => {
-        switch (currentStep) {
-            case 1:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">Základní kontaktní údaje</h3>
-                        <div>
-                            <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Tvůj email</label>
-                            <input
-                                required
-                                type="email"
-                                value={formData.email}
-                                onChange={e => { handleSelect('email', e.target.value); if (errors.email) setErrors(prev => ({ ...prev, email: undefined })); }}
-                                className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.email ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
-                                placeholder="email@gmail.com"
-                            />
-                            {errors.email && <p className="text-brand-red text-sm mt-2">{errors.email}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-white font-medium mb-2 uppercase text-xs tracking-wider opacity-80">Tvůj Instagram Handle</label>
-                            <input
-                                required
-                                type="text"
-                                value={formData.igHandle}
-                                onChange={e => { handleSelect('igHandle', e.target.value); if (errors.igHandle) setErrors(prev => ({ ...prev, igHandle: undefined })); if (igPreview.state !== 'idle') setIgPreview({ state: 'idle' }); }}
-                                onBlur={lookupIgPreview}
-                                className={`w-full bg-[#1A1A1A] border rounded-xl px-5 py-4 text-white focus:outline-none focus:bg-[#252525] transition-colors placeholder:text-gray-600 ${errors.igHandle ? 'border-brand-red' : 'border-white/10 focus:border-brand-red'}`}
-                                placeholder="@creationwithtim"
-                            />
-                            {errors.igHandle && <p className="text-brand-red text-sm mt-2">{errors.igHandle}</p>}
-
-                            {/* Live náhled profilu */}
-                            {igPreview.state === 'loading' && (
-                                <div className="flex items-center gap-2 mt-3 text-gray-400 text-sm">
-                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                    Hledám profil…
-                                </div>
-                            )}
-                            {igPreview.state === 'found' && igPreview.profile && (
-                                <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-[#1A1A1A] border border-green-500/40 animate-[fadeIn_0.3s_ease-out]">
-                                    {igPreview.profile.profilePicUrl && (
-                                        <img
-                                            src={`/api/ig-avatar?username=${encodeURIComponent(igPreview.profile.username)}&url=${encodeURIComponent(igPreview.profile.profilePicUrl)}`}
-                                            alt=""
-                                            className="w-11 h-11 rounded-full object-cover border border-white/10 shrink-0 bg-[#262626]"
-                                        />
-                                    )}
-                                    <span className="text-white font-bold truncate flex-1 min-w-0">@{igPreview.profile.username}</span>
-                                    <svg className="w-5 h-5 text-green-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                                </div>
-                            )}
-                            {igPreview.state === 'not_found' && !errors.igHandle && (
-                                <p className="text-brand-red text-sm mt-2">Tenhle účet jsme nenašli. Zkontroluj username.</p>
-                            )}
-                        </div>
-                    </div>
-                );
-            case 2:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-2">1. Co tě teď nejvíc brzdí?</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                            {q3Options.map((opt, i) => {
-                                const [title, ...rest] = opt.split(':');
-                                const description = rest.join(':').trim();
-                                return (
-                                    <div
-                                        key={i}
-                                        onClick={() => autoAdvance('q3', opt)}
-                                        className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1.5 ${formData.q3 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525]'}`}
-                                    >
-                                        <span className={`text-base md:text-lg font-bold leading-tight ${formData.q3 === opt ? 'text-white' : 'text-white'}`}>{title}</span>
-                                        {description && (
-                                            <span className={`text-xs md:text-sm leading-relaxed ${formData.q3 === opt ? 'text-white/80' : 'text-white/70'}`}>{description}</span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">2. Kolik ti teď měsíčně vydělává tvoje podnikání?</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                            {q4Options.map((opt, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => autoAdvance('q4', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q4 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
-                                >
-                                    {opt}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            case 4:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">3. Jak aktuálně prodáváš?</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                            {q5Options.map((opt, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => autoAdvance('q5', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q5 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
-                                >
-                                    {opt}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            case 5:
-                return (
-                    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out] flex flex-col h-full">
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-6">4. Kolik jsi teď schopný/á jednorázově investovat do růstu? (ne měsíční platba)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
-                            {q6Options.map((opt, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => autoAdvance('q6', opt)}
-                                    className={`p-5 rounded-xl border h-full cursor-pointer transition-colors flex items-center justify-center text-center font-bold text-sm md:text-base ${formData.q6 === opt ? 'border-brand-red bg-brand-red text-white' : 'border-white/10 bg-[#1A1A1A] hover:bg-[#252525] text-white'}`}
-                                >
-                                    {opt}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
     };
 
-    return (
-        <section className="pt-4 pb-12 px-4 relative z-20 w-full transition-opacity duration-500">
-            <FadeUp>
-                <div className="max-w-3xl mx-auto bg-[#131313] border border-white/10 rounded-xl p-6 md:p-10 min-h-[400px] md:min-h-[450px] flex flex-col relative overflow-hidden">
+    const potrebujeTlacitko = currentStep === 1 || (vetev === 'podnikatele' && currentStep === 2);
+    const hotovo = isSubmitted && !nizkyRozpocet;
 
-                    {/* Full width Progress Bar */}
-                    <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-white/5">
-                        <div
-                            className="h-full bg-brand-red transition-all duration-500 ease-out"
-                            style={{ width: `${(currentStep / 5) * 100}%` }}
-                        />
+    return (
+        <section className="pt-4 pb-12 px-4 relative z-20 w-full">
+            <FadeUp>
+                <div className="max-w-[1040px] mx-auto bg-[#131313] border border-white/10 rounded-[20px] overflow-hidden">
+
+                    {/* Dva kroky celé cesty: přihláška, pak termín */}
+                    <div className="flex items-center gap-6 px-6 md:px-8 py-4 border-b border-white/10 text-sm">
+                        <span className={`flex items-center gap-2 ${hotovo ? 'text-gray-500' : 'text-white font-bold'}`}>
+                            <span className={`w-2 h-2 rounded-full ${hotovo ? 'bg-gray-600' : 'bg-brand-red'}`} />Vyplň přihlášku
+                        </span>
+                        <span className={`flex items-center gap-2 ${hotovo ? 'text-white font-bold' : 'text-gray-500'}`}>
+                            <span className={`w-2 h-2 rounded-full ${hotovo ? 'bg-brand-red' : 'bg-gray-600'}`} />Vyber si termín
+                        </span>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="relative z-10 flex flex-col flex-1 mt-6">
-
-                        <div className="flex-1">
-                            {renderStepContent()}
-                        </div>
-
-                        {debug && valLog && (
-                            <div className="mt-4 rounded-lg border border-white/15 bg-black/50 p-4 text-xs font-mono text-left space-y-3">
-                                <div className="text-white/50 uppercase tracking-wider">Debug · validace (jen s ?debug=1)</div>
-
-                                <div className="space-y-1">
-                                    <div className={valLog.email.ok ? 'text-green-400 font-bold' : 'text-brand-red font-bold'}>
-                                        E-MAIL: {valLog.email.ok ? 'OK' : 'BLOK'}
-                                    </div>
-                                    <div className="text-white/70 break-all">
-                                        {valLog.email.email || '—'} · formát: {String(valLog.email.formatValid)} · test/placeholder: {String(valLog.email.placeholder)} · disposable: {String(valLog.email.disposable)} · doména přijímá poštu: {String(valLog.email.domainAcceptsMail)}
-                                        {valLog.email.provider?.name && ` · service(${valLog.email.provider.name}): ${valLog.email.provider.used ? valLog.email.provider.status : 'nepoužito'}`}
-                                    </div>
-                                    {valLog.email.reason && <div className="text-brand-red">↳ {valLog.email.reason}</div>}
-                                </div>
-
-                                <div className="space-y-1">
-                                    <div className={valLog.instagram.ok ? 'text-green-400 font-bold' : 'text-brand-red font-bold'}>
-                                        INSTAGRAM: {valLog.instagram.status === 'exists' ? 'NALEZEN' : valLog.instagram.status === 'not_found' ? 'NENALEZEN' : 'NEOVĚŘENO (puštěno dál)'}
-                                    </div>
-                                    <div className="text-white/70 break-all">
-                                        @{valLog.instagram.handle || '—'} · formát: {String(valLog.instagram.formatValid)} · test/placeholder: {String(valLog.instagram.placeholder)} · http: {valLog.instagram.httpStatus ?? '—'}
-                                    </div>
-                                    {valLog.instagram.reason && <div className="text-brand-red">↳ {valLog.instagram.reason}</div>}
-                                </div>
-
-                                <div className="text-white/40">V debug módu se po validaci nepostupuje na další krok.</div>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-4 pt-6 mt-8 border-t border-white/5">
-                            {currentStep > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={handleBack}
-                                    className="px-6 py-3 rounded-full border border-white/20 text-white font-medium hover:bg-white/10 transition-colors"
-                                >
-                                    Zpět
-                                </button>
-                            )}
-
-                            {currentStep === 1 && (
-                                <button
-                                    type="button"
-                                    onClick={handleStep1Next}
-                                    disabled={!isStepValid() || isValidating}
-                                    className="px-10 ml-auto bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold transition-colors flex items-center justify-center gap-2 min-w-[150px]"
-                                >
-                                    {isValidating ? (
-                                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        "Pokračovat"
-                                    )}
-                                </button>
-                            )}
-
-                            {currentStep === 5 && (
-                                <button
-                                    type="submit"
-                                    disabled={!isStepValid() || isSubmitting}
-                                    className="flex-1 md:flex-none md:px-12 ml-auto bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 rounded-full font-bold transition-colors flex justify-center items-center gap-2"
-                                >
-                                    {isSubmitting ? (
-                                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        redirectMode ? "Odemknout video" : "Rezervovat hovor"
-                                    )}
-                                </button>
-                            )}
-                        </div>
-
-                        {(currentStep === 1 || currentStep === 5) && (
-                            <p className="text-gray-500 text-xs leading-relaxed mt-4 text-center md:text-right">
-                                {currentStep === 1 ? 'Pokračováním' : 'Odesláním formuláře'} souhlasíš se zpracováním osobních údajů dle{' '}
-                                <a
-                                    href="/ochrana-osobnich-udaju"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="underline underline-offset-2 hover:text-white transition-colors"
-                                >
-                                    zásad ochrany osobních údajů
-                                </a>.
+                    {isSubmitted && nizkyRozpocet ? (
+                        <div className="px-6 md:px-12 py-14 text-center max-w-2xl mx-auto">
+                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">Díky za tvé odpovědi</h3>
+                            <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-4">
+                                Uvedl jsi, že teď můžeš do růstu investovat do 25 tisíc Kč. Budeme k tobě upřímní, naše 1:1 spolupráce potřebuje vyšší vstupní investici.
                             </p>
-                        )}
-                    </form>
+                            <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                                Teď pro tebe proto nejspíš není ta pravá. Díky za tvůj čas a hodně štěstí na cestě dál.
+                            </p>
+                        </div>
+                    ) : hotovo ? (
+                        <div id="calendly" className="pt-6">
+                            <p className="px-6 md:px-8 text-gray-300 text-base">Hotovo, přihláška je odeslaná. Teď si vyber termín hovoru</p>
+                            {/* Follow-up po kalendáři je e-mail pro kouče, podnikatelům ho neposíláme */}
+                            <CalendlySection prefillEmail={formData.email} followupEligible={vetev === 'kouci' && !nizkyRozpocet} />
+                        </div>
+                    ) : (
+                        <div className="grid md:grid-cols-[1.05fr_1fr]">
+                            <form onSubmit={handleSubmit} className="p-6 md:p-8 flex flex-col">
+                                <p className="text-sm text-gray-400 leading-relaxed mb-5">
+                                    Odpověz na pár otázek, <span className="text-white font-bold">zabere to asi minutu</span>. Pak se ti <span className="text-white font-bold">odemkne kalendář</span>
+                                </p>
+
+                                <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mb-5">
+                                    <div className="h-full bg-brand-red transition-all duration-500 ease-out" style={{ width: `${(currentStep / KROKU) * 100}%` }} />
+                                </div>
+
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-xs font-bold text-brand-red border border-brand-red/40 bg-brand-red/10 rounded-full px-2.5 py-0.5">Krok {currentStep}</span>
+                                    <span className="text-xs text-gray-500">z {KROKU}</span>
+                                </div>
+
+                                <h3 className="text-2xl md:text-[28px] font-bold text-white tracking-tight-custom leading-tight mb-5">
+                                    {NADPISY[vetev][currentStep - 1]}
+                                </h3>
+                                {vetev === 'kouci' && currentStep === 5 && (
+                                    <p className="text-sm text-gray-400 -mt-3 mb-5">Jednorázově, ne měsíčně</p>
+                                )}
+
+                                <div key={currentStep} className="animate-[fadeIn_0.3s_ease-out]">
+                                    {renderStepContent()}
+                                </div>
+
+                                {debug && valLog && (
+                                    <pre className="mt-4 rounded-lg border border-white/15 bg-black/50 p-3 text-[11px] text-white/70 whitespace-pre-wrap break-all">
+                                        {JSON.stringify(valLog, null, 2)}
+                                    </pre>
+                                )}
+
+                                {submitError && <p className="text-brand-red text-sm mt-4">{submitError}</p>}
+
+                                <div className="mt-6 grid gap-3">
+                                    {potrebujeTlacitko && (
+                                        <button
+                                            type="button"
+                                            onClick={handleNext}
+                                            disabled={!isStepValid() || isValidating}
+                                            className="w-full h-[52px] rounded-full bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold transition-colors flex items-center justify-center"
+                                        >
+                                            {isValidating ? <Spinner /> : 'Pokračovat'}
+                                        </button>
+                                    )}
+                                    {currentStep === KROKU && (
+                                        <button
+                                            type="submit"
+                                            disabled={!isStepValid() || isSubmitting}
+                                            className="w-full h-[52px] rounded-full bg-brand-red hover:bg-[#cc0b00] disabled:bg-[#252525] disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold transition-colors flex items-center justify-center"
+                                        >
+                                            {isSubmitting ? <Spinner /> : 'Odeslat a vybrat termín'}
+                                        </button>
+                                    )}
+                                    {currentStep > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentStep(s => s - 1)}
+                                            className="justify-self-start text-sm text-gray-400 hover:text-white transition-colors underline-offset-4 hover:underline"
+                                        >
+                                            Zpět
+                                        </button>
+                                    )}
+                                </div>
+
+                                {(currentStep === 1 || currentStep === KROKU) && (
+                                    <p className="text-gray-500 text-xs leading-relaxed mt-4">
+                                        {currentStep === 1 ? 'Pokračováním' : 'Odesláním'} souhlasíš se zpracováním osobních údajů podle{' '}
+                                        <a href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white transition-colors">
+                                            zásad ochrany osobních údajů
+                                        </a>
+                                    </p>
+                                )}
+                            </form>
+
+                            <div className="hidden md:block p-8 border-l border-white/10">
+                                <ZamcenyKalendar />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </FadeUp>
         </section>
