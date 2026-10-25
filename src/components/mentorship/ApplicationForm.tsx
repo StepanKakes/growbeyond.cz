@@ -360,16 +360,6 @@ export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
             <FadeUp>
                 <div className="max-w-[1040px] mx-auto bg-[#131313] border border-white/10 rounded-[20px] overflow-hidden">
 
-                    {/* Dva kroky celé cesty: přihláška, pak termín */}
-                    <div className="flex items-center gap-6 px-6 md:px-8 py-4 border-b border-white/10 text-sm">
-                        <span className={`flex items-center gap-2 ${hotovo ? 'text-gray-500' : 'text-white font-bold'}`}>
-                            <span className={`w-2 h-2 rounded-full ${hotovo ? 'bg-gray-600' : 'bg-brand-red'}`} />Vyplň přihlášku
-                        </span>
-                        <span className={`flex items-center gap-2 ${hotovo ? 'text-white font-bold' : 'text-gray-500'}`}>
-                            <span className={`w-2 h-2 rounded-full ${hotovo ? 'bg-brand-red' : 'bg-gray-600'}`} />Vyber si termín
-                        </span>
-                    </div>
-
                     {isSubmitted && nizkyRozpocet ? (
                         <div className="px-6 md:px-12 py-14 text-center max-w-2xl mx-auto">
                             <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight-custom mb-4">Díky za tvé odpovědi</h3>

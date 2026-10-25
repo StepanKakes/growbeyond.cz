@@ -37,10 +37,10 @@ export default function PodnikatelePage() {
 
                 <CoachingHero
                     words={["zakladatel", "podnikatel", "majitel firmy"]}
-                    line1="Tvoje firma je skvělá."
-                    line2="Ví o ní ti správní lidé?"
-                    sub="Postavíme ti osobní značku, se kterou se tvoje odbornost dostane k lidem, kteří nakupují, a z jejich pozornosti uděláme poptávky a schůzky"
-                    cta="CHCI RŮST DÍKY ZNAČCE"
+                    line1="Osobní značka, která"
+                    line2="ti otevře dveře"
+                    sub="Pomůžeme ti vybudovat osobní značku, která ti přinese kontakty, status, peníze a příležitosti, ke kterým by ses jinak nedostal"
+                    cta="CHCI SVOU ZNAČKU"
                 />
 
                 <div id="apply" className="pt-12 pb-24 relative overflow-visible">
@@ -56,7 +56,7 @@ export default function PodnikatelePage() {
                         href="#apply"
                         className="bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-5 rounded-full text-lg md:text-xl font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
                     >
-                        CHCI RŮST DÍKY ZNAČCE
+                        CHCI SVOU ZNAČKU
                     </a>
                 </div>
 
