@@ -38,12 +38,7 @@ export default function KouciPage() {
                 <Navbar />
                 <TextureOverlay />
 
-                <CoachingHero
-                    line1="Pomůžeme ti získávat"
-                    line2="nové klienty každý měsíc"
-                    sub="Nastavíme ti osobní značku, získávání klientů a prodej tak, aby platící klienti chodili stabilně, ne jen když se zrovna daří"
-                    cta="CHCI VÍC KLIENTŮ"
-                />
+                <CoachingHero />
 
                 <div className="pt-12 sm:pt-16 pb-12 relative overflow-visible">
                     <div className="w-full max-w-[95vw] md:max-w-[55vw] lg:max-w-[1100px] mx-auto relative">
@@ -76,7 +71,7 @@ export default function KouciPage() {
                         href="#apply"
                         className="bg-brand-red hover:bg-[#cc0b00] text-white px-10 py-5 rounded-full text-lg md:text-xl font-bold tracking-tight-custom transition-all inline-block uppercase hover:scale-105"
                     >
-                        CHCI VÍC KLIENTŮ
+                        JSEM READY RŮST
                     </a>
                 </div>
 

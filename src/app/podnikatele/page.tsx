@@ -49,7 +49,7 @@ export default function PodnikatelePage() {
                     </div>
                 </div>
 
-                <CallBenefits />
+                <CallBenefits vetev="podnikatele" />
 
                 <div className="pt-12 flex flex-col items-center relative z-20 pb-16">
                     <a
