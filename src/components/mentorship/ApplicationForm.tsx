@@ -56,11 +56,10 @@ const PODNIKATELE = {
         { value: "Jeden zdroj zákazníků: Když vypadne, poptávky stojí", title: "Jeden zdroj zákazníků", desc: "Když vypadne, poptávky stojí" },
         { value: "Zakladatel není vidět: Firma nemá tvář", title: "Zakladatel není vidět", desc: "Firma navenek nemá tvář" },
     ] as Moznost[],
-    q6: ["Do 50 tisíc Kč", "50 až 150 tisíc Kč", "150 až 300 tisíc Kč", "Více než 300 tisíc Kč"]
-        .map(v => ({ value: v, title: v })) as Moznost[],
+    q6: KOUCI.q6,
 };
 
-// Nejnižší stupeň investice → diskvalifikace (jen kouči).
+// Nejnižší stupeň investice → diskvalifikace.
 const LOWEST_BUDGET = "0 - 25 tisíc Kč";
 
 const NADPISY: Record<Vetev, string[]> = {
@@ -239,7 +238,7 @@ export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
         }
     };
 
-    const nizkyRozpocet = vetev === 'kouci' && formData.q6 === LOWEST_BUDGET;
+    const nizkyRozpocet = formData.q6 === LOWEST_BUDGET;
 
     const Moznosti = ({ field, options }: { field: keyof FormData; options: Moznost[] }) => (
         <div className="grid gap-2.5" role="radiogroup">
