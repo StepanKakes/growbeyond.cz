@@ -56,11 +56,12 @@ const PODNIKATELE = {
         { value: "Jeden zdroj zákazníků: Když vypadne, poptávky stojí", title: "Jeden zdroj zákazníků", desc: "Když vypadne, poptávky stojí" },
         { value: "Zakladatel není vidět: Firma nemá tvář", title: "Zakladatel není vidět", desc: "Firma navenek nemá tvář" },
     ] as Moznost[],
+    q6: ["Do 50 tisíc Kč", "50 až 150 tisíc Kč", "150 až 300 tisíc Kč", "Více než 300 tisíc Kč"]
+        .map(v => ({ value: v, title: v })) as Moznost[],
 };
 
 // Nejnižší stupeň investice → diskvalifikace (jen kouči).
 const LOWEST_BUDGET = "0 - 25 tisíc Kč";
-const KROKU = 5;
 
 const NADPISY: Record<Vetev, string[]> = {
     kouci: [
@@ -76,6 +77,7 @@ const NADPISY: Record<Vetev, string[]> = {
         "Jaké má firma měsíční tržby?",
         "Jak dnes získáváte zákazníky?",
         "Co nejvíc brzdí růst firmy?",
+        "Kolik můžete teď do růstu investovat?",
     ],
 };
 
@@ -136,12 +138,14 @@ export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
         if (new URLSearchParams(window.location.search).has('debug')) setDebug(true);
     }, []);
 
+    const KROKU = NADPISY[vetev].length;
+
     const set = (field: keyof FormData, value: string) => setFormData(prev => ({ ...prev, [field]: value }));
 
-    // Které pole a možnosti patří ke kroku 2 až 5
+    // Které pole a možnosti patří k jednotlivým krokům
     const vyberKroku: Record<number, { field: keyof FormData; options: Moznost[] } | null> = vetev === 'kouci'
         ? { 2: { field: 'q3', options: KOUCI.q3 }, 3: { field: 'q4', options: KOUCI.q4 }, 4: { field: 'q5', options: KOUCI.q5 }, 5: { field: 'q6', options: KOUCI.q6 } }
-        : { 2: null, 3: { field: 'q4', options: PODNIKATELE.q4 }, 4: { field: 'q5', options: PODNIKATELE.q5 }, 5: { field: 'q3', options: PODNIKATELE.q3 } };
+        : { 2: null, 3: { field: 'q4', options: PODNIKATELE.q4 }, 4: { field: 'q5', options: PODNIKATELE.q5 }, 5: { field: 'q3', options: PODNIKATELE.q3 }, 6: { field: 'q6', options: PODNIKATELE.q6 } };
 
     // Live náhled IG profilu po opuštění pole, ukáže, že jsme našli správný účet
     const lookupIgPreview = async () => {
@@ -215,7 +219,7 @@ export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
         const payload = vetev === 'kouci'
             ? { email: formData.email, igHandle: formData.igHandle, q3: formData.q3, q4: formData.q4, q5: formData.q5, q6: formData.q6 }
             : {
-                email: formData.email, igHandle: formData.igHandle, q3: formData.q3, q4: formData.q4, q5: formData.q5,
+                email: formData.email, igHandle: formData.igHandle, q3: formData.q3, q4: formData.q4, q5: formData.q5, q6: formData.q6,
                 q7: `Co firma dělá: ${formData.firma.trim()}\nCíl na 90 dní: ${formData.cil.trim()}`,
             };
 
@@ -395,7 +399,7 @@ export const ApplicationForm = ({ vetev = 'kouci' }: { vetev?: Vetev }) => {
                                 <h3 className="text-2xl md:text-[28px] font-bold text-white tracking-tight-custom leading-tight mb-5">
                                     {NADPISY[vetev][currentStep - 1]}
                                 </h3>
-                                {vetev === 'kouci' && currentStep === 5 && (
+                                {NADPISY[vetev][currentStep - 1].includes('investovat') && (
                                     <p className="text-sm text-gray-400 -mt-3 mb-5">Jednorázově, ne měsíčně</p>
                                 )}
 
