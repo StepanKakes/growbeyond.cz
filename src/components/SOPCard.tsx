@@ -39,7 +39,7 @@ const getIcon = (item: SOPItem) => {
   // Detect specific service icons for external links
   if (item.externalLink) {
     const link = item.externalLink.toLowerCase();
-    if (link.includes('loom.com') || link.includes('youtube.com') || link.includes('vimeo.com')) return <Video className="w-5 h-5" />;
+    if (link.includes('loom.com') || link.includes('youtube.com') || link.includes('youtu.be') || link.includes('vimeo.com') || link.includes('cap.growbeyond.cz')) return <Video className="w-5 h-5" />;
     if (link.includes('miro.com')) return <LayoutGrid className="w-5 h-5" />;
     return <ExternalLink className="w-5 h-5" />;
   }
@@ -52,7 +52,8 @@ const getTypeLabel = (item: SOPItem) => {
   if (item.externalLink) {
     const link = item.externalLink.toLowerCase();
     if (link.includes('loom.com')) return 'Loom Video';
-    if (link.includes('youtube.com')) return 'YouTube';
+    if (link.includes('youtube.com') || link.includes('youtu.be')) return 'YouTube';
+    if (link.includes('cap.growbeyond.cz')) return 'Video';
     if (link.includes('miro.com')) return 'Miro Board';
     return 'Externí odkaz';
   }
