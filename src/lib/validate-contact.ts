@@ -265,7 +265,9 @@ async function igResolve(handle: string): Promise<IgResolved> {
     try {
         const { status, json } = await fetchIgProfile(handle);
 
-        if (status === 404) {
+        // 404 bereme jako „neexistuje“ jen s JSON odpovědí od API. IG od 11/2026
+        // vrací HTML 404 („Page Not Found“) i pro existující účty, to je nejisté.
+        if (status === 404 && json) {
             const res: IgResolved = { exists: 'not_found', httpStatus: status, profile: null };
             igCacheSet(handle, res);
             return res;
