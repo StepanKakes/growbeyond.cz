@@ -12,6 +12,10 @@ const DISPOSABLE = new Set(disposableList as string[]);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const IG_RE = /^[a-zA-Z0-9._]{1,30}$/;
 
+// Vypínač kontroly IG. Instagram od 11/2026 vrací 404 i pro existující účty,
+// takže kontrolu dočasně vypínáme: každý IG projde, náhled profilu se neukáže.
+const IG_CHECK_DISABLED = true;
+
 // Placeholder / „test" pokusy
 const PLACEHOLDER_DOMAINS = new Set([
     'test.com', 'test.cz', 'test.test', 'test.email', 'test.io', 'test.org',
@@ -299,6 +303,7 @@ export async function getInstagramProfile(
     raw: string
 ): Promise<{ found: boolean; uncertain: boolean; handle: string; profile: IgProfile | null }> {
     const handle = normalizeIg(raw);
+    if (IG_CHECK_DISABLED) return { found: false, uncertain: true, handle, profile: null };
     const formatValid = IG_RE.test(handle) && !handle.includes('..');
     if (!formatValid || looksLikeTest(handle)) {
         return { found: false, uncertain: false, handle, profile: null };
@@ -317,6 +322,8 @@ export async function validateInstagram(raw: string): Promise<IgDetails> {
         placeholder: false,
         status: 'uncertain',
     };
+
+    if (IG_CHECK_DISABLED) return base;
 
     if (!base.formatValid) {
         return { ...base, ok: false, status: 'not_found', reason: 'Zadej platný Instagram username (např. @creationwithtim).' };
