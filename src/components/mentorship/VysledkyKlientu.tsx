@@ -23,13 +23,19 @@ export const VysledkyKlientu = () => {
                     Screenshoty z WhatsApp skupin, které máme s každým klientem. Zakrytá jsou jen telefonní čísla.
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                     {SLOUPCE.map((sloupec, i) => (
-                        <div key={i} className="flex flex-col gap-10">
+                        <div key={i} className="flex flex-col gap-6 min-w-0">
                             {sloupec.map((idx) => {
                                 const v = VYSLEDKY[idx];
                                 return (
-                                    <figure key={v.img[0]}>
+                                    <figure key={v.img[0]} className="rounded-2xl bg-[#171717] border border-white/10 p-3 md:p-4">
+                                        <figcaption className="px-1 pt-1 pb-3 md:pb-4">
+                                            <p className="text-white text-lg font-bold tracking-tight-custom leading-snug">
+                                                <span className="text-brand-red">{v.castka}</span> {v.co}
+                                            </p>
+                                            <p className="text-white/45 text-sm mt-1">{v.kdo}</p>
+                                        </figcaption>
                                         <div className="flex flex-col gap-2">
                                             {v.img.map((src) => (
                                                 <img
@@ -37,16 +43,10 @@ export const VysledkyKlientu = () => {
                                                     src={src}
                                                     alt={`${v.kdo}: ${v.castka} ${v.co}`}
                                                     loading="lazy"
-                                                    className="w-full h-auto rounded-xl"
+                                                    className="block w-full h-auto rounded-lg"
                                                 />
                                             ))}
                                         </div>
-                                        <figcaption className="mt-4">
-                                            <p className="text-white text-lg font-bold tracking-tight-custom leading-snug">
-                                                <span className="text-brand-red">{v.castka}</span> {v.co}
-                                            </p>
-                                            <p className="text-white/45 text-sm mt-1">{v.kdo}</p>
-                                        </figcaption>
                                     </figure>
                                 );
                             })}
