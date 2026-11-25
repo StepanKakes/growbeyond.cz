@@ -10,7 +10,7 @@ const VYSLEDKY = [
 ];
 
 // Ručně vyrovnané sloupce podle výšky screenshotů
-const SLOUPCE = [[0, 3], [2, 1], [4, 5]];
+const SLOUPCE = [[0, 2], [1, 3, 4], [5]];
 
 export const VysledkyKlientu = () => {
     return (
