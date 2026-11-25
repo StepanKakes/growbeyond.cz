@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic';
 import { initUtmTracking } from '@/lib/utm';
 import { Navbar } from '@/components/Navbar';
 import { CoachingHero } from '@/components/CoachingHero';
-import { Testimonials } from '@/components/Testimonials';
 import { TextureOverlay } from '@/components/TextureOverlay';
 import { CallBenefits } from '@/components/mentorship/CallBenefits';
 import { ScreenshotGallery } from '@/components/mentorship/ScreenshotGallery';
+import { VysledkyKlientu } from '@/components/mentorship/VysledkyKlientu';
 import { LegalFooter } from '@/components/LegalFooter';
 
 const SmoothScroll = dynamic(() => import('@/components/SmoothScroll').then(mod => mod.SmoothScroll), { ssr: false });
@@ -75,7 +75,7 @@ export default function KouciPage() {
                     </a>
                 </div>
 
-                <Testimonials />
+                <VysledkyKlientu />
 
                 <ScreenshotGallery />
 
