@@ -3,7 +3,7 @@ import React from 'react';
 const VYSLEDKY = [
     { castka: '118 802 Kč', co: 'za jeden týden', kdo: 'Fit Na Cestách, online kouči', img: ['/images/reference/fnc-118802.png'] },
     { castka: '446 000 Kč', co: 'rekordní měsíc s novou high ticket nabídkou', kdo: 'Lukáš Rusek, konzultant', img: ['/images/reference/lukas-446k.png'] },
-    { castka: '227 740 Kč', co: 'za 1. až 24. září, 22 platících klientů', kdo: 'Fit Na Cestách, online kouči', img: ['/images/reference/fnc-dashboard.jpg', '/images/reference/fnc-227k.png'] },
+    { castka: '227 740 Kč', co: '22 platících klientů', kdo: 'Fit Na Cestách, online kouči', img: ['/images/reference/fnc-dashboard.jpg', '/images/reference/fnc-227k.png'] },
     { castka: '3 měsíce 1:1', co: '', kdo: 'Pavel Sedláček, filmař a mentor', img: ['/images/reference/pavel-deal.png'] },
     { castka: '123 000 Kč', co: 'za týden', kdo: 'Fit Na Cestách, online kouči', img: ['/images/reference/fnc-123000.png'] },
     { castka: '90 000 Kč', co: 'jeden klient na 6 měsíců', kdo: 'Lukáš Rusek, konzultant', img: ['/images/reference/lukas-90k.png'] },
