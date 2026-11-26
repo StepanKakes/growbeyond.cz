@@ -53,6 +53,47 @@ export const VysledkyKlientu = () => {
                         </div>
                     ))}
                 </div>
+
+                <figure className="mt-6 rounded-2xl bg-[#171717] border border-white/10 p-3 md:p-4">
+                    <figcaption className="px-1 pt-1 pb-3 md:pb-4">
+                        <p className="text-white text-lg font-bold tracking-tight-custom leading-snug">
+                            <span className="text-brand-red">2 842 → 29 800</span> sledujících na Instagramu
+                        </p>
+                        <p className="text-white/45 text-sm mt-1">Jakub Bolek, otecbuduje</p>
+                    </figcaption>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-5">
+                        <div className="min-w-0">
+                            <p className="text-white/45 text-xs font-semibold uppercase tracking-wider mb-2 px-1">Před</p>
+                            <img
+                                src="/images/reference/otec-pred.png"
+                                alt="Instagram otecbuduje před spoluprací: 2 842 sledujících"
+                                loading="lazy"
+                                className="block w-full h-auto rounded-lg"
+                            />
+                        </div>
+                        <svg
+                            viewBox="0 0 48 24"
+                            aria-hidden="true"
+                            className="w-12 h-6 mx-auto text-brand-red rotate-90 md:rotate-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M3 12h40M33 3l10 9-10 9" />
+                        </svg>
+                        <div className="min-w-0">
+                            <p className="text-white/45 text-xs font-semibold uppercase tracking-wider mb-2 px-1">Po</p>
+                            <img
+                                src="/images/reference/otec-po.png"
+                                alt="Instagram otecbuduje po spolupráci: 29,8 tisíce sledujících"
+                                loading="lazy"
+                                className="block w-full h-auto rounded-lg"
+                            />
+                        </div>
+                    </div>
+                </figure>
             </div>
         </section>
     );
